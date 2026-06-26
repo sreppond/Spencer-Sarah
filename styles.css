@@ -652,10 +652,10 @@ img {
 }
 
 .photo-break-inner img {
-  width: 100%;
-  height: auto;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: unset !important;
   display: block;
-  object-position: center 40%;
 }
 
 /* ============================================
