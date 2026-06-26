@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="s2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1A2E"/>
+      <stop offset="50%" stop-color="#2D3050"/>
+      <stop offset="100%" stop-color="#16213E"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#s2)"/>
+  <polygon points="0,500 150,380 300,440 500,320 700,400 800,360 800,550 0,550" fill="#0D1520" opacity="0.8"/>
+  <circle cx="500" cy="200" r="8" fill="#FFF" opacity="0.8"/>
+  <circle cx="200" cy="150" r="3" fill="#FFF" opacity="0.5"/>
+  <circle cx="650" cy="120" r="4" fill="#FFF" opacity="0.6"/>
+  <circle cx="350" cy="100" r="2" fill="#FFF" opacity="0.4"/>
+  <circle cx="100" cy="250" r="3" fill="#FFF" opacity="0.5"/>
+  <circle cx="700" cy="280" r="2" fill="#FFF" opacity="0.3"/>
+  <rect x="0" y="540" width="800" height="260" fill="#0A0F18"/>
+  <line x1="50" y1="600" x2="250" y2="600" stroke="#1A2540" stroke-width="1" opacity="0.5"/>
+  <line x1="400" y1="620" x2="700" y2="620" stroke="#1A2540" stroke-width="1" opacity="0.4"/>
+</svg>

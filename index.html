@@ -11,61 +11,91 @@
 </head>
 <body>
 
-  <!-- Navigation -->
+  <!-- Floating Pill Navigation -->
   <nav id="navbar">
-    <div class="nav-brand">S&nbsp;&amp;&nbsp;S</div>
-    <div class="nav-links">
-      <a href="#story">Our Story</a>
-      <a href="#venue">The Venue</a>
-      <a href="#details">Details</a>
-      <a href="#travel">Travel</a>
-      <a href="#faq">FAQ</a>
-      <a href="#rsvp" class="nav-cta">RSVP</a>
+    <div class="nav-inner">
+      <div class="nav-brand">S&nbsp;&amp;&nbsp;S</div>
+      <div class="nav-links">
+        <a href="#story">Our Story</a>
+        <a href="#venue">The Venue</a>
+        <a href="#details">Details</a>
+        <a href="#travel">Travel</a>
+        <a href="#faq">FAQ</a>
+        <a href="#rsvp" class="nav-cta">Submit RSVP</a>
+      </div>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-    <button class="nav-toggle" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
-    </button>
   </nav>
 
   <!-- Mobile Menu -->
-  <div class="mobile-menu">
+  <div class="mobile-menu" id="mobile-menu">
     <a href="#story">Our Story</a>
     <a href="#venue">The Venue</a>
     <a href="#details">Details</a>
     <a href="#travel">Travel</a>
     <a href="#faq">FAQ</a>
-    <a href="#rsvp" class="nav-cta">RSVP</a>
+    <a href="#rsvp" class="nav-cta">Submit RSVP</a>
   </div>
 
-  <!-- Hero Section -->
-  <section id="hero">
-    <div class="hero-bg" id="hero-bg"></div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <p class="hero-prelude reveal">together with their families</p>
-      <h1 class="hero-names">
-        <span class="name-line reveal">Spencer</span>
-        <span class="ampersand reveal">&amp;</span>
-        <span class="name-line reveal">Sarah</span>
-      </h1>
-      <div class="hero-date reveal">
-        <div class="date-line"></div>
-        <p>June 18, 2027&nbsp;&nbsp;·&nbsp;&nbsp;Whitefish, Montana</p>
-        <div class="date-line"></div>
+  <!-- ============================================
+       HERO + PHOTO MOSAIC (Cordially-style)
+       The hero photo starts full-screen, then shrinks
+       into a card while satellite photos fly in.
+       ============================================ -->
+  <section id="hero-mosaic">
+    <div class="mosaic-stage" id="mosaic-stage">
+      <!-- Main hero image -->
+      <div class="mosaic-hero-card" id="hero-card">
+        <img src="images/hero.svg" alt="Mountain landscape at Whitefish Lake" class="mosaic-hero-img">
+        <div class="hero-overlay"></div>
+        <div class="hero-content" id="hero-content">
+          <p class="hero-prelude">together with their families</p>
+          <h1 class="hero-names">
+            <span class="name-line">Spencer</span>
+            <span class="ampersand">&amp;</span>
+            <span class="name-line">Sarah</span>
+          </h1>
+          <div class="hero-date">
+            <div class="date-line"></div>
+            <p>June 18, 2027&nbsp;&nbsp;&middot;&nbsp;&nbsp;Whitefish, Montana</p>
+            <div class="date-line"></div>
+          </div>
+        </div>
+        <div class="scroll-indicator" id="scroll-indicator">
+          <span>S C R O L L&nbsp;&nbsp;&nbsp;T O&nbsp;&nbsp;&nbsp;E X P L O R E</span>
+          <div class="scroll-arrow"></div>
+        </div>
+      </div>
+
+      <!-- Satellite photos (fly in on scroll) -->
+      <div class="sat-photo sat-tl" id="sat-tl">
+        <img src="images/photo-1.svg" alt="Montana adventure">
+      </div>
+      <div class="sat-photo sat-bl" id="sat-bl">
+        <img src="images/photo-2.svg" alt="Together">
+      </div>
+      <div class="sat-photo sat-tr" id="sat-tr">
+        <img src="images/photo-3.svg" alt="Mountain views">
+      </div>
+      <div class="sat-photo sat-br" id="sat-br">
+        <img src="images/photo-4.svg" alt="Lakeside">
+      </div>
+      <div class="sat-photo sat-mr" id="sat-mr">
+        <img src="images/photo-5.svg" alt="Adventure">
       </div>
     </div>
-    <div class="scroll-indicator">
-      <span>Scroll to Explore</span>
-      <div class="scroll-arrow"></div>
-    </div>
+    <!-- Scroll spacer for the transition -->
+    <div class="mosaic-spacer"></div>
   </section>
 
-  <!-- Intro Section -->
+  <!-- Countdown Section -->
   <section id="intro">
     <div class="container">
       <div class="intro-text reveal">
         <p class="script-accent">so please join us...</p>
-        <h2 class="countdown-date">June 18, 2027</h2>
+        <h2 class="countdown-date">june 18, 2027</h2>
         <div class="countdown" id="countdown">
           <div class="countdown-unit">
             <span class="countdown-number" id="days">---</span>
@@ -102,12 +132,7 @@
       <div class="story-block">
         <div class="story-image reveal-left">
           <div class="image-frame">
-            <div class="placeholder-image" data-label="Spencer & Sarah">
-              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="500" fill="#d4c5b0"/>
-                <text x="200" y="250" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="18">Your Photo Here</text>
-              </svg>
-            </div>
+            <img src="images/story-1.svg" alt="Spencer and Sarah">
           </div>
         </div>
         <div class="story-text reveal-right">
@@ -119,12 +144,7 @@
       <div class="story-block reverse">
         <div class="story-image reveal-right">
           <div class="image-frame">
-            <div class="placeholder-image" data-label="Adventures Together">
-              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="500" fill="#c4b5a0"/>
-                <text x="200" y="250" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="18">Your Photo Here</text>
-              </svg>
-            </div>
+            <img src="images/story-2.svg" alt="Adventures together">
           </div>
         </div>
         <div class="story-text reveal-left">
@@ -136,12 +156,7 @@
       <div class="story-block">
         <div class="story-image reveal-left">
           <div class="image-frame">
-            <div class="placeholder-image" data-label="Cooper & Marley">
-              <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="500" fill="#d9ccba"/>
-                <text x="200" y="250" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="18">Your Photo Here</text>
-              </svg>
-            </div>
+            <img src="images/story-3.svg" alt="The proposal">
           </div>
         </div>
         <div class="story-text reveal-right">
@@ -152,97 +167,67 @@
     </div>
   </section>
 
-  <!-- Photo Gallery Parallax -->
-  <section id="gallery">
-    <div class="gallery-strip">
-      <div class="gallery-item parallax-item" data-speed="0.3">
-        <div class="placeholder-image tall" data-label="Photo 1">
-          <svg viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="450" fill="#c9baa5"/>
-            <text x="150" y="225" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="16">Photo</text>
-          </svg>
-        </div>
-      </div>
-      <div class="gallery-item parallax-item" data-speed="0.5">
-        <div class="placeholder-image wide" data-label="Photo 2">
-          <svg viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">
-            <rect width="450" height="300" fill="#d4c5b0"/>
-            <text x="225" y="150" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="16">Photo</text>
-          </svg>
-        </div>
-      </div>
-      <div class="gallery-item parallax-item" data-speed="0.2">
-        <div class="placeholder-image tall" data-label="Photo 3">
-          <svg viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="450" fill="#bfb09b"/>
-            <text x="150" y="225" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="16">Photo</text>
-          </svg>
-        </div>
-      </div>
-      <div class="gallery-item parallax-item" data-speed="0.4">
-        <div class="placeholder-image" data-label="Photo 4">
-          <svg viewBox="0 0 350 350" xmlns="http://www.w3.org/2000/svg">
-            <rect width="350" height="350" fill="#d9ccba"/>
-            <text x="175" y="175" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="16">Photo</text>
-          </svg>
-        </div>
-      </div>
-      <div class="gallery-item parallax-item" data-speed="0.35">
-        <div class="placeholder-image wide" data-label="Photo 5">
-          <svg viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">
-            <rect width="450" height="300" fill="#c4b5a0"/>
-            <text x="225" y="150" text-anchor="middle" fill="#8a7968" font-family="Cormorant Garamond" font-size="16">Photo</text>
-          </svg>
-        </div>
-      </div>
+  <!-- Full-width Photo Break -->
+  <section class="photo-break">
+    <div class="photo-break-inner">
+      <img src="images/venue-wide.svg" alt="Whitefish Lake and mountains">
     </div>
   </section>
 
   <!-- Venue Section -->
   <section id="venue">
-    <div class="venue-hero">
-      <div class="venue-bg parallax-bg" id="venue-bg"></div>
-      <div class="venue-overlay"></div>
-      <div class="venue-hero-text reveal">
-        <p class="section-tag light">The Venue</p>
-        <h2 class="section-title light">The Lodge at<br>Whitefish Lake</h2>
-        <p class="venue-subtitle">Whitefish, Montana</p>
+    <div class="venue-intro container">
+      <div class="section-header reveal">
+        <p class="section-tag">The Venue</p>
+        <h2 class="section-title">The Lodge at<br>Whitefish Lake</h2>
+        <p class="venue-location">Whitefish, Montana</p>
       </div>
-    </div>
-    <div class="venue-details container">
       <div class="venue-description reveal">
         <p>Nestled on the shores of Whitefish Lake with the Rocky Mountains as a backdrop, The Lodge at Whitefish Lake is the perfect setting for our celebration. Long days, perfect weather, and celebrations right on the water — there's nothing like Whitefish, Montana in the summer.</p>
         <p>We're envisioning the tent open to the lake, lush white and cream florals with plenty of greenery, and tables that feel abundant but never fussy. A long, candlelit dinner that gives way to a dance floor that goes late.</p>
       </div>
-      <div class="venue-features">
-        <div class="venue-feature reveal">
-          <div class="feature-icon">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M24 4L28 16H40L30 24L34 36L24 28L14 36L18 24L8 16H20L24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            </svg>
-          </div>
-          <h4>Lakeside Ceremony</h4>
-          <p>Exchange vows with the stunning lake and mountain views</p>
+    </div>
+    <div class="venue-gallery">
+      <div class="venue-gallery-grid">
+        <div class="vg-item vg-large reveal">
+          <img src="images/venue-1.svg" alt="Lodge at Whitefish Lake ceremony">
         </div>
-        <div class="venue-feature reveal">
-          <div class="feature-icon">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 40V20L24 8L40 20V40H28V28H20V40H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            </svg>
-          </div>
-          <h4>Tented Reception</h4>
-          <p>An elegant tent open to the waters of Whitefish Lake</p>
+        <div class="vg-item vg-tall reveal">
+          <img src="images/venue-2.svg" alt="Lakeside dock">
         </div>
-        <div class="venue-feature reveal">
-          <div class="feature-icon">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-              <path d="M24 12V24L32 28" stroke="#8a7968" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h4>Weekend Celebration</h4>
-          <p>A full weekend of events with the people we love most</p>
+        <div class="vg-item vg-wide reveal">
+          <img src="images/venue-3.svg" alt="Mountain views from the venue">
         </div>
+      </div>
+    </div>
+    <div class="venue-features container">
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4L28 16H40L30 24L34 36L24 28L14 36L18 24L8 16H20L24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h4>Lakeside Ceremony</h4>
+        <p>Exchange vows with stunning lake and mountain views</p>
+      </div>
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 40V20L24 8L40 20V40H28V28H20V40H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h4>Tented Reception</h4>
+        <p>An elegant tent open to the waters of Whitefish Lake</p>
+      </div>
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M24 12V24L32 28" stroke="#8a7968" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h4>Weekend Celebration</h4>
+        <p>A full weekend of events with the people we love most</p>
       </div>
     </div>
   </section>
@@ -376,7 +361,7 @@
       <p class="section-tag">Registry</p>
       <h2 class="script-heading">Gifts</h2>
       <p>Your presence is the greatest gift. But if you'd like to honor us with something, we've put together a small registry.</p>
-      <a href="#" class="btn-registry">View Our Registry</a>
+      <a href="#" class="btn-outline">View Our Registry</a>
     </div>
   </section>
 
@@ -446,7 +431,9 @@
 
   <!-- RSVP Section -->
   <section id="rsvp">
-    <div class="rsvp-bg parallax-bg" id="rsvp-bg"></div>
+    <div class="rsvp-bg">
+      <img src="images/rsvp-bg.svg" alt="" aria-hidden="true">
+    </div>
     <div class="rsvp-overlay"></div>
     <div class="rsvp-content">
       <div class="rsvp-header reveal">
@@ -470,17 +457,17 @@
             <option value="no">Regretfully Declines</option>
           </select>
         </div>
-        <div class="form-group guest-count-group" id="guest-count-group" style="display:none;">
+        <div class="form-group" id="guest-count-group" style="display:none;">
           <select id="guest-count" name="guest_count">
             <option value="1">1 Guest</option>
             <option value="2">2 Guests</option>
           </select>
         </div>
-        <div class="form-group plus-one-group" id="plus-one-group" style="display:none;">
+        <div class="form-group" id="plus-one-group" style="display:none;">
           <input type="text" id="plus-one-name" name="plus_one_name" placeholder=" ">
           <label for="plus-one-name">Plus One's Full Name</label>
         </div>
-        <div class="form-group dietary-group" id="dietary-group" style="display:none;">
+        <div class="form-group" id="dietary-group" style="display:none;">
           <input type="text" id="dietary" name="dietary" placeholder=" ">
           <label for="dietary">Dietary Restrictions (if any)</label>
         </div>
@@ -507,7 +494,7 @@
   <footer id="footer">
     <div class="footer-content">
       <h2 class="footer-names">Spencer &amp; Sarah</h2>
-      <p class="footer-date">June 18, 2027&nbsp;&nbsp;·&nbsp;&nbsp;Whitefish, Montana</p>
+      <p class="footer-date">June 18, 2027&nbsp;&nbsp;&middot;&nbsp;&nbsp;Whitefish, Montana</p>
       <div class="footer-divider"></div>
       <p class="footer-tag">Made with love</p>
     </div>

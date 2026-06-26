@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="v1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A0C0B0"/>
+      <stop offset="100%" stop-color="#5A8A78"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#v1)"/>
+  <polygon points="100,400 300,250 500,350 700,200 800,300 800,500 0,500" fill="#3A6A5A" opacity="0.7"/>
+  <rect x="0" y="490" width="800" height="310" fill="#4A7A68"/>
+  <!-- Flower ground cover -->
+  <circle cx="150" cy="520" r="8" fill="#E8D5C0" opacity="0.5"/>
+  <circle cx="300" cy="530" r="6" fill="#F0E0D0" opacity="0.4"/>
+  <circle cx="500" cy="510" r="7" fill="#E8D5C0" opacity="0.5"/>
+  <circle cx="650" cy="525" r="9" fill="#F0E0D0" opacity="0.4"/>
+</svg>

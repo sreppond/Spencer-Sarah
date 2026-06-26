@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <defs>
+    <linearGradient id="st2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7CA8B8"/>
+      <stop offset="100%" stop-color="#B8CCD4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#st2)"/>
+  <polygon points="0,600 200,500 400,550 600,480 800,530 800,700 0,700" fill="#4A7080" opacity="0.5"/>
+  <text x="400" y="480" text-anchor="middle" fill="#FFF" font-family="Georgia" font-size="24" font-style="italic" opacity="0.8">Your Photo Here</text>
+  <text x="400" y="520" text-anchor="middle" fill="#FFF" font-family="Georgia" font-size="16" opacity="0.6">Adventures Together</text>
+</svg>

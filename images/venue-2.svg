@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="v2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#90B0C0"/>
+      <stop offset="100%" stop-color="#5A8898"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#v2)"/>
+  <polygon points="50,300 200,200 350,280 500,180 600,250 600,380 0,380" fill="#4A6878"/>
+  <rect x="0" y="370" width="600" height="230" fill="#4A7888"/>
+  <!-- Dock -->
+  <rect x="180" y="400" width="240" height="10" fill="#6A5040" opacity="0.8" rx="2"/>
+  <rect x="200" y="380" width="8" height="50" fill="#5A4030" opacity="0.7"/>
+  <rect x="400" y="380" width="8" height="50" fill="#5A4030" opacity="0.7"/>
+  <!-- Boats -->
+  <ellipse cx="250" cy="440" rx="25" ry="8" fill="#8A6050" opacity="0.6"/>
+  <ellipse cx="320" cy="445" rx="22" ry="7" fill="#A07060" opacity="0.5"/>
+  <ellipse cx="380" cy="442" rx="24" ry="8" fill="#C0A080" opacity="0.5"/>
+</svg>

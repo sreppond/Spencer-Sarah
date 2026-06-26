@@ -1,9 +1,22 @@
 // ============================================
-// Spencer & Sarah — Wedding Website Scripts
+// Spencer & Sarah — Cordially-Inspired Scroll Engine
 // ============================================
 
 (function () {
   'use strict';
+
+  // --- Utilities ---
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
 
   // --- Countdown Timer ---
   const weddingDate = new Date('2027-06-18T16:30:00-06:00');
@@ -20,126 +33,152 @@
       return;
     }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    document.getElementById('days').textContent = days;
-    document.getElementById('hours').textContent = hours;
-    document.getElementById('minutes').textContent = minutes;
-    document.getElementById('seconds').textContent = seconds;
+    document.getElementById('days').textContent = Math.floor(diff / (1000 * 60 * 60 * 24));
+    document.getElementById('hours').textContent = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    document.getElementById('minutes').textContent = Math.floor((diff / (1000 * 60)) % 60);
+    document.getElementById('seconds').textContent = Math.floor((diff / 1000) % 60);
   }
 
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // --- Navigation scroll behavior ---
-  const navbar = document.getElementById('navbar');
-  let lastScroll = 0;
+  // --- Hero Mosaic Scroll Animation ---
+  // The hero starts full-screen. As the user scrolls through the spacer,
+  // it shrinks to a card in the center while satellite photos fly in.
+  function initMosaicScroll() {
+    const section = document.getElementById('hero-mosaic');
+    const heroCard = document.getElementById('hero-card');
+    const heroContent = document.getElementById('hero-content');
+    const scrollInd = document.getElementById('scroll-indicator');
+    const navbar = document.getElementById('navbar');
 
-  function handleNavScroll() {
-    const scrollY = window.scrollY;
-    if (scrollY > 80) {
-      navbar.classList.add('scrolled');
-    } else {
-      navbar.classList.remove('scrolled');
+    const satellites = [
+      { el: document.getElementById('sat-tl'), fromX: -120, fromY: -80 },
+      { el: document.getElementById('sat-bl'), fromX: -100, fromY: 100 },
+      { el: document.getElementById('sat-tr'), fromX: 100, fromY: -100 },
+      { el: document.getElementById('sat-br'), fromX: 120, fromY: 80 },
+      { el: document.getElementById('sat-mr'), fromX: 140, fromY: 20 },
+    ];
+
+    if (!section || !heroCard) return;
+
+    function updateMosaic() {
+      const sectionTop = section.getBoundingClientRect().top;
+      const spacerHeight = window.innerHeight;
+      const scrolled = -sectionTop;
+      const progress = clamp(scrolled / spacerHeight, 0, 1);
+      const easedProgress = easeOutCubic(progress);
+
+      const targetW = Math.min(55, 90 - (window.innerWidth < 900 ? 10 : 0));
+      const targetH = window.innerWidth < 900 ? 55 : 65;
+      const width = lerp(100, targetW, easedProgress);
+      const height = lerp(100, targetH, easedProgress);
+      const radius = lerp(0, 18, easedProgress);
+      const scale = lerp(1, 0.97, easedProgress);
+
+      heroCard.style.width = width + '%';
+      heroCard.style.height = height + '%';
+      heroCard.style.borderRadius = radius + 'px';
+      heroCard.style.transform = `scale(${scale})`;
+      heroCard.style.boxShadow = progress > 0.05
+        ? `0 ${lerp(0, 20, easedProgress)}px ${lerp(0, 60, easedProgress)}px rgba(0,0,0,${lerp(0, 0.18, easedProgress)})`
+        : 'none';
+
+      // Hero text fades and scales down slightly
+      const textOpacity = lerp(1, 0.85, easedProgress);
+      const textScale = lerp(1, 0.75, easedProgress);
+      heroContent.style.opacity = textOpacity;
+      heroContent.style.transform = `scale(${textScale})`;
+
+      // Scroll indicator fades
+      if (scrollInd) {
+        scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
+      }
+
+      // Satellite photos fly in
+      satellites.forEach((sat) => {
+        if (!sat.el) return;
+        const satProgress = clamp((progress - 0.15) / 0.7, 0, 1);
+        const easedSat = easeOutCubic(satProgress);
+
+        const tx = lerp(sat.fromX, 0, easedSat);
+        const ty = lerp(sat.fromY, 0, easedSat);
+        const opacity = lerp(0, 1, easedSat);
+        const satScale = lerp(0.7, 1, easedSat);
+
+        sat.el.style.transform = `translate(${tx}%, ${ty}%) scale(${satScale})`;
+        sat.el.style.opacity = opacity;
+      });
+
+      // Nav: switch to pill mode when scrolled
+      if (progress > 0.1) {
+        navbar.classList.add('pill');
+      } else {
+        navbar.classList.remove('pill');
+      }
     }
-    lastScroll = scrollY;
-  }
 
-  // --- Parallax effects ---
-  function handleParallax() {
-    const scrollY = window.scrollY;
-    const heroFactor = 0.4;
-
-    const heroBg = document.getElementById('hero-bg');
-    if (heroBg) {
-      heroBg.style.transform = `translateY(${scrollY * heroFactor}px) scale(1.05)`;
-    }
-
-    document.querySelectorAll('.parallax-bg').forEach((el) => {
-      const rect = el.parentElement.getBoundingClientRect();
-      const speed = 0.15;
-      const offset = rect.top * speed;
-      el.style.transform = `translateY(${offset}px)`;
-    });
-
-    document.querySelectorAll('.parallax-item').forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      const speed = parseFloat(el.dataset.speed) || 0.3;
-      const center = window.innerHeight / 2;
-      const offset = (rect.top - center) * speed * 0.3;
-      el.style.transform = `translateY(${offset}px)`;
-    });
+    return updateMosaic;
   }
 
   // --- Scroll reveal animations ---
   function createRevealObserver() {
-    const options = {
-      threshold: 0.15,
-      rootMargin: '0px 0px -50px 0px',
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, options);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
 
     document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach((el) => {
       observer.observe(el);
     });
   }
 
-  // --- Confetti in countdown section ---
+  // --- Confetti ---
   function createConfetti() {
     const container = document.getElementById('confetti');
     if (!container) return;
 
     const colors = ['#d4b896', '#e8d5c0', '#f0e8dd', '#c4a882', '#dcc8b0', '#f5c6d0', '#e8b4b8'];
-    const shapes = ['circle', 'square'];
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 35; i++) {
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
-
-      const shape = shapes[Math.floor(Math.random() * shapes.length)];
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 8 + 4;
+      const size = Math.random() * 7 + 4;
 
       piece.style.width = size + 'px';
       piece.style.height = size + 'px';
       piece.style.backgroundColor = color;
       piece.style.left = Math.random() * 100 + '%';
-      piece.style.borderRadius = shape === 'circle' ? '50%' : '2px';
-      piece.style.animationDuration = Math.random() * 8 + 6 + 's';
-      piece.style.animationDelay = Math.random() * 10 + 's';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = Math.random() * 8 + 7 + 's';
+      piece.style.animationDelay = Math.random() * 12 + 's';
       piece.style.animationIterationCount = 'infinite';
 
       container.appendChild(piece);
     }
   }
 
-  // --- Mobile navigation ---
+  // --- Mobile nav ---
   function initMobileNav() {
     const toggle = document.querySelector('.nav-toggle');
-    const menu = document.querySelector('.mobile-menu');
-
+    const menu = document.getElementById('mobile-menu');
     if (!toggle || !menu) return;
 
     toggle.addEventListener('click', () => {
       menu.classList.toggle('open');
-      toggle.classList.toggle('active');
     });
 
     menu.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => {
         menu.classList.remove('open');
-        toggle.classList.remove('active');
       });
     });
   }
@@ -149,15 +188,9 @@
     document.querySelectorAll('.faq-question').forEach((btn) => {
       btn.addEventListener('click', () => {
         const item = btn.parentElement;
-        const isOpen = item.classList.contains('open');
-
-        document.querySelectorAll('.faq-item').forEach((faq) => {
-          faq.classList.remove('open');
-        });
-
-        if (!isOpen) {
-          item.classList.add('open');
-        }
+        const wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach((faq) => faq.classList.remove('open'));
+        if (!wasOpen) item.classList.add('open');
       });
     });
   }
@@ -170,19 +203,13 @@
     const plusOneGroup = document.getElementById('plus-one-group');
     const dietaryGroup = document.getElementById('dietary-group');
     const guestCountSelect = document.getElementById('guest-count');
-
     if (!form || !attendingSelect) return;
 
     attendingSelect.addEventListener('change', () => {
-      const attending = attendingSelect.value === 'yes';
-      guestCountGroup.style.display = attending ? 'block' : 'none';
-      dietaryGroup.style.display = attending ? 'block' : 'none';
-
-      if (attending && guestCountSelect.value === '2') {
-        plusOneGroup.style.display = 'block';
-      } else {
-        plusOneGroup.style.display = 'none';
-      }
+      const yes = attendingSelect.value === 'yes';
+      guestCountGroup.style.display = yes ? 'block' : 'none';
+      dietaryGroup.style.display = yes ? 'block' : 'none';
+      plusOneGroup.style.display = yes && guestCountSelect.value === '2' ? 'block' : 'none';
     });
 
     guestCountSelect.addEventListener('change', () => {
@@ -191,47 +218,28 @@
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      console.log('RSVP Submission:', data);
-
       form.style.display = 'none';
       document.getElementById('rsvp-success').style.display = 'block';
     });
   }
 
-  // --- Smooth scroll for nav links ---
+  // --- Smooth scroll ---
   function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (e) => {
         e.preventDefault();
         const target = document.querySelector(anchor.getAttribute('href'));
         if (target) {
-          const offset = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 72;
-          const top = target.getBoundingClientRect().top + window.scrollY - offset;
+          const top = target.getBoundingClientRect().top + window.scrollY - 80;
           window.scrollTo({ top, behavior: 'smooth' });
         }
       });
     });
   }
 
-  // --- Scroll event handler (debounced with rAF) ---
-  let ticking = false;
-  function onScroll() {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        handleNavScroll();
-        handleParallax();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }
-
-  // --- Initialize everything ---
+  // --- Main scroll handler (rAF throttled) ---
   function init() {
+    const updateMosaic = initMosaicScroll();
     createRevealObserver();
     createConfetti();
     initMobileNav();
@@ -239,10 +247,19 @@
     initRSVP();
     initSmoothScroll();
 
-    window.addEventListener('scroll', onScroll, { passive: true });
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (updateMosaic) updateMosaic();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
 
-    handleNavScroll();
-    handleParallax();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    if (updateMosaic) updateMosaic();
   }
 
   if (document.readyState === 'loading') {
