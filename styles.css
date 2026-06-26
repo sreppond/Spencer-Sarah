@@ -648,15 +648,13 @@ img {
 
 .photo-break-inner {
   width: 100%;
-  height: 60vh;
-  min-height: 400px;
   overflow: hidden;
 }
 
 .photo-break-inner img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  display: block;
   object-position: center 40%;
 }
 
