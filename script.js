@@ -202,6 +202,40 @@
     });
   }
 
+  // --- Vision scroll text reveal ---
+  function initVisionReveal() {
+    const section = document.getElementById('vision');
+    const textEl = document.getElementById('vision-text');
+    if (!section || !textEl) return null;
+
+    // Wrap each word in its own span
+    const words = textEl.textContent.trim().split(/\s+/);
+    textEl.innerHTML = words
+      .map((w) => `<span class="vision-word">${w}</span>`)
+      .join(' ');
+    const wordEls = Array.from(textEl.querySelectorAll('.vision-word'));
+    const n = wordEls.length;
+
+    function update() {
+      const rect = section.getBoundingClientRect();
+      const scrollable = section.offsetHeight - window.innerHeight;
+      if (scrollable <= 0) return;
+      const progress = Math.max(0, Math.min(1, -rect.top / scrollable));
+
+      // Reveal words across the first 85% of the scroll so the full
+      // sentence is lit before the section hands off to the next one.
+      const span = 0.85;
+      wordEls.forEach((el, i) => {
+        const start = (i / n) * span;
+        const end = ((i + 1) / n) * span;
+        const wp = Math.max(0, Math.min(1, (progress - start) / (end - start)));
+        el.style.opacity = (0.15 + 0.85 * wp).toFixed(3);
+      });
+    }
+
+    return update;
+  }
+
   // --- Card Fan Carousel ---
   function initFanCarousel() {
     const stage = document.getElementById('fan-stage');
@@ -331,6 +365,7 @@
   // --- Main scroll handler (rAF throttled) ---
   function init() {
     const updateMosaic = prefersReducedMotion ? null : initMosaicScroll();
+    const updateVision = prefersReducedMotion ? null : initVisionReveal();
     createRevealObserver();
     createConfetti();
     initMobileNav();
@@ -346,6 +381,7 @@
       if (!ticking) {
         requestAnimationFrame(() => {
           if (updateMosaic) updateMosaic();
+          if (updateVision) updateVision();
           ticking = false;
         });
         ticking = true;
@@ -354,6 +390,7 @@
 
     window.addEventListener('scroll', onScroll, { passive: true });
     if (updateMosaic) updateMosaic();
+    if (updateVision) updateVision();
   }
 
   if (document.readyState === 'loading') {
