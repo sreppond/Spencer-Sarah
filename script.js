@@ -5,6 +5,8 @@
 (function () {
   'use strict';
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   // --- Utilities ---
   function lerp(a, b, t) {
     return a + (b - a) * t;
@@ -14,8 +16,10 @@
     return Math.max(min, Math.min(max, val));
   }
 
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  // Emil Kowalski-style easing: cubic-bezier(0.23, 1, 0.32, 1)
+  // Approximated as a JS function for scroll-driven use
+  function easeOutCustom(t) {
+    return 1 - Math.pow(1 - t, 4);
   }
 
   // --- Countdown Timer ---
@@ -43,8 +47,6 @@
   setInterval(updateCountdown, 1000);
 
   // --- Hero Mosaic Scroll Animation ---
-  // The hero starts full-screen. As the user scrolls through the spacer,
-  // it shrinks to a card in the center while satellite photos fly in.
   function initMosaicScroll() {
     const section = document.getElementById('hero-mosaic');
     const heroCard = document.getElementById('hero-card');
@@ -67,7 +69,7 @@
       const spacerHeight = window.innerHeight;
       const scrolled = -sectionTop;
       const progress = clamp(scrolled / spacerHeight, 0, 1);
-      const easedProgress = easeOutCubic(progress);
+      const easedProgress = easeOutCustom(progress);
 
       const targetW = Math.min(55, 90 - (window.innerWidth < 900 ? 10 : 0));
       const targetH = window.innerWidth < 900 ? 55 : 65;
@@ -84,11 +86,13 @@
         ? `0 ${lerp(0, 20, easedProgress)}px ${lerp(0, 60, easedProgress)}px rgba(0,0,0,${lerp(0, 0.18, easedProgress)})`
         : 'none';
 
-      // Hero text fades and scales down slightly
+      // Hero text fades, scales, and blurs as card shrinks
       const textOpacity = lerp(1, 0.85, easedProgress);
       const textScale = lerp(1, 0.75, easedProgress);
+      const textBlur = lerp(0, 6, easedProgress);
       heroContent.style.opacity = textOpacity;
       heroContent.style.transform = `scale(${textScale})`;
+      heroContent.style.filter = `blur(${textBlur}px)`;
 
       // Scroll indicator fades
       if (scrollInd) {
@@ -99,7 +103,7 @@
       satellites.forEach((sat) => {
         if (!sat.el) return;
         const satProgress = clamp((progress - 0.15) / 0.7, 0, 1);
-        const easedSat = easeOutCubic(satProgress);
+        const easedSat = easeOutCustom(satProgress);
 
         const tx = lerp(sat.fromX, 0, easedSat);
         const ty = lerp(sat.fromY, 0, easedSat);
@@ -121,13 +125,26 @@
     return updateMosaic;
   }
 
-  // --- Scroll reveal animations ---
+  // --- Scroll reveal animations with stagger ---
   function createRevealObserver() {
+    if (prefersReducedMotion) {
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach((el) => {
+        el.classList.add('visible');
+      });
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+            const delay = entry.target.dataset.delay;
+            if (delay) {
+              const ms = parseInt(delay, 10) * 50;
+              setTimeout(() => entry.target.classList.add('visible'), ms);
+            } else {
+              entry.target.classList.add('visible');
+            }
             observer.unobserve(entry.target);
           }
         });
@@ -142,6 +159,8 @@
 
   // --- Confetti ---
   function createConfetti() {
+    if (prefersReducedMotion) return;
+
     const container = document.getElementById('confetti');
     if (!container) return;
 
@@ -227,6 +246,7 @@
   function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (e) => {
+        if (prefersReducedMotion) return;
         e.preventDefault();
         const target = document.querySelector(anchor.getAttribute('href'));
         if (target) {
@@ -239,13 +259,15 @@
 
   // --- Main scroll handler (rAF throttled) ---
   function init() {
-    const updateMosaic = initMosaicScroll();
+    const updateMosaic = prefersReducedMotion ? null : initMosaicScroll();
     createRevealObserver();
     createConfetti();
     initMobileNav();
     initFAQ();
     initRSVP();
     initSmoothScroll();
+
+    if (prefersReducedMotion) return;
 
     let ticking = false;
     function onScroll() {

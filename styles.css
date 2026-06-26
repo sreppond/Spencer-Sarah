@@ -18,6 +18,11 @@
   --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --nav-height: 72px;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius: 10px;
 }
 
 *, *::before, *::after {
@@ -128,8 +133,10 @@ img {
   color: var(--text-light);
 }
 
-#navbar.pill .nav-links a:hover {
-  color: var(--text);
+@media (hover: hover) and (pointer: fine) {
+  #navbar.pill .nav-links a:hover {
+    color: var(--text);
+  }
 }
 
 .nav-cta {
@@ -137,12 +144,18 @@ img {
   color: var(--white) !important;
   padding: 0.55rem 1.3rem !important;
   border-radius: 50px;
-  transition: background 0.3s ease, transform 0.2s ease !important;
+  transition: background 0.25s var(--ease-out), transform 0.16s var(--ease-out) !important;
 }
 
-.nav-cta:hover {
-  background: var(--taupe-dark) !important;
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .nav-cta:hover {
+    background: var(--taupe-dark) !important;
+    transform: translateY(-1px);
+  }
+}
+
+.nav-cta:active {
+  transform: scale(0.97);
 }
 
 #navbar.pill .nav-cta {
@@ -319,8 +332,9 @@ img {
 
 .hero-date {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.4rem;
   margin-top: 2rem;
 }
 
@@ -334,11 +348,17 @@ img {
   white-space: nowrap;
 }
 
+.hero-date p:first-child {
+  font-size: 0.78rem;
+  letter-spacing: 0.25em;
+  color: rgba(255,255,255,0.9);
+}
+
 .date-line {
-  flex: 1;
+  width: 40px;
   height: 1px;
   background: rgba(255,255,255,0.25);
-  max-width: 80px;
+  margin: 0.2rem 0;
 }
 
 .scroll-indicator {
@@ -375,7 +395,7 @@ img {
 /* Satellite photos */
 .sat-photo {
   position: absolute;
-  border-radius: 12px;
+  border-radius: var(--radius);
   overflow: hidden;
   box-shadow: 0 8px 40px rgba(0,0,0,0.12);
   opacity: 0;
@@ -584,7 +604,7 @@ img {
 .image-frame {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius);
   aspect-ratio: 4/5;
   background: var(--taupe);
 }
@@ -595,11 +615,6 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.image-frame:hover img {
-  transform: scale(1.03);
 }
 
 .story-text h3 {
@@ -702,7 +717,7 @@ img {
 }
 
 .vg-item {
-  border-radius: 8px;
+  border-radius: var(--radius);
   overflow: hidden;
   background: var(--taupe);
 }
@@ -711,11 +726,6 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.vg-item:hover img {
-  transform: scale(1.03);
 }
 
 .vg-large {
@@ -943,14 +953,16 @@ img {
 
 .travel-card {
   background: var(--white);
-  border-radius: 12px;
+  border-radius: var(--radius);
   padding: 2.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
 }
 
-.travel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 48px rgba(0,0,0,0.06);
+@media (hover: hover) and (pointer: fine) {
+  .travel-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.06);
+  }
 }
 
 .travel-icon {
@@ -1027,10 +1039,16 @@ img {
   transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
-.btn-outline:hover {
-  background: var(--gold);
-  color: var(--white);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-outline:hover {
+    background: var(--gold);
+    color: var(--white);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline:active {
+  transform: scale(0.97);
 }
 
 /* ============================================
@@ -1071,8 +1089,10 @@ img {
   transition: color 0.3s ease;
 }
 
-.faq-question:hover {
-  color: var(--gold);
+@media (hover: hover) and (pointer: fine) {
+  .faq-question:hover {
+    color: var(--gold);
+  }
 }
 
 .faq-toggle {
@@ -1080,7 +1100,7 @@ img {
   font-size: 1.5rem;
   font-weight: 300;
   color: var(--taupe-dark);
-  transition: transform 0.3s ease;
+  transition: transform 0.25s var(--ease-out);
   flex-shrink: 0;
   margin-left: 1rem;
 }
@@ -1092,7 +1112,7 @@ img {
 .faq-answer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.4s ease;
+  transition: max-height 0.35s var(--ease-out), padding 0.35s var(--ease-out);
 }
 
 .faq-item.open .faq-answer {
@@ -1251,9 +1271,16 @@ img {
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.btn-submit:hover {
-  background: var(--taupe-dark);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .btn-submit:hover {
+    background: var(--taupe-dark);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-submit:active {
+  transform: scale(0.97);
+  transition: transform 0.1s var(--ease-out);
 }
 
 .rsvp-success {
@@ -1313,6 +1340,16 @@ img {
   color: rgba(255,255,255,0.35);
 }
 
+.footer-location {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-top: 0.35rem;
+}
+
 .footer-divider {
   width: 40px;
   height: 1px;
@@ -1335,8 +1372,8 @@ img {
 
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(30px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
 }
 
 .reveal.visible {
@@ -1346,8 +1383,8 @@ img {
 
 .reveal-left {
   opacity: 0;
-  transform: translateX(-60px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateX(-40px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
 }
 
 .reveal-left.visible {
@@ -1357,13 +1394,23 @@ img {
 
 .reveal-right {
   opacity: 0;
-  transform: translateX(60px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateX(40px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
 }
 
 .reveal-right.visible {
   opacity: 1;
   transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-left, .reveal-right {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .confetti-piece { animation: none !important; }
+  .scroll-arrow { animation: none; }
 }
 
 /* ============================================
@@ -1500,6 +1547,85 @@ img {
     gap: 0.25rem;
   }
 }
+
+/* ============================================
+   Focus States (Accessibility)
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.btn-submit:focus-visible,
+.btn-outline:focus-visible,
+.nav-cta:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
+
+.faq-question:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 0;
+}
+
+/* ============================================
+   Hero Entrance Animation
+   ============================================ */
+
+.hero-content {
+  animation: heroEntrance 1.2s var(--ease-out) 0.3s both;
+}
+
+@keyframes heroEntrance {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.hero-prelude {
+  animation: heroFadeUp 0.8s var(--ease-out) 0.6s both;
+}
+
+.hero-date {
+  animation: heroFadeUp 0.8s var(--ease-out) 1s both;
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-content,
+  .hero-prelude,
+  .hero-date {
+    animation: none;
+  }
+}
+
+/* ============================================
+   Stagger Support
+   ============================================ */
+
+.reveal[data-delay="1"] { transition-delay: 50ms; }
+.reveal[data-delay="2"] { transition-delay: 100ms; }
+.reveal[data-delay="3"] { transition-delay: 150ms; }
+.reveal[data-delay="4"] { transition-delay: 200ms; }
 
 /* ============================================
    Scrollbar
