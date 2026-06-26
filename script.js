@@ -86,13 +86,10 @@
         ? `0 ${lerp(0, 20, easedProgress)}px ${lerp(0, 60, easedProgress)}px rgba(0,0,0,${lerp(0, 0.18, easedProgress)})`
         : 'none';
 
-      // Hero text fades, scales, and blurs as card shrinks
-      const textOpacity = lerp(1, 0.85, easedProgress);
-      const textScale = lerp(1, 0.75, easedProgress);
-      const textBlur = lerp(0, 6, easedProgress);
-      heroContent.style.opacity = textOpacity;
+      // Hero text stays crisp and scales down with the card so the
+      // names always sit cleanly inside the shrinking framed photo.
+      const textScale = lerp(1, (targetW / 100) * 0.92, easedProgress);
       heroContent.style.transform = `scale(${textScale})`;
-      heroContent.style.filter = `blur(${textBlur}px)`;
 
       // Scroll indicator fades
       if (scrollInd) {
@@ -202,34 +199,37 @@
     });
   }
 
-  // --- Vision scroll text reveal ---
-  function initVisionReveal() {
-    const section = document.getElementById('vision');
-    const textEl = document.getElementById('vision-text');
-    if (!section || !textEl) return null;
+  // --- Scroll-driven text reveal (shared by every [data-text-reveal]) ---
+  function initTextReveals() {
+    const sections = Array.from(document.querySelectorAll('[data-text-reveal]'));
+    if (!sections.length) return null;
 
-    // Wrap each word in its own span
-    const words = textEl.textContent.trim().split(/\s+/);
-    textEl.innerHTML = words
-      .map((w) => `<span class="vision-word">${w}</span>`)
-      .join(' ');
-    const wordEls = Array.from(textEl.querySelectorAll('.vision-word'));
-    const n = wordEls.length;
+    const items = sections.map((section) => {
+      const textEl = section.querySelector('.reveal-words');
+      const words = textEl.textContent.trim().split(/\s+/);
+      textEl.innerHTML = words
+        .map((w) => `<span class="reveal-word">${w}</span>`)
+        .join(' ');
+      return { section, words: Array.from(textEl.querySelectorAll('.reveal-word')) };
+    });
 
     function update() {
-      const rect = section.getBoundingClientRect();
-      const scrollable = section.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const progress = Math.max(0, Math.min(1, -rect.top / scrollable));
+      items.forEach(({ section, words }) => {
+        const rect = section.getBoundingClientRect();
+        const scrollable = section.offsetHeight - window.innerHeight;
+        if (scrollable <= 0) return;
+        const progress = clamp(-rect.top / scrollable, 0, 1);
+        const n = words.length;
 
-      // Reveal words across the first 85% of the scroll so the full
-      // sentence is lit before the section hands off to the next one.
-      const span = 0.85;
-      wordEls.forEach((el, i) => {
-        const start = (i / n) * span;
-        const end = ((i + 1) / n) * span;
-        const wp = Math.max(0, Math.min(1, (progress - start) / (end - start)));
-        el.style.opacity = (0.15 + 0.85 * wp).toFixed(3);
+        // Light the words across the first 85% of the scroll so the full
+        // sentence is revealed before the section hands off to the next.
+        const span = 0.85;
+        words.forEach((el, i) => {
+          const start = (i / n) * span;
+          const end = ((i + 1) / n) * span;
+          const wp = clamp((progress - start) / (end - start), 0, 1);
+          el.style.opacity = (0.12 + 0.88 * wp).toFixed(3);
+        });
       });
     }
 
@@ -365,7 +365,7 @@
   // --- Main scroll handler (rAF throttled) ---
   function init() {
     const updateMosaic = prefersReducedMotion ? null : initMosaicScroll();
-    const updateVision = prefersReducedMotion ? null : initVisionReveal();
+    const updateReveals = prefersReducedMotion ? null : initTextReveals();
     createRevealObserver();
     createConfetti();
     initMobileNav();
@@ -381,7 +381,7 @@
       if (!ticking) {
         requestAnimationFrame(() => {
           if (updateMosaic) updateMosaic();
-          if (updateVision) updateVision();
+          if (updateReveals) updateReveals();
           ticking = false;
         });
         ticking = true;
@@ -390,7 +390,7 @@
 
     window.addEventListener('scroll', onScroll, { passive: true });
     if (updateMosaic) updateMosaic();
-    if (updateVision) updateVision();
+    if (updateReveals) updateReveals();
   }
 
   if (document.readyState === 'loading') {
