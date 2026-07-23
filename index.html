@@ -6,7 +6,7 @@
   <title>Spencer & Sarah | June 18, 2027</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -40,30 +40,53 @@
   </div>
 
   <!-- ============================================
-       HERO — Watercolor gallery opening
-       The site opens on the painted view of The Lodge
-       at Whitefish Lake, framed like an artwork, with
-       the couple's names set in the invitation serif.
+       HERO + PHOTO MOSAIC (Cordially-style)
+       The hero photo starts full-screen, then shrinks
+       into a card while satellite photos fly in.
        ============================================ -->
-  <section id="hero">
-    <div class="hero-inner">
-      <div class="hero-heading" id="hero-heading">
-        <p class="hero-prelude">together with their families</p>
-        <h1 class="hero-names">
-          <span class="hn-word">Spencer</span>
-          <span class="hn-amp">&amp;</span>
-          <span class="hn-word">Sarah</span>
-        </h1>
-        <p class="hero-meta">June 18, 2027 &nbsp;&middot;&nbsp; Whitefish, Montana</p>
+  <section id="hero-mosaic">
+    <div class="mosaic-stage" id="mosaic-stage">
+      <!-- Main hero image -->
+      <div class="mosaic-hero-card" id="hero-card">
+        <img src="images/hero.svg" alt="Mountain landscape at Whitefish Lake" class="mosaic-hero-img">
+        <div class="hero-overlay"></div>
+        <div class="hero-content" id="hero-content">
+          <p class="hero-prelude">together with their families</p>
+          <h1 class="hero-names">
+            <span class="name-line">Spencer</span>
+            <span class="ampersand">&amp;</span>
+            <span class="name-line">Sarah</span>
+          </h1>
+          <div class="hero-date">
+            <p>June 18, 2027</p>
+            <div class="date-line"></div>
+            <p>Whitefish, Montana</p>
+          </div>
+        </div>
+        <div class="scroll-indicator" id="scroll-indicator">
+          <div class="scroll-arrow"></div>
+        </div>
       </div>
-      <figure class="hero-painting" id="hero-painting">
-        <img src="images/whitefish-lodge.jpg" alt="Watercolor of The Lodge at Whitefish Lake">
-      </figure>
+
+      <!-- Satellite photos (fly in on scroll) -->
+      <div class="sat-photo sat-tl" id="sat-tl">
+        <img src="images/photo-1.svg" alt="Montana adventure">
+      </div>
+      <div class="sat-photo sat-bl" id="sat-bl">
+        <img src="images/photo-2.svg" alt="Together">
+      </div>
+      <div class="sat-photo sat-tr" id="sat-tr">
+        <img src="images/photo-3.svg" alt="Mountain views">
+      </div>
+      <div class="sat-photo sat-br" id="sat-br">
+        <img src="images/photo-4.svg" alt="Lakeside">
+      </div>
+      <div class="sat-photo sat-mr" id="sat-mr">
+        <img src="images/photo-5.svg" alt="Adventure">
+      </div>
     </div>
-    <div class="scroll-indicator" id="scroll-indicator">
-      <span>Scroll</span>
-      <div class="scroll-arrow"></div>
-    </div>
+    <!-- Scroll spacer for the transition -->
+    <div class="mosaic-spacer"></div>
   </section>
 
   <!-- Invitation Text Reveal -->
@@ -185,6 +208,13 @@
         <div class="fan-dots" id="fan-dots"></div>
         <button class="fan-btn fan-next" aria-label="Next photo">&#8594;</button>
       </div>
+    </div>
+  </section>
+
+  <!-- Full-width Photo Break -->
+  <section class="photo-break">
+    <div class="photo-break-inner">
+      <img src="images/whitefish-lodge.jpg" alt="The Lodge at Whitefish Lake">
     </div>
   </section>
 

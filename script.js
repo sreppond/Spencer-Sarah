@@ -46,41 +46,80 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // --- Hero parallax + nav pill (Finca-style gentle drift) ---
-  function initHeroParallax() {
-    const section = document.getElementById('hero');
-    const paintingImg = document.querySelector('#hero-painting img');
+  // --- Hero Mosaic Scroll Animation ---
+  function initMosaicScroll() {
+    const section = document.getElementById('hero-mosaic');
+    const heroCard = document.getElementById('hero-card');
+    const heroContent = document.getElementById('hero-content');
     const scrollInd = document.getElementById('scroll-indicator');
     const navbar = document.getElementById('navbar');
 
-    if (!section) return null;
+    const satellites = [
+      { el: document.getElementById('sat-tl'), fromX: -120, fromY: -80 },
+      { el: document.getElementById('sat-bl'), fromX: -100, fromY: 100 },
+      { el: document.getElementById('sat-tr'), fromX: 100, fromY: -100 },
+      { el: document.getElementById('sat-br'), fromX: 120, fromY: 80 },
+      { el: document.getElementById('sat-mr'), fromX: 140, fromY: 20 },
+    ];
 
-    function updateHero() {
-      const rect = section.getBoundingClientRect();
-      const progress = clamp(-rect.top / window.innerHeight, 0, 1);
+    if (!section || !heroCard) return;
 
-      // Painting drifts upward slightly slower than the page scrolls,
-      // and softens with a touch of scale for a subtle depth effect.
-      if (paintingImg) {
-        const ty = lerp(0, -6, easeOutCustom(progress));
-        const scale = lerp(1, 1.04, easeOutCustom(progress));
-        paintingImg.style.transform = `translateY(${ty}%) scale(${scale})`;
-      }
+    function updateMosaic() {
+      const sectionTop = section.getBoundingClientRect().top;
+      const spacerHeight = window.innerHeight;
+      const scrolled = -sectionTop;
+      const progress = clamp(scrolled / spacerHeight, 0, 1);
+      const easedProgress = easeOutCustom(progress);
 
+      const targetW = Math.min(55, 90 - (window.innerWidth < 900 ? 10 : 0));
+      const targetH = window.innerWidth < 900 ? 55 : 65;
+      const width = lerp(100, targetW, easedProgress);
+      const height = lerp(100, targetH, easedProgress);
+      const radius = lerp(0, 18, easedProgress);
+      const scale = lerp(1, 0.97, easedProgress);
+
+      heroCard.style.width = width + '%';
+      heroCard.style.height = height + '%';
+      heroCard.style.borderRadius = radius + 'px';
+      heroCard.style.transform = `scale(${scale})`;
+      heroCard.style.boxShadow = progress > 0.05
+        ? `0 ${lerp(0, 20, easedProgress)}px ${lerp(0, 60, easedProgress)}px rgba(0,0,0,${lerp(0, 0.18, easedProgress)})`
+        : 'none';
+
+      // Hero text stays crisp and scales down with the card so the
+      // names always sit cleanly inside the shrinking framed photo.
+      const textScale = lerp(1, (targetW / 100) * 0.92, easedProgress);
+      heroContent.style.transform = `scale(${textScale})`;
+
+      // Scroll indicator fades
       if (scrollInd) {
-        scrollInd.style.opacity = lerp(1, 0, clamp(progress * 4, 0, 1));
+        scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
       }
 
-      if (navbar) {
-        if (rect.top < -80) {
-          navbar.classList.add('pill');
-        } else {
-          navbar.classList.remove('pill');
-        }
+      // Satellite photos fly in
+      satellites.forEach((sat) => {
+        if (!sat.el) return;
+        const satProgress = clamp((progress - 0.15) / 0.7, 0, 1);
+        const easedSat = easeOutCustom(satProgress);
+
+        const tx = lerp(sat.fromX, 0, easedSat);
+        const ty = lerp(sat.fromY, 0, easedSat);
+        const opacity = lerp(0, 1, easedSat);
+        const satScale = lerp(0.7, 1, easedSat);
+
+        sat.el.style.transform = `translate(${tx}%, ${ty}%) scale(${satScale})`;
+        sat.el.style.opacity = opacity;
+      });
+
+      // Nav: switch to pill mode when scrolled
+      if (progress > 0.1) {
+        navbar.classList.add('pill');
+      } else {
+        navbar.classList.remove('pill');
       }
     }
 
-    return updateHero;
+    return updateMosaic;
   }
 
   // --- Scroll reveal animations with stagger ---
@@ -325,7 +364,7 @@
 
   // --- Main scroll handler (rAF throttled) ---
   function init() {
-    const updateHero = prefersReducedMotion ? null : initHeroParallax();
+    const updateMosaic = prefersReducedMotion ? null : initMosaicScroll();
     const updateReveals = prefersReducedMotion ? null : initTextReveals();
     createRevealObserver();
     createConfetti();
@@ -341,7 +380,7 @@
     function onScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
-          if (updateHero) updateHero();
+          if (updateMosaic) updateMosaic();
           if (updateReveals) updateReveals();
           ticking = false;
         });
@@ -350,7 +389,7 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    if (updateHero) updateHero();
+    if (updateMosaic) updateMosaic();
     if (updateReveals) updateReveals();
   }
 
