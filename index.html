@@ -48,8 +48,24 @@
     <div class="mosaic-stage" id="mosaic-stage">
       <!-- Main hero image -->
       <div class="mosaic-hero-card" id="hero-card">
-        <img src="images/hero.svg" alt="Mountain landscape at Whitefish Lake" class="mosaic-hero-img">
+        <video
+          class="mosaic-hero-video"
+          poster="images/hero-poster.jpg"
+          autoplay
+          muted
+          loop
+          playsinline
+          webkit-playsinline
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
+          aria-label="Painted illustration of The Lodge at Whitefish Lake, with drifting clouds and rippling water"
+        >
+          <source src="videos/hero-venue.webm" type="video/webm">
+          <source src="videos/hero-venue.mp4" type="video/mp4">
+        </video>
         <div class="hero-overlay"></div>
+        <div class="hero-bottom-fade"></div>
         <div class="hero-content" id="hero-content">
           <p class="hero-prelude">together with their families</p>
           <h1 class="hero-names">

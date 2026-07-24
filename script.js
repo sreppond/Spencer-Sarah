@@ -7,6 +7,13 @@
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // --- Hero video: respect reduced-motion by freezing on the poster frame ---
+  const heroVideo = document.querySelector('.mosaic-hero-video');
+  if (heroVideo && prefersReducedMotion) {
+    heroVideo.removeAttribute('autoplay');
+    heroVideo.pause();
+  }
+
   // --- Utilities ---
   function lerp(a, b, t) {
     return a + (b - a) * t;
