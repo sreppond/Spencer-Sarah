@@ -20,7 +20,10 @@
   --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Bodoni Moda', 'Bodoni 72', Didot, serif;
-  --font-script: 'Bickham Script Pro 3', 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
+  /* Bickham first if licensed; Cormorant Garamond italic is the working
+     face — its open-bowled swash ampersand matches the art direction and
+     the family is already loaded for the rest of the site. */
+  --font-script: 'Bickham Script Pro 3', 'Cormorant Garamond', 'Snell Roundhand', 'Apple Chancery', serif;
 
   --nav-height: 72px;
 
@@ -137,18 +140,18 @@ img {
 
 /* Hairline dividers sit between links, never after the last. */
 .nav-links a + a {
-  margin-left: 2.1rem;
+  margin-left: 3.1rem;
 }
 
 .nav-links a + a::before {
   content: "";
   position: absolute;
   width: 1px;
-  height: 0.95em;
-  margin-left: -1.05rem;
-  transform: translateY(0.1em);
+  height: 1.5em;
+  margin-left: -1.55rem;
+  transform: translateY(-0.22em);
   background: currentColor;
-  opacity: 0.3;
+  opacity: 0.32;
 }
 
 #navbar.pill .nav-links a {
@@ -379,17 +382,16 @@ img {
   z-index: 2;
   display: inline-block;
   font-family: var(--font-script);
-  /* Script ampersands have a small cap-height relative to their em,
-     so this runs larger than the names' font-size to land ~1.25x
-     their visual height. */
-  font-size: clamp(4.6rem, 13.5vw, 15rem);
+  font-style: italic;
+  /* Sized so the glyph lands ~1.25x the names' cap height. */
+  font-size: clamp(3.1rem, 9.6vw, 10.4rem);
   font-weight: 400;
-  line-height: 0.4;
+  line-height: 0.8;
   color: var(--gold);
   /* Sits slightly below center and overlaps into the names on each side */
-  transform: translateY(0.06em);
-  margin-left: -0.07em;
-  margin-right: -0.07em;
+  transform: translateY(0.045em);
+  margin-left: -0.02em;
+  margin-right: -0.02em;
   font-feature-settings: "liga" 1, "dlig" 1, "salt" 1, "ss01" 1, "ss02" 1;
 }
 
@@ -398,9 +400,9 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.1rem;
-  width: min(30rem, 62vw);
-  margin-top: clamp(1.4rem, 3vw, 2.4rem);
+  gap: 1rem;
+  width: min(21rem, 46vw);
+  margin-top: clamp(1.1rem, 2.4vw, 1.9rem);
 }
 
 .hero-rule-line {
@@ -412,17 +414,18 @@ img {
 
 .hero-sprig {
   flex: none;
-  width: clamp(58px, 6.5vw, 80px);
+  width: clamp(54px, 5vw, 70px);
   height: auto;
   color: var(--sage);
+  overflow: visible;
 }
 
 .sprig-stem {
   fill: none;
   stroke: currentColor;
-  stroke-width: 0.9;
+  stroke-width: 0.8;
   stroke-linecap: round;
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
 .sprig-leaves {
