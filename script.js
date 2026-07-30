@@ -216,77 +216,6 @@
     return update;
   }
 
-  // --- Card Fan Carousel ---
-  function initFanCarousel() {
-    const stage = document.getElementById('fan-stage');
-    if (!stage) return;
-
-    const cards = Array.from(stage.querySelectorAll('.fan-card'));
-    const dotsContainer = document.getElementById('fan-dots');
-    const total = cards.length;
-    let active = Math.floor(total / 2);
-
-    // Fan layout: rotation and offset per distance from active
-    const fanConfig = [
-      { rotate: -30, x: -110, y: 24, scale: 0.78, zIndex: 1 },
-      { rotate: -15, x: -55,  y: 10, scale: 0.88, zIndex: 2 },
-      { rotate:   0, x:   0,  y:  0, scale: 1.00, zIndex: 5 },
-      { rotate:  15, x:  55,  y: 10, scale: 0.88, zIndex: 2 },
-      { rotate:  30, x: 110,  y: 24, scale: 0.78, zIndex: 1 },
-    ];
-
-    // Build dots
-    cards.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = 'fan-dot';
-      dot.setAttribute('aria-label', `Go to photo ${i + 1}`);
-      dot.addEventListener('click', () => setActive(i));
-      dotsContainer.appendChild(dot);
-    });
-
-    function applyLayout() {
-      const dots = dotsContainer.querySelectorAll('.fan-dot');
-      cards.forEach((card, i) => {
-        const offset = i - active;
-        const clampedOffset = Math.max(-2, Math.min(2, offset));
-        const cfg = fanConfig[clampedOffset + 2];
-        card.style.transform = `translateX(${cfg.x}px) translateY(${cfg.y}px) rotate(${cfg.rotate}deg) scale(${cfg.scale})`;
-        card.style.zIndex = cfg.zIndex;
-        card.style.boxShadow = offset === 0
-          ? '0 16px 48px rgba(0,0,0,0.22)'
-          : '0 4px 20px rgba(0,0,0,0.14)';
-        card.classList.toggle('fan-active', offset === 0);
-      });
-      dots.forEach((dot, i) => dot.classList.toggle('active', i === active));
-    }
-
-    function setActive(index) {
-      active = (index + total) % total;
-      applyLayout();
-    }
-
-    // Click a card to focus it
-    cards.forEach((card, i) => {
-      card.addEventListener('click', () => {
-        if (i !== active) setActive(i);
-      });
-    });
-
-    stage.closest('.fan-carousel').querySelector('.fan-prev')
-      .addEventListener('click', () => setActive(active - 1));
-    stage.closest('.fan-carousel').querySelector('.fan-next')
-      .addEventListener('click', () => setActive(active + 1));
-
-    // Keyboard support
-    stage.setAttribute('tabindex', '0');
-    stage.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') setActive(active - 1);
-      if (e.key === 'ArrowRight') setActive(active + 1);
-    });
-
-    applyLayout();
-  }
-
   // --- FAQ accordion ---
   function initFAQ() {
     document.querySelectorAll('.faq-question').forEach((btn) => {
@@ -349,7 +278,6 @@
     createRevealObserver();
     createConfetti();
     initMobileNav();
-    initFanCarousel();
     initFAQ();
     initRSVP();
     initSmoothScroll();
