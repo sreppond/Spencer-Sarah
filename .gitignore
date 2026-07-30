@@ -2,3 +2,7 @@ node_modules/
 package.json
 package-lock.json
 screenshots/
+
+# Source uploads for derived art (kept in git history, not deployed)
+images/IMG_*.png
+images/IMG_*.jpeg

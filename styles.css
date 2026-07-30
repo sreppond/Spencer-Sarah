@@ -26,6 +26,8 @@
   --font-script: 'Bickham Script Pro 3', 'Cormorant Garamond', 'Snell Roundhand', 'Apple Chancery', serif;
 
   --nav-height: 72px;
+  /* Gap between nav links; the hairline divider centres itself in it. */
+  --nav-gap: clamp(1.5rem, 5.96vw, 5.6rem);
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
@@ -128,7 +130,7 @@ img {
 
 .nav-links a {
   font-family: var(--font-display);
-  font-size: 0.76rem;
+  font-size: clamp(0.72rem, 1.02vw, 0.94rem);
   font-weight: 400;
   text-decoration: none;
   color: var(--slate);
@@ -140,7 +142,7 @@ img {
 
 /* Hairline dividers sit between links, never after the last. */
 .nav-links a + a {
-  margin-left: 3.1rem;
+  margin-left: var(--nav-gap);
 }
 
 .nav-links a + a::before {
@@ -148,7 +150,7 @@ img {
   position: absolute;
   width: 1px;
   height: 1.5em;
-  margin-left: -1.55rem;
+  margin-left: calc(var(--nav-gap) / -2);
   transform: translateY(-0.22em);
   background: currentColor;
   opacity: 0.32;
@@ -350,7 +352,9 @@ img {
   align-items: center;
   justify-content: center;
   z-index: 3;
-  padding: 2rem;
+  /* Extra bottom padding lifts the centred block to ~47% of the stage,
+     matching where the title sits in the reference composition. */
+  padding: 2rem 2rem calc(2rem + 6vh);
   text-align: center;
 }
 
@@ -368,7 +372,7 @@ img {
 
 .name-line {
   font-family: var(--font-display);
-  font-size: clamp(2.25rem, 7vw, 7.5rem);
+  font-size: clamp(2.25rem, 7.14vw, 7.6rem);
   font-weight: 400;
   font-style: normal;
   text-transform: uppercase;
@@ -443,7 +447,7 @@ img {
 
 .hero-date-line {
   font-family: var(--font-display);
-  font-size: clamp(0.82rem, 1.35vw, 1.15rem);
+  font-size: clamp(0.86rem, 1.48vw, 1.34rem);
   font-weight: 400;
   letter-spacing: 0.34em;
   /* Tracking adds trailing space; pull the line back to true centre. */
@@ -455,7 +459,7 @@ img {
 
 .hero-place {
   font-family: var(--font-serif);
-  font-size: clamp(0.95rem, 1.5vw, 1.3rem);
+  font-size: clamp(1.1rem, 1.98vw, 1.8rem);
   font-style: italic;
   font-weight: 400;
   letter-spacing: 0.08em;
