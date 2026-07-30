@@ -222,53 +222,42 @@ img {
 }
 
 /* ============================================
-   HERO MOSAIC — Cordially-style scroll transition
-   Full-screen hero shrinks to card as satellite
-   photos fly in from the edges.
+   HERO — scroll-scrubbed cloud animation
+   A full-screen video is pinned while scroll position
+   drives its currentTime, so the clouds only move as
+   you scroll. The animation finishes exactly as the
+   scroll runway (.hero-video-spacer) runs out, then the
+   page releases into the rest of the site.
    ============================================ */
 
-#hero-mosaic {
+#hero-video {
   position: relative;
-  height: 280vh;
-  background: var(--ivory);
+  height: 240vh;
+  background: var(--charcoal);
 }
 
-.mosaic-stage {
+.hero-video-stage {
   position: sticky;
   top: 0;
   height: 100vh;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   z-index: 1;
 }
 
-.mosaic-spacer {
-  height: 180vh;
+.hero-video-spacer {
+  height: 140vh;
   pointer-events: none;
 }
 
-/* Main hero card */
-.mosaic-hero-card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  overflow: hidden;
-  transition: none;
-  will-change: transform, width, height, border-radius;
-  z-index: 2;
-}
-
-.mosaic-hero-img {
+.hero-video-el {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 30%;
+  object-position: center 42%;
+  z-index: 0;
 }
 
 .hero-overlay {
@@ -394,59 +383,6 @@ img {
 @keyframes scrollPulse {
   0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
   50% { opacity: 1; transform: scaleY(1); }
-}
-
-/* Satellite photos */
-.sat-photo {
-  position: absolute;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-  opacity: 0;
-  will-change: transform, opacity;
-  z-index: 1;
-  transition: none;
-}
-
-.sat-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.sat-tl {
-  width: 22%;
-  height: 48%;
-  top: 4%;
-  left: 2%;
-}
-
-.sat-bl {
-  width: 20%;
-  height: 35%;
-  bottom: 6%;
-  left: 4%;
-}
-
-.sat-tr {
-  width: 18%;
-  height: 32%;
-  top: 5%;
-  right: 3%;
-}
-
-.sat-br {
-  width: 24%;
-  height: 42%;
-  bottom: 4%;
-  right: 2%;
-}
-
-.sat-mr {
-  width: 14%;
-  height: 24%;
-  top: 38%;
-  right: 1%;
 }
 
 /* ============================================
@@ -1669,35 +1605,6 @@ img {
     display: none;
   }
 
-  /* Satellite photos: simpler layout on mobile */
-  .sat-tl {
-    width: 35%;
-    height: 30%;
-    top: 2%;
-    left: 2%;
-  }
-  .sat-bl {
-    width: 30%;
-    height: 25%;
-    bottom: 3%;
-    left: 2%;
-  }
-  .sat-tr {
-    width: 30%;
-    height: 25%;
-    top: 2%;
-    right: 2%;
-  }
-  .sat-br {
-    width: 35%;
-    height: 30%;
-    bottom: 2%;
-    right: 2%;
-  }
-  .sat-mr {
-    display: none;
-  }
-
   .hero-date {
     flex-direction: column;
     gap: 0;
@@ -1815,6 +1722,16 @@ img {
   .hero-prelude,
   .hero-date {
     animation: none;
+  }
+
+  /* No scroll-driven scrubbing: collapse the runway so the video
+     sits as a static frame and scroll moves straight into the page. */
+  #hero-video {
+    height: 100vh;
+  }
+
+  .hero-video-spacer {
+    height: 0;
   }
 }
 

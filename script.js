@@ -46,70 +46,50 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // --- Hero Mosaic Scroll Animation ---
-  function initMosaicScroll() {
-    const section = document.getElementById('hero-mosaic');
-    const heroCard = document.getElementById('hero-card');
-    const heroContent = document.getElementById('hero-content');
+  // --- Hero Video Scroll Scrubbing ---
+  // Scroll position drives the video's currentTime directly (no
+  // autoplay, no loop) so the clouds only move as the user scrolls.
+  // The scrub distance below must match the CSS runway
+  // (.hero-video-spacer height, in vh) so progress hits 1 exactly as
+  // the spacer runs out.
+  const HERO_SCRUB_VH = 1.4;
+
+  function initHeroVideoScroll() {
+    const section = document.getElementById('hero-video');
+    const video = document.getElementById('hero-video-media');
     const scrollInd = document.getElementById('scroll-indicator');
     const navbar = document.getElementById('navbar');
 
-    const satellites = [
-      { el: document.getElementById('sat-tl'), fromX: -120, fromY: -80 },
-      { el: document.getElementById('sat-bl'), fromX: -100, fromY: 100 },
-      { el: document.getElementById('sat-tr'), fromX: 100, fromY: -100 },
-      { el: document.getElementById('sat-br'), fromX: 120, fromY: 80 },
-      { el: document.getElementById('sat-mr'), fromX: 140, fromY: 20 },
-    ];
+    if (!section || !video) return null;
 
-    if (!section || !heroCard) return;
+    let duration = 0;
+    video.addEventListener('loadedmetadata', () => {
+      duration = video.duration || 0;
+    });
 
-    function updateMosaic() {
+    // iOS Safari won't let a currentTime seek "take" until the video
+    // has played at least once. Unlock it silently on first touch.
+    function unlock() {
+      video.play().then(() => video.pause()).catch(() => {});
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('scroll', unlock);
+    }
+    window.addEventListener('touchstart', unlock, { passive: true, once: true });
+    window.addEventListener('scroll', unlock, { passive: true, once: true });
+
+    function updateHeroVideo() {
       const sectionTop = section.getBoundingClientRect().top;
-      const spacerHeight = window.innerHeight;
+      const runway = window.innerHeight * HERO_SCRUB_VH;
       const scrolled = -sectionTop;
-      const progress = clamp(scrolled / spacerHeight, 0, 1);
-      const easedProgress = easeOutCustom(progress);
+      const progress = clamp(scrolled / runway, 0, 1);
 
-      const targetW = Math.min(55, 90 - (window.innerWidth < 900 ? 10 : 0));
-      const targetH = window.innerWidth < 900 ? 55 : 65;
-      const width = lerp(100, targetW, easedProgress);
-      const height = lerp(100, targetH, easedProgress);
-      const radius = lerp(0, 18, easedProgress);
-      const scale = lerp(1, 0.97, easedProgress);
+      if (duration > 0 && video.seeking === false) {
+        video.currentTime = progress * duration;
+      }
 
-      heroCard.style.width = width + '%';
-      heroCard.style.height = height + '%';
-      heroCard.style.borderRadius = radius + 'px';
-      heroCard.style.transform = `scale(${scale})`;
-      heroCard.style.boxShadow = progress > 0.05
-        ? `0 ${lerp(0, 20, easedProgress)}px ${lerp(0, 60, easedProgress)}px rgba(0,0,0,${lerp(0, 0.18, easedProgress)})`
-        : 'none';
-
-      // Hero text stays crisp and scales down with the card so the
-      // names always sit cleanly inside the shrinking framed photo.
-      const textScale = lerp(1, (targetW / 100) * 0.92, easedProgress);
-      heroContent.style.transform = `scale(${textScale})`;
-
-      // Scroll indicator fades
       if (scrollInd) {
         scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
       }
-
-      // Satellite photos fly in
-      satellites.forEach((sat) => {
-        if (!sat.el) return;
-        const satProgress = clamp((progress - 0.15) / 0.7, 0, 1);
-        const easedSat = easeOutCustom(satProgress);
-
-        const tx = lerp(sat.fromX, 0, easedSat);
-        const ty = lerp(sat.fromY, 0, easedSat);
-        const opacity = lerp(0, 1, easedSat);
-        const satScale = lerp(0.7, 1, easedSat);
-
-        sat.el.style.transform = `translate(${tx}%, ${ty}%) scale(${satScale})`;
-        sat.el.style.opacity = opacity;
-      });
 
       // Nav: switch to pill mode when scrolled
       if (progress > 0.1) {
@@ -119,7 +99,7 @@
       }
     }
 
-    return updateMosaic;
+    return updateHeroVideo;
   }
 
   // --- Scroll reveal animations with stagger ---
@@ -364,7 +344,7 @@
 
   // --- Main scroll handler (rAF throttled) ---
   function init() {
-    const updateMosaic = prefersReducedMotion ? null : initMosaicScroll();
+    const updateHeroVideo = prefersReducedMotion ? null : initHeroVideoScroll();
     const updateReveals = prefersReducedMotion ? null : initTextReveals();
     createRevealObserver();
     createConfetti();
@@ -380,7 +360,7 @@
     function onScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
-          if (updateMosaic) updateMosaic();
+          if (updateHeroVideo) updateHeroVideo();
           if (updateReveals) updateReveals();
           ticking = false;
         });
@@ -389,7 +369,7 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    if (updateMosaic) updateMosaic();
+    if (updateHeroVideo) updateHeroVideo();
     if (updateReveals) updateReveals();
   }
 
