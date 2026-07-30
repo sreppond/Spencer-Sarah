@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Spencer &amp; Sarah | Save the Date</title>
+  <meta name="description" content="Spencer & Sarah are getting married! Save the date — June 18, 2027 in Whitefish, Montana.">
+  <meta name="theme-color" content="#f0e8dd">
+
+  <!-- Link preview (iMessage / SMS / social) -->
+  <meta property="og:title" content="Spencer &amp; Sarah | Save the Date">
+  <meta property="og:description" content="June 18, 2027 · Whitefish, Montana">
+  <meta property="og:image" content="https://sreppond.github.io/Spencer-Sarah/images/whitefish-lodge.jpg">
+  <meta property="og:url" content="https://sreppond.github.io/Spencer-Sarah/save-the-date.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Spencer &amp; Sarah | Save the Date">
+  <meta name="twitter:description" content="June 18, 2027 · Whitefish, Montana">
+  <meta name="twitter:image" content="https://sreppond.github.io/Spencer-Sarah/images/whitefish-lodge.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="save-the-date.css">
+</head>
+<body>
+  <main id="scene">
+
+    <!-- ENVELOPE -->
+    <section id="envelope-screen" class="screen active">
+      <div class="envelope-wrap">
+        <p class="envelope-greeting" id="envelope-greeting">You're Invited</p>
+
+        <button type="button" id="envelope" class="envelope" aria-label="Open your save the date">
+          <span class="env-shadow" aria-hidden="true"></span>
+          <span class="env-back" aria-hidden="true"></span>
+
+          <span class="env-card" aria-hidden="true">
+            <span class="env-card-monogram">S<span class="amp">&amp;</span>S</span>
+            <span class="env-card-sub">save the date</span>
+            <span class="env-card-date">06 &middot; 18 &middot; 2027</span>
+          </span>
+
+          <span class="env-pocket" aria-hidden="true"></span>
+          <span class="env-flap" aria-hidden="true"></span>
+          <span class="env-seal" aria-hidden="true"><span class="env-seal-inner">S&amp;S</span></span>
+        </button>
+
+        <p class="envelope-hint">tap to open</p>
+      </div>
+    </section>
+
+    <!-- HERO REVEAL -->
+    <section id="hero-screen" class="screen">
+      <div class="hero-stage">
+        <video
+          class="hero-video"
+          src="images/hero-clouds.mp4"
+          poster="images/whitefish-lodge.jpg"
+          muted
+          playsinline
+          autoplay
+          loop
+          preload="metadata"
+          aria-hidden="true"
+        ></video>
+        <div class="hero-overlay" aria-hidden="true"></div>
+
+        <div class="hero-inner">
+          <p class="hero-prelude">together with their families</p>
+          <h1 class="hero-names">
+            <span class="name-line">Spencer</span>
+            <span class="ampersand">&amp;</span>
+            <span class="name-line">Sarah</span>
+          </h1>
+          <p class="hero-save">are getting married</p>
+          <div class="hero-date">
+            <p>June 18, 2027</p>
+            <div class="date-line"></div>
+            <p>Whitefish, Montana</p>
+          </div>
+          <div class="hero-actions">
+            <a class="btn-site" href="index.html">View Full Invitation</a>
+            <a class="btn-calendar" id="add-to-calendar" href="#">Add to Calendar</a>
+          </div>
+          <p class="hero-footnote">Formal invitation with all the details to follow.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="save-the-date.js"></script>
+</body>
+</html>
