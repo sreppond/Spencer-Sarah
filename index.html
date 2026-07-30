@@ -40,23 +40,15 @@
   </div>
 
   <!-- ============================================
-       HERO — scroll-scrubbed cloud animation
-       The hero is pinned full-screen while the clouds
-       painting plays forward, frame-by-frame, tied to
-       scroll position. Once it finishes, scroll releases
-       into the rest of the page.
+       HERO — painted lake-and-mountain hero image
        ============================================ -->
   <section id="hero-video">
     <div class="hero-video-stage" id="hero-video-stage">
-      <video
-        id="hero-video-media"
+      <img
         class="hero-video-el"
-        src="images/hero-clouds.mp4"
-        muted
-        playsinline
-        preload="auto"
-        aria-hidden="true"
-      ></video>
+        src="images/hero-lake.jpg"
+        alt="Painting of the Lodge at Whitefish Lake, with tents on the shore and boats on the water beneath the Rocky Mountains"
+      >
       <div class="hero-overlay"></div>
       <div class="hero-content" id="hero-content">
         <h1 class="hero-names">
@@ -94,7 +86,7 @@
            two never meet on a hard edge. -->
       <div class="hero-fade" aria-hidden="true"></div>
     </div>
-    <!-- Scroll spacer: distance the clouds animation scrubs across -->
+    <!-- Scroll runway the hero choreography plays across -->
     <div class="hero-video-spacer"></div>
   </section>
 
@@ -177,45 +169,6 @@
           <h3>The Proposal</h3>
           <p>And then came the moment everything changed. The question, the "yes," and the beginning of this next chapter. Celebrating that with the people we love most is what this whole weekend is about.</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Vision / Scroll Text Reveal -->
-  <section id="vision" data-text-reveal>
-    <div class="reveal-sticky">
-      <p class="reveal-words">The vision is simple &mdash; everyone we love in one place that happens to sit on a mountain lake, with golden summer light, drinks that keep flowing, and a dance floor that runs long past dark.</p>
-    </div>
-  </section>
-
-  <!-- Card Fan Carousel -->
-  <section id="gallery">
-    <div class="section-header reveal">
-      <p class="section-tag">Our Moments</p>
-      <h2 class="section-title">A Few of Our<br>Favorites</h2>
-    </div>
-    <div class="fan-carousel">
-      <div class="fan-stage" id="fan-stage">
-        <div class="fan-card" data-fan-index="0">
-          <img src="images/photo-1.svg" alt="Montana adventure">
-        </div>
-        <div class="fan-card" data-fan-index="1">
-          <img src="images/story-1.svg" alt="Spencer and Sarah">
-        </div>
-        <div class="fan-card" data-fan-index="2">
-          <img src="images/photo-3.svg" alt="Mountain views">
-        </div>
-        <div class="fan-card" data-fan-index="3">
-          <img src="images/story-2.svg" alt="Adventures together">
-        </div>
-        <div class="fan-card" data-fan-index="4">
-          <img src="images/photo-5.svg" alt="Adventure">
-        </div>
-      </div>
-      <div class="fan-controls">
-        <button class="fan-btn fan-prev" aria-label="Previous photo">&#8592;</button>
-        <div class="fan-dots" id="fan-dots"></div>
-        <button class="fan-btn fan-next" aria-label="Next photo">&#8594;</button>
       </div>
     </div>
   </section>

@@ -46,68 +46,52 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // --- Hero Video Scroll Scrubbing ---
-  // Scroll position drives the video's currentTime directly (no
-  // autoplay, no loop) so the clouds only move as the user scrolls.
-  // The scrub distance below must match the CSS runway
-  // (.hero-video-spacer height, in vh) so progress hits 1 exactly as
-  // the spacer runs out.
-  const HERO_SCRUB_VH = 1.4;
+  // --- Hero scroll choreography ---
+  // The stage is pinned while the runway below scrolls past. Scroll
+  // position (not a wall-clock loop) drives a slow push-in on the
+  // painting, lifts the title away, and dissolves the artwork into the
+  // next section's ivory. Distance must match the CSS runway
+  // (.hero-video-spacer height, in vh).
+  const HERO_RUNWAY_VH = 1.0;
 
-  function initHeroVideoScroll() {
+  function initHeroScroll() {
     const section = document.getElementById('hero-video');
-    const video = document.getElementById('hero-video-media');
+    const media = section && section.querySelector('.hero-video-el');
+    const content = document.getElementById('hero-content');
     const scrollInd = document.getElementById('scroll-indicator');
     const heroFade = section && section.querySelector('.hero-fade');
     const navbar = document.getElementById('navbar');
 
-    if (!section || !video) return null;
+    if (!section || !media) return null;
 
-    let duration = 0;
-    video.addEventListener('loadedmetadata', () => {
-      duration = video.duration || 0;
-    });
+    function updateHero() {
+      const runway = window.innerHeight * HERO_RUNWAY_VH;
+      const progress = clamp(-section.getBoundingClientRect().top / runway, 0, 1);
 
-    // iOS Safari won't let a currentTime seek "take" until the video
-    // has played at least once. Unlock it silently on first touch.
-    function unlock() {
-      video.play().then(() => video.pause()).catch(() => {});
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('scroll', unlock);
-    }
-    window.addEventListener('touchstart', unlock, { passive: true, once: true });
-    window.addEventListener('scroll', unlock, { passive: true, once: true });
+      // Slow push-in on the painting.
+      media.style.transform = `scale(${lerp(1, 1.14, easeOutCustom(progress))})`;
 
-    function updateHeroVideo() {
-      const sectionTop = section.getBoundingClientRect().top;
-      const runway = window.innerHeight * HERO_SCRUB_VH;
-      const scrolled = -sectionTop;
-      const progress = clamp(scrolled / runway, 0, 1);
-
-      if (duration > 0 && video.seeking === false) {
-        video.currentTime = progress * duration;
+      // The title drifts up and clears before the ivory arrives.
+      if (content) {
+        content.style.transform = `translateY(${lerp(0, -56, easeOutCustom(progress))}px)`;
+        content.style.opacity = clamp(1 - (progress - 0.42) / 0.33, 0, 1);
       }
 
       if (scrollInd) {
         scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
       }
 
-      // Dissolve into the next section over the tail of the scrub, so
+      // Dissolve into the next section over the tail of the runway, so
       // the painting has fully become ivory by the time the sticky
       // stage unpins and the invitation slides up.
       if (heroFade) {
-        heroFade.style.opacity = clamp((progress - 0.55) / 0.4, 0, 1);
+        heroFade.style.opacity = clamp((progress - 0.45) / 0.45, 0, 1);
       }
 
-      // Nav: switch to pill mode when scrolled
-      if (progress > 0.1) {
-        navbar.classList.add('pill');
-      } else {
-        navbar.classList.remove('pill');
-      }
+      if (navbar) navbar.classList.toggle('pill', progress > 0.08);
     }
 
-    return updateHeroVideo;
+    return updateHero;
   }
 
   // --- Scroll reveal animations with stagger ---
@@ -224,77 +208,6 @@
     return update;
   }
 
-  // --- Card Fan Carousel ---
-  function initFanCarousel() {
-    const stage = document.getElementById('fan-stage');
-    if (!stage) return;
-
-    const cards = Array.from(stage.querySelectorAll('.fan-card'));
-    const dotsContainer = document.getElementById('fan-dots');
-    const total = cards.length;
-    let active = Math.floor(total / 2);
-
-    // Fan layout: rotation and offset per distance from active
-    const fanConfig = [
-      { rotate: -30, x: -110, y: 24, scale: 0.78, zIndex: 1 },
-      { rotate: -15, x: -55,  y: 10, scale: 0.88, zIndex: 2 },
-      { rotate:   0, x:   0,  y:  0, scale: 1.00, zIndex: 5 },
-      { rotate:  15, x:  55,  y: 10, scale: 0.88, zIndex: 2 },
-      { rotate:  30, x: 110,  y: 24, scale: 0.78, zIndex: 1 },
-    ];
-
-    // Build dots
-    cards.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = 'fan-dot';
-      dot.setAttribute('aria-label', `Go to photo ${i + 1}`);
-      dot.addEventListener('click', () => setActive(i));
-      dotsContainer.appendChild(dot);
-    });
-
-    function applyLayout() {
-      const dots = dotsContainer.querySelectorAll('.fan-dot');
-      cards.forEach((card, i) => {
-        const offset = i - active;
-        const clampedOffset = Math.max(-2, Math.min(2, offset));
-        const cfg = fanConfig[clampedOffset + 2];
-        card.style.transform = `translateX(${cfg.x}px) translateY(${cfg.y}px) rotate(${cfg.rotate}deg) scale(${cfg.scale})`;
-        card.style.zIndex = cfg.zIndex;
-        card.style.boxShadow = offset === 0
-          ? '0 16px 48px rgba(0,0,0,0.22)'
-          : '0 4px 20px rgba(0,0,0,0.14)';
-        card.classList.toggle('fan-active', offset === 0);
-      });
-      dots.forEach((dot, i) => dot.classList.toggle('active', i === active));
-    }
-
-    function setActive(index) {
-      active = (index + total) % total;
-      applyLayout();
-    }
-
-    // Click a card to focus it
-    cards.forEach((card, i) => {
-      card.addEventListener('click', () => {
-        if (i !== active) setActive(i);
-      });
-    });
-
-    stage.closest('.fan-carousel').querySelector('.fan-prev')
-      .addEventListener('click', () => setActive(active - 1));
-    stage.closest('.fan-carousel').querySelector('.fan-next')
-      .addEventListener('click', () => setActive(active + 1));
-
-    // Keyboard support
-    stage.setAttribute('tabindex', '0');
-    stage.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') setActive(active - 1);
-      if (e.key === 'ArrowRight') setActive(active + 1);
-    });
-
-    applyLayout();
-  }
-
   // --- FAQ accordion ---
   function initFAQ() {
     document.querySelectorAll('.faq-question').forEach((btn) => {
@@ -352,12 +265,11 @@
 
   // --- Main scroll handler (rAF throttled) ---
   function init() {
-    const updateHeroVideo = prefersReducedMotion ? null : initHeroVideoScroll();
+    const updateHero = prefersReducedMotion ? null : initHeroScroll();
     const updateReveals = prefersReducedMotion ? null : initTextReveals();
     createRevealObserver();
     createConfetti();
     initMobileNav();
-    initFanCarousel();
     initFAQ();
     initRSVP();
     initSmoothScroll();
@@ -368,7 +280,7 @@
     function onScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
-          if (updateHeroVideo) updateHeroVideo();
+          if (updateHero) updateHero();
           if (updateReveals) updateReveals();
           ticking = false;
         });
@@ -377,7 +289,7 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    if (updateHeroVideo) updateHeroVideo();
+    if (updateHero) updateHero();
     if (updateReveals) updateReveals();
   }
 
