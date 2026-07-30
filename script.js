@@ -58,6 +58,7 @@
     const section = document.getElementById('hero-video');
     const video = document.getElementById('hero-video-media');
     const scrollInd = document.getElementById('scroll-indicator');
+    const heroFade = section && section.querySelector('.hero-fade');
     const navbar = document.getElementById('navbar');
 
     if (!section || !video) return null;
@@ -89,6 +90,13 @@
 
       if (scrollInd) {
         scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
+      }
+
+      // Dissolve into the next section over the tail of the scrub, so
+      // the painting has fully become ivory by the time the sticky
+      // stage unpins and the invitation slides up.
+      if (heroFade) {
+        heroFade.style.opacity = clamp((progress - 0.55) / 0.4, 0, 1);
       }
 
       // Nav: switch to pill mode when scrolled

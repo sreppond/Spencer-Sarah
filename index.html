@@ -11,18 +11,18 @@
 </head>
 <body>
 
-  <!-- Floating Pill Navigation -->
+  <!-- Centered editorial navigation: hairline-divided serif links
+       with the RSVP pill held to the right edge. -->
   <nav id="navbar">
     <div class="nav-inner">
-      <div class="nav-brand">S&nbsp;&amp;&nbsp;S</div>
       <div class="nav-links">
         <a href="#story">Our Story</a>
         <a href="#venue">The Venue</a>
         <a href="#details">Details</a>
         <a href="#travel">Travel</a>
         <a href="#faq">FAQ</a>
-        <a href="#rsvp" class="nav-cta">Submit RSVP</a>
       </div>
+      <a href="#rsvp" class="nav-cta">RSVP</a>
       <button class="nav-toggle" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
@@ -59,21 +59,40 @@
       ></video>
       <div class="hero-overlay"></div>
       <div class="hero-content" id="hero-content">
-        <p class="hero-prelude">together with their families</p>
         <h1 class="hero-names">
           <span class="name-line">Spencer</span>
           <span class="ampersand">&amp;</span>
           <span class="name-line">Sarah</span>
         </h1>
+        <div class="hero-rule">
+          <span class="hero-rule-line"></span>
+          <svg class="hero-sprig" viewBox="0 0 76 26" aria-hidden="true" focusable="false">
+            <!-- Laurel sprig: a curved stem with paired lens-shaped leaves -->
+            <path class="sprig-stem" d="M6 13 C24 13, 44 12.4, 70 12.4"/>
+            <g class="sprig-leaves">
+              <path d="M0 0 Q6.5 -4.2 13 0 Q6.5 4.2 0 0Z" transform="translate(16 12) rotate(-34)"/>
+              <path d="M0 0 Q7 -4.5 14 0 Q7 4.5 0 0Z" transform="translate(28 11.4) rotate(-26)"/>
+              <path d="M0 0 Q6.2 -4 12.4 0 Q6.2 4 0 0Z" transform="translate(40 11.4) rotate(-18)"/>
+              <path d="M0 0 Q5 -3.3 10 0 Q5 3.3 0 0Z" transform="translate(51 11.6) rotate(-12)"/>
+              <path d="M0 0 Q6.5 4.2 13 0 Q6.5 -4.2 0 0Z" transform="translate(20 14) rotate(34)"/>
+              <path d="M0 0 Q7 4.5 14 0 Q7 -4.5 0 0Z" transform="translate(32 14.6) rotate(26)"/>
+              <path d="M0 0 Q6.2 4 12.4 0 Q6.2 -4 0 0Z" transform="translate(44 14.6) rotate(18)"/>
+              <path d="M0 0 Q5 3.3 10 0 Q5 -3.3 0 0Z" transform="translate(55 14.4) rotate(12)"/>
+            </g>
+          </svg>
+          <span class="hero-rule-line"></span>
+        </div>
         <div class="hero-date">
-          <p>June 18, 2027</p>
-          <div class="date-line"></div>
-          <p>Whitefish, Montana</p>
+          <p class="hero-date-line">June 18, 2027</p>
+          <p class="hero-place">whitefish, montana</p>
         </div>
       </div>
       <div class="scroll-indicator" id="scroll-indicator">
         <div class="scroll-arrow"></div>
       </div>
+      <!-- Dissolves the painting into the next section's ivory so the
+           two never meet on a hard edge. -->
+      <div class="hero-fade" aria-hidden="true"></div>
     </div>
     <!-- Scroll spacer: distance the clouds animation scrubs across -->
     <div class="hero-video-spacer"></div>
