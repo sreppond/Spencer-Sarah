@@ -313,6 +313,12 @@ button {
   height: 100%;
   object-fit: cover;
   object-position: center 42%;
+  animation: heroKenBurns 24s ease-in-out infinite alternate;
+}
+
+@keyframes heroKenBurns {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
 }
 
 .hero-overlay {
@@ -482,7 +488,7 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #envelope-screen, #hero-screen, .env-card, .env-flap, .env-seal, .env-shadow, .hero-inner {
+  #envelope-screen, #hero-screen, .env-card, .env-flap, .env-seal, .env-shadow, .hero-inner, .hero-video {
     transition-duration: 0.01ms !important;
     animation: none !important;
   }

@@ -1,6 +1,6 @@
 // Spencer & Sarah — Digital Save the Date
 // Envelope tap opens the flap + slides the card out, then crossfades
-// into the full-screen hero reveal (same clouds video as the main site).
+// into the full-screen hero reveal (same hero image as the main site).
 
 (function () {
   const params = new URLSearchParams(window.location.search);
@@ -14,7 +14,6 @@
   const envelope = document.getElementById('envelope');
   const envelopeScreen = document.getElementById('envelope-screen');
   const heroScreen = document.getElementById('hero-screen');
-  const heroVideo = document.querySelector('.hero-video');
 
   let opened = false;
 
@@ -28,12 +27,6 @@
     // Let the seal-break / flap-open / card-out sequence play (~1.5s),
     // then crossfade the whole scene into the hero reveal.
     window.setTimeout(function () {
-      if (heroVideo) {
-        heroVideo.play().catch(function () {
-          /* autoplay can be blocked before a user gesture on some browsers;
-             the poster frame still reads fine if playback doesn't start. */
-        });
-      }
       heroScreen.classList.add('active');
       requestAnimationFrame(function () {
         heroScreen.classList.add('revealed');

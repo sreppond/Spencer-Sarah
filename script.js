@@ -46,60 +46,26 @@
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  // --- Hero Video Scroll Scrubbing ---
-  // Scroll position drives the video's currentTime directly (no
-  // autoplay, no loop) so the clouds only move as the user scrolls.
-  // The scrub distance below must match the CSS runway
-  // (.hero-video-spacer height, in vh) so progress hits 1 exactly as
-  // the spacer runs out.
-  const HERO_SCRUB_VH = 1.4;
-
-  function initHeroVideoScroll() {
-    const section = document.getElementById('hero-video');
-    const video = document.getElementById('hero-video-media');
+  // --- Hero: navbar pill + scroll indicator fade ---
+  // The hero is a static image now, so this just tracks page scroll
+  // (not hero-relative progress) to switch the nav into pill mode and
+  // fade the scroll-down hint out of view.
+  function initHeroStatic() {
     const scrollInd = document.getElementById('scroll-indicator');
     const navbar = document.getElementById('navbar');
 
-    if (!section || !video) return null;
+    if (!navbar) return null;
 
-    let duration = 0;
-    video.addEventListener('loadedmetadata', () => {
-      duration = video.duration || 0;
-    });
-
-    // iOS Safari won't let a currentTime seek "take" until the video
-    // has played at least once. Unlock it silently on first touch.
-    function unlock() {
-      video.play().then(() => video.pause()).catch(() => {});
-      window.removeEventListener('touchstart', unlock);
-      window.removeEventListener('scroll', unlock);
-    }
-    window.addEventListener('touchstart', unlock, { passive: true, once: true });
-    window.addEventListener('scroll', unlock, { passive: true, once: true });
-
-    function updateHeroVideo() {
-      const sectionTop = section.getBoundingClientRect().top;
-      const runway = window.innerHeight * HERO_SCRUB_VH;
-      const scrolled = -sectionTop;
-      const progress = clamp(scrolled / runway, 0, 1);
-
-      if (duration > 0 && video.seeking === false) {
-        video.currentTime = progress * duration;
-      }
+    function updateHero() {
+      const y = window.scrollY;
+      navbar.classList.toggle('pill', y > 60);
 
       if (scrollInd) {
-        scrollInd.style.opacity = lerp(1, 0, clamp(progress * 3, 0, 1));
-      }
-
-      // Nav: switch to pill mode when scrolled
-      if (progress > 0.1) {
-        navbar.classList.add('pill');
-      } else {
-        navbar.classList.remove('pill');
+        scrollInd.style.opacity = lerp(1, 0, clamp(y / (window.innerHeight * 0.5), 0, 1));
       }
     }
 
-    return updateHeroVideo;
+    return updateHero;
   }
 
   // --- Scroll reveal animations with stagger ---
@@ -273,7 +239,7 @@
 
   // --- Main scroll handler (rAF throttled) ---
   function init() {
-    const updateHeroVideo = prefersReducedMotion ? null : initHeroVideoScroll();
+    const updateHero = prefersReducedMotion ? null : initHeroStatic();
     const updateReveals = prefersReducedMotion ? null : initTextReveals();
     createRevealObserver();
     createConfetti();
@@ -288,7 +254,7 @@
     function onScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
-          if (updateHeroVideo) updateHeroVideo();
+          if (updateHero) updateHero();
           if (updateReveals) updateReveals();
           ticking = false;
         });
@@ -297,7 +263,7 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    if (updateHeroVideo) updateHeroVideo();
+    if (updateHero) updateHero();
     if (updateReveals) updateReveals();
   }
 

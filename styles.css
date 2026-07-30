@@ -238,32 +238,21 @@ img {
 }
 
 /* ============================================
-   HERO — scroll-scrubbed cloud animation
-   A full-screen video is pinned while scroll position
-   drives its currentTime, so the clouds only move as
-   you scroll. The animation finishes exactly as the
-   scroll runway (.hero-video-spacer) runs out, then the
-   page releases into the rest of the site.
+   HERO — static painted lake-and-mountain image
    ============================================ */
 
 #hero-video {
   position: relative;
-  height: 240vh;
+  height: 100vh;
   background: var(--charcoal);
 }
 
 .hero-video-stage {
-  position: sticky;
-  top: 0;
+  position: relative;
   height: 100vh;
   width: 100%;
   overflow: hidden;
   z-index: 1;
-}
-
-.hero-video-spacer {
-  height: 140vh;
-  pointer-events: none;
 }
 
 .hero-video-el {
@@ -274,6 +263,12 @@ img {
   object-fit: cover;
   object-position: center 42%;
   z-index: 0;
+  animation: heroKenBurns 24s ease-in-out infinite alternate;
+}
+
+@keyframes heroKenBurns {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
 }
 
 .hero-overlay {
@@ -1638,18 +1633,9 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .hero-content,
   .hero-prelude,
-  .hero-date {
+  .hero-date,
+  .hero-video-el {
     animation: none;
-  }
-
-  /* No scroll-driven scrubbing: collapse the runway so the video
-     sits as a static frame and scroll moves straight into the page. */
-  #hero-video {
-    height: 100vh;
-  }
-
-  .hero-video-spacer {
-    height: 0;
   }
 }
 
