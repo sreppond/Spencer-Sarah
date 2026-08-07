@@ -23,7 +23,7 @@
   }
 
   // --- Countdown Timer ---
-  const weddingDate = new Date('2027-06-18T16:30:00-06:00');
+  const weddingDate = new Date('2027-06-12T16:30:00-06:00');
 
   function updateCountdown() {
     const now = new Date();

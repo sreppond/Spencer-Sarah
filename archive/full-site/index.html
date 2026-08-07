@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     ARCHIVED — the full wedding site, parked for later.
+
+     This is not the live experience. The public root of the site is
+     the save the date at /index.html. Everything here (Our Story, the
+     venue, weekend events, attire, travel, registry, FAQ, RSVP) is
+     kept intact so it can be brought back and expanded when the
+     formal invitation goes out.
+
+     Nothing links here from the save the date. Image paths point back
+     at the shared ../../images/ directory. Dates have been kept in
+     sync with the save the date (June 12, 2027).
+     ============================================================ -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spencer & Sarah | June 12, 2027</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Centered editorial navigation: hairline-divided serif links
+       with the RSVP pill held to the right edge. -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <div class="nav-links">
+        <a href="#story">Our Story</a>
+        <a href="#venue">The Venue</a>
+        <a href="#details">Details</a>
+        <a href="#travel">Travel</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <a href="#rsvp" class="nav-cta">RSVP</a>
+      <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#story">Our Story</a>
+    <a href="#venue">The Venue</a>
+    <a href="#details">Details</a>
+    <a href="#travel">Travel</a>
+    <a href="#faq">FAQ</a>
+    <a href="#rsvp" class="nav-cta">Submit RSVP</a>
+  </div>
+
+  <!-- ============================================
+       HERO — painted lake-and-mountain hero image
+       ============================================ -->
+  <section id="hero-video">
+    <div class="hero-video-stage" id="hero-video-stage">
+      <img
+        class="hero-video-el"
+        src="../../images/hero-lake.jpg"
+        alt="Painting of the Lodge at Whitefish Lake, with tents on the shore and boats on the water beneath the Rocky Mountains"
+      >
+      <div class="hero-overlay"></div>
+      <div class="hero-content" id="hero-content">
+        <h1 class="hero-names">
+          <span class="name-line">Spencer</span>
+          <span class="ampersand">&amp;</span>
+          <span class="name-line">Sarah</span>
+        </h1>
+        <div class="hero-rule">
+          <span class="hero-rule-line"></span>
+          <svg class="hero-sprig" viewBox="0 0 64 22" aria-hidden="true" focusable="false">
+            <!-- Olive sprig: pointed leaves stepping up a stem that rises right -->
+            <path class="sprig-stem" d="M3 17.2 C20 16, 42 11.6, 61 6.8"/>
+            <g class="sprig-leaves">
+              <path d="M0 0 Q5.6 -2.7 11.2 0 Q5.6 2.7 0 0Z" transform="translate(3.5 17) rotate(-19)"/>
+              <path d="M0 0 Q5.5 -2.65 11 0 Q5.5 2.65 0 0Z" transform="translate(15 15.1) rotate(-19)"/>
+              <path d="M0 0 Q5.3 -2.55 10.6 0 Q5.3 2.55 0 0Z" transform="translate(26.5 13.1) rotate(-19)"/>
+              <path d="M0 0 Q5 -2.4 10 0 Q5 2.4 0 0Z" transform="translate(37.5 11.2) rotate(-19)"/>
+              <path d="M0 0 Q4.4 -2.1 8.8 0 Q4.4 2.1 0 0Z" transform="translate(48 9.4) rotate(-19)"/>
+            </g>
+          </svg>
+          <span class="hero-rule-line"></span>
+        </div>
+        <div class="hero-date">
+          <p class="hero-date-line">June 12, 2027</p>
+          <p class="hero-place">whitefish, montana</p>
+        </div>
+      </div>
+      <div class="scroll-indicator" id="scroll-indicator">
+        <div class="scroll-arrow"></div>
+      </div>
+      <!-- Dissolves the painting into the next section's ivory so the
+           two never meet on a hard edge. -->
+      <div class="hero-fade" aria-hidden="true"></div>
+    </div>
+    <!-- Scroll runway the hero choreography plays across -->
+    <div class="hero-video-spacer"></div>
+  </section>
+
+  <!-- Invitation Text Reveal -->
+  <section id="invitation" data-text-reveal>
+    <div class="reveal-sticky">
+      <p class="reveal-words">You're cordially invited to celebrate the marriage of Spencer &amp; Sarah, on the shore of Whitefish Lake, the twelfth of June, two thousand twenty-seven.</p>
+    </div>
+  </section>
+
+  <!-- Countdown Section -->
+  <section id="intro">
+    <div class="container">
+      <div class="intro-text reveal">
+        <p class="script-accent">so please join us...</p>
+        <h2 class="countdown-date">june 12, 2027</h2>
+        <div class="countdown" id="countdown">
+          <div class="countdown-unit">
+            <span class="countdown-number" id="days">---</span>
+            <span class="countdown-label">Days</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-number" id="hours">--</span>
+            <span class="countdown-label">Hours</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-number" id="minutes">--</span>
+            <span class="countdown-label">Minutes</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-number" id="seconds">--</span>
+            <span class="countdown-label">Seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="confetti-container" id="confetti"></div>
+  </section>
+
+  <!-- Our Story Section -->
+  <section id="story">
+    <div class="section-header reveal">
+      <h2 class="section-title">Best Friends First</h2>
+    </div>
+    <div class="story-content container">
+      <div class="story-block">
+        <div class="story-image reveal-left">
+          <div class="image-frame">
+            <img src="../../images/story-1.svg" alt="Spencer and Sarah">
+          </div>
+        </div>
+        <div class="story-text reveal-right">
+          <h3>How We Started</h3>
+          <p>We're best friends first. Sarah brings a warmth and energy into my life and I like to think I keep the two of us grounded. We're easy together, whether it's a good laugh, a long walk with the dogs, or figuring things out side by side. We just work.</p>
+          <p>We've built a strong foundation, and we can't wait to spend the rest of our lives building on it together.</p>
+        </div>
+      </div>
+      <div class="story-block reverse">
+        <div class="story-image reveal-right">
+          <div class="image-frame">
+            <img src="../../images/story-2.svg" alt="Adventures together">
+          </div>
+        </div>
+        <div class="story-text reveal-left">
+          <h3>Our Adventures</h3>
+          <p>We love going on adventures together, usually with our two pups, Cooper and Marley, in tow. Whether it's a hike, a day out on the water, or a trip somewhere we've never been, we're at our best when we're exploring.</p>
+          <p>When we're not out adventuring, we're happy keeping it simple at home with good food and good company.</p>
+        </div>
+      </div>
+      <div class="story-block">
+        <div class="story-image reveal-left">
+          <div class="image-frame">
+            <img src="../../images/story-3.svg" alt="The proposal">
+          </div>
+        </div>
+        <div class="story-text reveal-right">
+          <h3>The Proposal</h3>
+          <p>And then came the moment everything changed. The question, the "yes," and the beginning of this next chapter. Celebrating that with the people we love most is what this whole weekend is about.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full-width Photo Break -->
+  <section class="photo-break">
+    <div class="photo-break-inner">
+      <img src="../../images/whitefish-lodge.jpg" alt="The Lodge at Whitefish Lake">
+    </div>
+  </section>
+
+  <!-- Venue Section -->
+  <section id="venue">
+    <div class="venue-intro container">
+      <div class="section-header reveal">
+        <p class="section-tag">The Venue</p>
+        <h2 class="section-title">The Lodge at<br>Whitefish Lake</h2>
+        <p class="venue-location">Whitefish, Montana</p>
+      </div>
+      <div class="venue-description reveal">
+        <p>Nestled on the shores of Whitefish Lake with the Rocky Mountains as a backdrop, The Lodge at Whitefish Lake is the perfect setting for our celebration. Long days, perfect weather, and celebrations right on the water. There's nothing like Whitefish, Montana in the summer.</p>
+        <p>We're envisioning the tent open to the lake, lush white and cream florals with plenty of greenery, and tables that feel abundant but never fussy. A long, candlelit dinner that gives way to a dance floor that goes late.</p>
+      </div>
+    </div>
+    <div class="venue-gallery">
+      <div class="venue-gallery-grid">
+        <div class="vg-item vg-large reveal">
+          <img src="../../images/venue-1.svg" alt="Lodge at Whitefish Lake ceremony">
+        </div>
+        <div class="vg-item vg-tall reveal">
+          <img src="../../images/venue-2.svg" alt="Lakeside dock">
+        </div>
+        <div class="vg-item vg-wide reveal">
+          <img src="../../images/venue-3.svg" alt="Mountain views from the venue">
+        </div>
+      </div>
+    </div>
+    <div class="venue-features container">
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4L28 16H40L30 24L34 36L24 28L14 36L18 24L8 16H20L24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h4>Lakeside Ceremony</h4>
+        <p>Exchange vows with stunning lake and mountain views</p>
+      </div>
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 40V20L24 8L40 20V40H28V28H20V40H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h4>Tented Reception</h4>
+        <p>An elegant tent open to the waters of Whitefish Lake</p>
+      </div>
+      <div class="venue-feature reveal">
+        <div class="feature-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M24 12V24L32 28" stroke="#8a7968" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h4>Weekend Celebration</h4>
+        <p>A full weekend of events with the people we love most</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details / Schedule Section -->
+  <section id="details">
+    <div class="section-header reveal">
+      <h2 class="section-title">Wedding Weekend</h2>
+    </div>
+    <div class="timeline container">
+      <div class="timeline-event reveal">
+        <div class="timeline-date">
+          <span class="event-day">Thursday</span>
+          <span class="event-date">June 17</span>
+        </div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-info">
+          <h3>Welcome Gathering</h3>
+          <p>Join us for a casual welcome gathering as our guests arrive in Whitefish. Details to follow.</p>
+        </div>
+      </div>
+      <div class="timeline-event reveal">
+        <div class="timeline-date">
+          <span class="event-day">Friday</span>
+          <span class="event-date">June 12</span>
+        </div>
+        <div class="timeline-dot active"></div>
+        <div class="timeline-info">
+          <h3>The Wedding</h3>
+          <div class="event-detail">
+            <span class="detail-time">4:30 PM</span>
+            <span class="detail-desc">Ceremony on the Lake Lawn</span>
+          </div>
+          <div class="event-detail">
+            <span class="detail-time">5:30 PM</span>
+            <span class="detail-desc">Cocktail Hour</span>
+          </div>
+          <div class="event-detail">
+            <span class="detail-time">7:00 PM</span>
+            <span class="detail-desc">Dinner &amp; Reception</span>
+          </div>
+          <div class="event-detail">
+            <span class="detail-time">Late</span>
+            <span class="detail-desc">Dancing Under the Stars</span>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-event reveal">
+        <div class="timeline-date">
+          <span class="event-day">Saturday</span>
+          <span class="event-date">June 19</span>
+        </div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-info">
+          <h3>Farewell Brunch</h3>
+          <p>One last chance to celebrate before we all head our separate ways. Details to follow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dress Code -->
+  <section id="dresscode">
+    <div class="dresscode-content container reveal">
+      <h2 class="script-heading">Attire</h2>
+      <p class="dresscode-label">Formal / Black Tie Optional</p>
+      <p class="dresscode-note">Please dress to celebrate. We want our guests to feel elegant and comfortable. Think floor-length gowns and suits or tuxedos. The ceremony and cocktail hour will be outdoors on the lawn, so plan footwear accordingly.</p>
+    </div>
+  </section>
+
+  <!-- Travel Section -->
+  <section id="travel">
+    <div class="section-header reveal">
+      <p class="section-tag">Getting There</p>
+      <h2 class="section-title">Travel &amp; Logistics</h2>
+    </div>
+    <div class="travel-grid container">
+      <div class="travel-card reveal">
+        <div class="travel-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 4C20 4 14 8 14 16C14 26 24 44 24 44C24 44 34 26 34 16C34 8 28 4 24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <circle cx="24" cy="16" r="4" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h3>The Venue</h3>
+        <p class="travel-venue-name">The Lodge at Whitefish Lake</p>
+        <p>1380 Wisconsin Ave<br>Whitefish, MT 59937</p>
+      </div>
+      <div class="travel-card reveal">
+        <div class="travel-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 36L24 4L40 36H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M24 36V20" stroke="#8a7968" stroke-width="1.5"/>
+            <path d="M18 28L30 28" stroke="#8a7968" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Getting There</h3>
+        <p>Fly into Glacier Park International Airport (FCA), located just 15 minutes from the venue.</p>
+        <p class="travel-tip">We recommend booking flights early. Summer is peak season in Whitefish!</p>
+      </div>
+      <div class="travel-card reveal">
+        <div class="travel-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="8" y="12" width="32" height="24" rx="2" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M8 20H40" stroke="#8a7968" stroke-width="1.5"/>
+            <path d="M16 28H24" stroke="#8a7968" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Where to Stay</h3>
+        <p>We have a room block at The Lodge at Whitefish Lake. Details and booking link coming soon.</p>
+        <p class="travel-tip">There are also many wonderful hotels, vacation rentals, and Airbnbs in the area.</p>
+      </div>
+      <div class="travel-card reveal">
+        <div class="travel-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M16 24C16 20 20 16 24 16C28 16 32 20 32 24" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+            <path d="M20 32C20 28 22 26 24 26C26 26 28 28 28 32" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+          </svg>
+        </div>
+        <h3>Things to Do</h3>
+        <p>Whitefish is an outdoor paradise. Hiking, lake activities, golf, and the charming downtown are all within reach. Perfect for extending your trip!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Registry -->
+  <section id="registry">
+    <div class="registry-content container reveal">
+      <p class="section-tag">Registry</p>
+      <h2 class="script-heading">Gifts</h2>
+      <p>Your presence is the greatest gift. But if you'd like to honor us with something, we've put together a small registry.</p>
+      <a href="#" class="btn-outline">View Our Registry</a>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq">
+    <div class="section-header reveal">
+      <h2 class="section-title">FAQ</h2>
+    </div>
+    <div class="faq-list container">
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>Can I bring a plus one?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>We've done our best to include everyone's significant others. If your invitation includes a plus one, it will be noted. Due to venue capacity, we kindly ask that only those listed on the invitation attend.</p>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>Are children welcome?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>While we love your little ones, our wedding will be an adults-only celebration. We hope this gives you a chance to enjoy a night out!</p>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>What's the weather like in Whitefish in June?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>June in Whitefish is beautiful. Expect warm days (70s to 80s°F) and cooler evenings (50s°F). The ceremony and cocktail hour will be outdoors, so a light layer for the evening is recommended.</p>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>Is there parking at the venue?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>Yes! The Lodge at Whitefish Lake has complimentary parking on-site. If you're staying at the Lodge, you'll be able to walk to the ceremony and reception.</p>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>When should I RSVP by?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>Please RSVP by April 12, 2027, two months before the wedding. This helps us finalize all the details to make the weekend perfect for everyone.</p>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question">
+          <span>Will there be transportation?</span>
+          <span class="faq-toggle">+</span>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">
+            <p>We're working on arranging shuttle service between nearby hotels and the venue. More details will be shared closer to the wedding.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RSVP Section -->
+  <section id="rsvp">
+    <div class="rsvp-bg">
+      <img src="../../images/rsvp-bg.svg" alt="" aria-hidden="true">
+    </div>
+    <div class="rsvp-overlay"></div>
+    <div class="rsvp-content">
+      <div class="rsvp-header reveal">
+        <p class="section-tag light">RSVP</p>
+        <h2 class="section-title light">We Can't Wait<br>to Celebrate With You</h2>
+        <p class="rsvp-deadline">Please respond by April 12, 2027</p>
+      </div>
+      <form class="rsvp-form reveal" id="rsvp-form">
+        <div class="form-group">
+          <input type="text" id="guest-name" name="name" required placeholder=" ">
+          <label for="guest-name">Full Name</label>
+        </div>
+        <div class="form-group">
+          <input type="email" id="guest-email" name="email" required placeholder=" ">
+          <label for="guest-email">Email Address</label>
+        </div>
+        <div class="form-group">
+          <select id="attending" name="attending" required>
+            <option value="" disabled selected>Will you be attending?</option>
+            <option value="yes">Joyfully Accepts</option>
+            <option value="no">Regretfully Declines</option>
+          </select>
+        </div>
+        <div class="form-group" id="guest-count-group" style="display:none;">
+          <select id="guest-count" name="guest_count">
+            <option value="1">1 Guest</option>
+            <option value="2">2 Guests</option>
+          </select>
+        </div>
+        <div class="form-group" id="plus-one-group" style="display:none;">
+          <input type="text" id="plus-one-name" name="plus_one_name" placeholder=" ">
+          <label for="plus-one-name">Plus One's Full Name</label>
+        </div>
+        <div class="form-group" id="dietary-group" style="display:none;">
+          <input type="text" id="dietary" name="dietary" placeholder=" ">
+          <label for="dietary">Dietary Restrictions (if any)</label>
+        </div>
+        <div class="form-group">
+          <textarea id="message" name="message" rows="3" placeholder=" "></textarea>
+          <label for="message">Leave us a note (optional)</label>
+        </div>
+        <button type="submit" class="btn-submit">Send RSVP</button>
+      </form>
+      <div class="rsvp-success" id="rsvp-success" style="display:none;">
+        <div class="success-icon">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" stroke="#fff" stroke-width="2"/>
+            <path d="M20 32L28 40L44 24" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>Thank You!</h3>
+        <p>Your RSVP has been received. We can't wait to celebrate with you!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <div class="footer-content">
+      <h2 class="footer-names">Spencer &amp; Sarah</h2>
+      <p class="footer-date">June 12, 2027</p>
+      <p class="footer-location">Whitefish, Montana</p>
+      <div class="footer-divider"></div>
+      <p class="footer-tag">Made with love</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
