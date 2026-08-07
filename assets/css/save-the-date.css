@@ -23,6 +23,13 @@
   --gold-deep:    #a8834f;
   --olive:        #7f8a6b;
 
+  /* Darker siblings of --stone and --gold-deep, for text set on paper.
+     The lighter pair stays where it belongs: the hero lettering (whose
+     colours are specified exactly) and non-text botanical artwork. Both
+     of these clear 4.5:1 against the warmest point of the paper. */
+  --stone-text:   #726a5a;
+  --gold-text:    #83663d;
+
   /* --- envelope --- */
   --env-paper:    #24241f;
   --env-paper-hi: #33332c;
@@ -69,7 +76,7 @@ img, svg, video { display: block; max-width: 100%; }
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 :focus-visible {
-  outline: 1.5px solid var(--gold-deep);
+  outline: 1.5px solid var(--gold-text);
   outline-offset: 3px;
   border-radius: 2px;
 }
@@ -604,7 +611,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   letter-spacing: .42em;
   text-indent: .42em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--gold-text);
   text-align: center;
 }
 .sheet-title {
@@ -713,7 +720,15 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   border-bottom-color: var(--gold-deep);
   background: rgba(255,255,255,.44);
 }
-.field input:focus-visible, .field textarea:focus-visible { outline: none; }
+/* Pointer focus is carried by the rule and the paper warming under the
+   field. Keyboard focus gets a real ring as well — the soft treatment alone
+   is too quiet to navigate by, and the ring only ever shows for keyboard. */
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 1.5px solid var(--gold-text);
+  outline-offset: 4px;
+  border-bottom-color: var(--gold-text);
+}
 
 .field-hint {
   margin-top: .5rem;
@@ -721,16 +736,16 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   font-weight: 300;
   font-style: italic;
   line-height: 1.45;
-  color: var(--stone);
+  color: var(--stone-text);
 }
 .field-err {
   margin-top: .5rem;
   font-size: .88rem;
   font-style: italic;
-  color: #9a5d46;
+  color: #90543e;
 }
 .field.has-error input,
-.field.has-error textarea { border-bottom-color: #b57459; }
+.field.has-error textarea { border-bottom-color: #a2604a; border-bottom-width: 2px; }
 
 /* honeypot */
 .hp {
@@ -746,7 +761,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   width: 100%;
   margin-top: 2.2rem;
   padding: 1.05rem 1.5rem;
-  border: 1px solid var(--gold-deep);
+  border: 1px solid var(--gold-text);
   border-radius: 1px;
   background: transparent;
   font-family: var(--font-serif);
@@ -755,11 +770,11 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   letter-spacing: .34em;
   text-indent: .34em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--gold-text);
   cursor: pointer;
   transition: background .5s var(--ease-soft), color .5s var(--ease-soft);
 }
-.btn-send:hover:not(:disabled) { background: var(--gold-deep); color: var(--paper); }
+.btn-send:hover:not(:disabled) { background: var(--gold-text); color: var(--paper); }
 .btn-send:disabled { opacity: .5; cursor: default; }
 
 .form-status {
@@ -773,7 +788,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   text-align: center;
   text-wrap: pretty;
 }
-.form-status.is-error { color: #9a5d46; }
+.form-status.is-error { color: #90543e; }
 
 .form-done { text-align: center; padding: clamp(1rem, 5vw, 2rem) 0; }
 .done-divider { width: 12rem; max-width: 60%; height: auto; margin: 0 auto 1.6rem; }
@@ -844,7 +859,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   font-weight: 300;
   font-style: italic;
   letter-spacing: .02em;
-  color: var(--stone);
+  color: var(--stone-text);
 }
 
 /* placeholder for a photo that has not been supplied yet */
@@ -869,7 +884,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   letter-spacing: .3em;
   text-indent: .3em;
   text-transform: uppercase;
-  color: var(--stone);
+  color: var(--stone-text);
   text-align: center;
 }
 
@@ -896,7 +911,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   font-size: clamp(.92rem, 3.6vw, 1.02rem);
   font-weight: 300;
   letter-spacing: .14em;
-  color: var(--stone);
+  color: var(--stone-text);
 }
 .end-dot { margin: 0 .55em; color: var(--rule); }
 .end-note {
@@ -1001,7 +1016,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 /* pointer-coarse: no hover states worth keeping */
 @media (hover: none) {
   .btn-cal:hover { background: rgba(251,247,240,.5); border-color: rgba(168,131,79,.42); }
-  .btn-send:hover:not(:disabled) { background: transparent; color: var(--gold-deep); }
+  .btn-send:hover:not(:disabled) { background: transparent; color: var(--gold-text); }
 }
 
 
