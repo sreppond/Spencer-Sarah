@@ -61,6 +61,20 @@ window.SAVE_THE_DATE = {
     socialPreview: 'assets/img/social-preview.jpg'
   },
 
+  /* ---- Hero calls to action ---------------------------------
+     Two actions sit beneath the names. "Add to calendar" builds its
+     .ics in the browser and needs nothing here.
+
+     The lodging link points at the venue. Swap `href` for the room-block
+     / group-booking URL the moment it exists — the placeholder below is
+     the hotel's front door, not a reserved block. Set `href` to '' and
+     the button removes itself, leaving the calendar action centred. */
+  lodging: {
+    label: 'Lodging',
+    note: 'Book before October',
+    href: 'https://lodgeatwhitefishlake.com/'
+  },
+
   /* ---- Ambient audio --------------------------------------- */
   audio: {
     targetVolume: 0.16,   // deliberately quiet

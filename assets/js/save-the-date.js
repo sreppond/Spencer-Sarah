@@ -124,6 +124,7 @@
       scene.classList.add('is-gone');
       scene.setAttribute('aria-hidden', 'true');
       startHeroVideo();
+      revealHero();
       revealAudioToggle();
     }, hand);
 
@@ -161,7 +162,33 @@
 
 
   /* ------------------------------------------------------------------
+     Hero reveal — the staged entrance, armed the moment the hero is
+     actually on screen: after the envelope hands off, or immediately for
+     anyone who skipped the envelope (deep link, no-JS-envelope, reduced
+     motion). Everything it triggers is opacity and transform in CSS.
+     ------------------------------------------------------------------ */
+  var heroEl = $('#hero');
+  var heroRevealed = false;
+
+  function revealHero() {
+    if (heroRevealed || !heroEl) return;
+    heroRevealed = true;
+    // Two frames: one for the initial (hidden) state to be committed,
+    // one for the class change to transition from it rather than snap.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { heroEl.classList.add('is-revealed'); });
+    });
+  }
+
+
+  /* ------------------------------------------------------------------
      Hero video — the still is the hero until the loop is actually ready.
+
+     Autoplay contract: the element carries muted + playsinline + autoplay
+     in the markup, which is what iOS actually checks, and we still call
+     play() by hand so we can catch a rejection and keep the painting up
+     instead of showing a dead frame. The video only fades in on `playing`,
+     so a slow or refused start is invisible — the still never blinks.
      ------------------------------------------------------------------ */
   var video = $('#hero-video');
   var videoArmed = false;
@@ -175,6 +202,9 @@
     var src = (mobile && media.heroVideoMobile) || media.heroVideo;
     if (!src) return;
 
+    // Same painting as the still beneath it, so there is never a black frame.
+    if (media.heroPoster) video.poster = media.heroPoster;
+
     video.addEventListener('playing', function () {
       video.classList.add('is-playing');
     }, { once: true });
@@ -185,11 +215,69 @@
       video.removeAttribute('src');
     }, { once: true });
 
+    // muted must be true as a property, not just an attribute, for iOS to
+    // treat play() as allowed without a gesture.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+
     video.src = src;
     video.preload = 'auto';
     video.load();
+
     var p = video.play();
-    if (p && p.catch) p.catch(function () { /* still image carries the hero */ });
+    if (p && p.catch) {
+      p.catch(function () {
+        // Refused (low power mode, data saver, a policy we do not control).
+        // The still carries the hero; try once more on the first real
+        // interaction, which browsers always accept.
+        var retry = function () {
+          ['pointerdown', 'keydown'].forEach(function (evt) {
+            removeEventListener(evt, retry);
+          });
+          video.play().catch(function () {});
+        };
+        addEventListener('pointerdown', retry, { passive: true });
+        addEventListener('keydown', retry);
+      });
+    }
+  }
+
+
+  /* ------------------------------------------------------------------
+     Lodging action — config drives the label, the note and the link.
+     An empty href means the block is not open yet, so the button is
+     removed rather than shipped as a dead end.
+     ------------------------------------------------------------------ */
+  (function lodging() {
+    var link = $('#lodging-link');
+    if (!link) return;
+
+    var cfg = CFG.lodging || {};
+    if (!cfg.href) { link.remove(); return; }
+
+    link.href = cfg.href;
+    var label = link.querySelector('[data-lodging-label]');
+    var note = link.querySelector('[data-lodging-note]');
+    if (label && cfg.label) label.textContent = cfg.label;
+    if (note) {
+      if (cfg.note) note.textContent = cfg.note;
+      else note.remove();
+    }
+    // The visible text is two stacked fragments; give assistive tech the
+    // whole sentence, and say that it leaves the site.
+    link.setAttribute('aria-label',
+      [cfg.label || 'Lodging', cfg.note].filter(Boolean).join(' — ') + ' (opens in a new tab)');
+  }());
+
+
+  /* The envelope is optional markup. Without it nothing ever hands off to
+     the hero, so the hero reveals itself and the loop starts immediately.
+     This lives here, below the definitions above, because `var` hoists the
+     declarations but not the element lookups they depend on. */
+  if (!scene || !envelope) {
+    revealHero();
+    startHeroVideo();
   }
 
 
@@ -486,14 +574,69 @@
 
 
   /* ------------------------------------------------------------------
-     Scroll cue retires once the guest has started scrolling
+     Hero scroll hand-off
+
+     Publishes one number — --hero-p, 0 to 1 across the hero's runway —
+     and lets CSS decide what every layer does with it. Nothing here reads
+     layout inside the scroll event: the runway length is measured once up
+     front and re-measured only on resize, so a scroll frame is a single
+     scrollY read and one custom-property write. The painting itself is
+     never transformed; only the copy and the ivory wash respond.
      ------------------------------------------------------------------ */
-  (function cue() {
+  (function heroScroll() {
     var hero = $('#hero');
     if (!hero) return;
-    addEventListener('scroll', function () {
+
+    // Under reduced motion the hero is one static screen; CSS pins
+    // --hero-p at 0 and there is nothing to drive.
+    if (reduced) {
+      addEventListener('scroll', function () {
+        hero.classList.toggle('is-scrolled', window.scrollY > 40);
+      }, { passive: true });
+      return;
+    }
+
+    var runway = 0;
+    var last = -1;
+    var ticking = false;
+
+    function measure() {
+      // How far you can scroll before the sticky pane lets go. On engines
+      // without the sticky runway this is ~0, and dividing by it would snap
+      // the copy to invisible on the first pixel of scroll — so below a
+      // sensible floor we simply do not run the hand-off at all.
+      var r = hero.offsetHeight - window.innerHeight;
+      runway = r > 40 ? r : 0;
+    }
+
+    function frame() {
+      ticking = false;
+      var p = runway ? window.scrollY / runway : 0;
+      p = p < 0 ? 0 : p > 1 ? 1 : p;
+
+      // Two decimals is well under one rendered pixel of difference and
+      // keeps us from writing a new value on every sub-pixel scroll.
+      p = Math.round(p * 100) / 100;
+      if (p === last) return;
+      last = p;
+
+      hero.style.setProperty('--hero-p', p);
+      hero.classList.toggle('is-scrolling', p > 0);
       hero.classList.toggle('is-scrolled', window.scrollY > 40);
-    }, { passive: true });
+    }
+
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+    }
+
+    measure();
+    frame();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', function () { measure(); last = -1; onScroll(); }, { passive: true });
+    // iOS fires orientationchange before the new viewport height is settled.
+    addEventListener('orientationchange', function () {
+      setTimeout(function () { measure(); last = -1; onScroll(); }, 250);
+    });
   }());
 
 

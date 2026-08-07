@@ -180,56 +180,83 @@
      ============================================================ -->
 <main id="page" class="page">
 
-  <!-- ---------- HERO ---------- -->
+  <!-- ---------- HERO ----------
+       .hero is the scroll runway (about 118svh); .hero-viewport is the
+       single sticky pane that holds the painting still while the copy
+       lifts away and the paper rises over it. Everything inside the
+       viewport is one composited layer stack — see CSS §2. -->
   <header class="hero" id="hero">
-    <div class="hero-media" aria-hidden="true">
-      <img class="hero-still" id="hero-still" src="images/hero-lake.jpg" alt="" decoding="async" fetchpriority="high">
-      <video class="hero-video" id="hero-video" muted playsinline loop preload="none" tabindex="-1" aria-hidden="true"></video>
-    </div>
-    <div class="hero-scrim" aria-hidden="true"></div>
-    <div class="hero-dissolve" aria-hidden="true"></div>
+    <div class="hero-viewport">
 
-    <!-- The hero lettering is artwork, not live text. It was traced out of
-         the painted reference by tools/extract-typography.py, so the exact
-         letterforms, the gold ampersand and the sprig survive at any size.
-         The alt strings are the readable copy and config.js drives them —
-         see assets/typography/README.md before changing any of this. -->
-    <div class="hero-type">
-      <h1 class="hero-title">
-        <img class="hero-title-art" src="assets/typography/sarah-spencer-exact-title.svg"
-             alt="Sarah &amp; Spencer" data-config-alt="couple"
-             width="1003" height="93" fetchpriority="high" decoding="async">
-      </h1>
-      <img class="hero-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30" decoding="async">
-      <p class="hero-meta">
-        <img class="hero-meta-art" src="assets/typography/event-meta-exact.svg"
-             alt="June 12, 2027 — Whitefish, Montana" data-hero-meta-alt
-             width="240" height="59" decoding="async">
-      </p>
-    </div>
+      <div class="hero-media" aria-hidden="true">
+        <img class="hero-still" id="hero-still" src="images/hero-lake.jpg" alt="" decoding="async" fetchpriority="high">
+        <!-- Muted + playsinline + autoplay is the whole iOS autoplay contract;
+             save-the-date.js also calls play() explicitly and falls back to
+             the still above if the browser or the file says no. -->
+        <video class="hero-video" id="hero-video"
+               muted playsinline autoplay loop preload="none"
+               disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback"
+               tabindex="-1" aria-hidden="true"></video>
+      </div>
+      <div class="hero-scrim" aria-hidden="true"></div>
+      <div class="hero-dissolve" aria-hidden="true"></div>
+      <!-- The ivory that rises over the painting as you scroll. -->
+      <div class="hero-wash" aria-hidden="true"></div>
 
-    <div class="hero-actions">
-      <a class="btn-cal" id="add-to-calendar" href="#" download>
-        <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
-            <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
-            <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
+      <div class="hero-content">
+        <!-- The hero lettering is artwork, not live text. It was traced out of
+             the painted reference by tools/extract-typography.py, so the exact
+             letterforms, the gold ampersand and the sprig survive at any size.
+             The alt strings are the readable copy and config.js drives them —
+             see assets/typography/README.md before changing any of this. -->
+        <div class="hero-type">
+          <h1 class="hero-title">
+            <img class="hero-title-art" src="assets/typography/sarah-spencer-exact-title.svg"
+                 alt="Sarah &amp; Spencer" data-config-alt="couple"
+                 width="1003" height="93" fetchpriority="high" decoding="async">
+          </h1>
+          <img class="hero-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30" decoding="async">
+          <p class="hero-meta">
+            <img class="hero-meta-art" src="assets/typography/event-meta-exact.svg"
+                 alt="June 12, 2027 — Whitefish, Montana" data-hero-meta-alt
+                 width="240" height="59" decoding="async">
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn btn-cal" id="add-to-calendar" href="#" download>
+            <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+                <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
+                <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
+              </g>
+            </svg>
+            <span class="btn-label">Add to calendar</span>
+          </a>
+
+          <!-- href, label and note all come from config.lodging; an empty
+               href removes this button rather than shipping a dead link. -->
+          <a class="btn btn-lodge" id="lodging-link" href="https://lodgeatwhitefishlake.com/"
+             target="_blank" rel="noopener noreferrer">
+            <span class="btn-label" data-lodging-label>Lodging</span>
+            <span class="btn-note" data-lodging-note>Book before October</span>
+          </a>
+        </div>
+      </div>
+
+      <a class="hero-cue" href="#details">
+        <span class="cue-label">Explore the weekend</span>
+        <svg viewBox="0 0 24 64" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+            <path class="cue-stem" d="M12 2c0 22-4 30 0 46"/>
+            <path d="M12 22c0-4.4-3.4-8-7.6-8C4.4 18.4 7.8 22 12 22Z"/>
+            <path d="M12 34c0-4 3.1-7.3 7-7.3C19 30.7 15.9 34 12 34Z"/>
           </g>
+          <circle class="cue-tip" cx="12" cy="50" r="1.8" fill="currentColor"/>
         </svg>
-        <span>Add to calendar</span>
       </a>
-    </div>
 
-    <a class="hero-cue" href="#details" aria-label="Continue to the page">
-      <svg viewBox="0 0 24 64" aria-hidden="true" focusable="false">
-        <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
-          <path class="cue-stem" d="M12 2c0 22-4 30 0 46"/>
-          <path d="M12 22c0-4.4-3.4-8-7.6-8C4.4 18.4 7.8 22 12 22Z"/>
-          <path d="M12 34c0-4 3.1-7.3 7-7.3C19 30.7 15.9 34 12 34Z"/>
-        </g>
-        <circle class="cue-tip" cx="12" cy="50" r="1.8" fill="currentColor"/>
-      </svg>
-    </a>
+    </div><!-- /hero-viewport -->
   </header>
 
   <!-- ---------- PAPER ---------- -->

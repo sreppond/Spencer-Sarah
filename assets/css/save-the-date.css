@@ -42,9 +42,24 @@
   --ease-out:    cubic-bezier(.16, 1, .3, 1);
   --ease-inout:  cubic-bezier(.62, .02, .26, 1);
   --ease-soft:   cubic-bezier(.25, .8, .28, 1);
+  /* the reveal easing: a long, slow settle with no overshoot */
+  --ease-reveal: cubic-bezier(.22, 1, .36, 1);
 
   /* how far down the hero the painting starts dissolving into paper */
   --hero-fade-start: 76%;
+
+  /* Where the name/date/actions group centres in the viewport. Deliberately
+     below middle: it leaves the clouds and the mountain line — the only
+     things actually moving in the loop — completely unobstructed, and sets
+     the copy over the lake, which is the calmest, most even part of the
+     painting and so the most readable. */
+  --hero-anchor: 59%;
+
+  /* Total scroll runway of the hero. The default is exactly one screen —
+     no sticky hand-off — because that is the only version guaranteed to
+     behave everywhere. The extra runway is opted into below, gated on the
+     same feature that makes sticky survive our overflow rules. */
+  --hero-runway: 100svh;
 
   --gutter: clamp(1.25rem, 6vw, 2.5rem);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -54,9 +69,16 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* `overflow-x: hidden` turns an element into a scroll container, which
+   silently kills `position: sticky` for everything inside it — that is what
+   the hero hand-off rides on. `clip` does the same job without creating one.
+   The `hidden` line stays first as the fallback for engines that predate
+   `clip`; those engines also skip the sticky runway entirely (see below), so
+   they get a plain one-screen hero rather than a broken one. */
 html {
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -64,6 +86,7 @@ body {
   color: var(--ink-body);
   background: var(--paper);
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -333,18 +356,51 @@ html:not(.js) .env-scene { display: none; }
 }
 html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 
+/* .hero is only a scroll runway. Nothing is painted on it directly —
+   .hero-viewport is the pane that actually holds the picture, and it
+   sticks to the top of the screen for the extra 18svh so the copy can
+   lift away and the paper can climb over a painting that is standing
+   still. Sticky (not fixed, not transformed) keeps iOS Safari honest
+   when the URL bar collapses. */
 .hero {
   position: relative;
-  height: 100svh;
+  height: var(--hero-runway);
   min-height: 30rem;
   isolation: isolate;
+  /* 0 → 1 across the runway; JS writes it, every layer below reads it. */
+  --hero-p: 0;
 }
-@supports not (height: 100svh) { .hero { height: 100vh; } }
+@supports not (height: 100svh) { :root { --hero-runway: 100vh; } }
+
+/* The sticky hand-off, opted into only where it actually works: `clip`
+   support is what lets html/body clip horizontally without becoming scroll
+   containers, and a sticky child of a scroll container never sticks.
+   Everywhere else the hero is simply one screen tall and the painting meets
+   the paper on the dissolve it already had — reliable beats clever. */
+@supports (overflow-x: clip) {
+  :root { --hero-runway: 118svh; }
+  @supports not (height: 100svh) { :root { --hero-runway: 118vh; } }
+}
+
+/* Exactly the visible screen, and deliberately no min-height: a sticky pane
+   that is as tall as the block it sticks inside has nowhere to stick, which
+   is what a shared 30rem floor did to short landscape windows. .hero keeps
+   the floor; the pane just tracks the viewport. */
+.hero-viewport {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+@supports not (height: 100svh) { .hero-viewport { height: 100vh; } }
 
 .hero-media {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  /* Warm, never black: if decode is slow this is what shows through. */
+  background: var(--paper-deep);
   /* The painting dissolves into the paper instead of meeting it on an edge.
      Stops are fractions of the remaining height, so the ramp always finishes
      exactly at the bottom no matter where --hero-fade-start is set. A plain
@@ -367,6 +423,10 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
           mask-image: var(--fade);
 }
 
+/* The artwork is 4:3 and the viewport almost never is, so object-position
+   is doing real compositional work at every size — see the breakpoints
+   under §2.1. No transform, no scale, no Ken Burns: the loop already
+   contains its own camera and a second one would fight it. */
 .hero-still,
 .hero-video {
   position: absolute;
@@ -374,23 +434,41 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 44%;
+  object-position: 50% 46%;
+  background: var(--paper-deep);
 }
-.hero-video { opacity: 0; transition: opacity 1s ease; }
+.hero-video { opacity: 0; transition: opacity 1.2s var(--ease-soft); }
 .hero-video.is-playing { opacity: 1; }
 
-/* Warm scrim: lifts the lettering off the sky without a panel. */
+/* Warm scrim: lifts the lettering off the water without a panel.
+   Deliberately not a rectangle and not grey — it is a soft ivory bloom
+   centred on the copy, so it reads as light in the painting rather than
+   as a layer over it. It tracks --hero-anchor. */
 .hero-scrim {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(ellipse 70% 30% at 50% 40%,
-      rgba(252,250,246,.62) 0%,
-      rgba(252,250,246,.46) 40%,
-      rgba(252,250,246,.22) 68%,
+  background: radial-gradient(ellipse 66% 30% at 50% var(--hero-anchor),
+      rgba(252,250,246,.58) 0%,
+      rgba(252,250,246,.42) 40%,
+      rgba(252,250,246,.20) 68%,
       rgba(252,250,246,.05) 88%,
       rgba(252,250,246,0)   100%);
+}
+
+/* A whisper of edge vignette. Warm, not dark — it stops the painting
+   from feeling like it was cut out with scissors at the screen edge. */
+.hero-viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 92% 80% at 50% 46%,
+      rgba(120,104,80,0)    62%,
+      rgba(120,104,80,.045) 86%,
+      rgba(120,104,80,.085) 100%);
 }
 
 /* Fallback dissolve for engines without mask-image, plus a soft warm bloom
@@ -416,16 +494,53 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   .hero-dissolve { opacity: .5; }
 }
 
-/* --- hero typography (see spec §9) --------------------------------------
-   Reference composition 1448 × 1086. Title top 35.54%, title group width
-   min(69.27%, 1003px), divider 32.10% of that, metadata 23.93%. */
-.hero-type {
+/* The ivory that climbs over the painting on scroll. It starts as nothing,
+   so at rest the artwork is completely untouched; by the end of the runway
+   its bottom edge is solid --paper and is the same colour the next section
+   starts on, which is what removes the seam between them. */
+.hero-wash {
   position: absolute;
-  top: 35.54%;
+  left: 0; right: 0; bottom: 0;
+  height: 74%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to bottom,
+      rgba(247,242,233,0)    0%,
+      rgba(247,242,233,.10) 22%,
+      rgba(247,242,233,.28) 40%,
+      rgba(247,242,233,.52) 56%,
+      rgba(247,242,233,.74) 70%,
+      rgba(247,242,233,.90) 82%,
+      rgba(247,242,233,.98) 92%,
+      var(--paper)         100%);
+}
+
+/* --- hero content group --------------------------------------------------
+   Names, divider, date/place and the two actions travel as one block,
+   centred on --hero-anchor. Grouping them is what keeps the spacing
+   between the lettering and the buttons constant at every viewport
+   height instead of stretching with it. */
+.hero-content {
+  position: absolute;
   left: 50%;
+  top: var(--hero-anchor);
   z-index: 3;
   width: min(69.27%, 1003px);
-  transform: translateX(-50%);
+  max-width: calc(100% - 2 * var(--gutter));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+}
+
+/* --- hero typography (see spec §9) --------------------------------------
+   Reference composition 1448 × 1086. Title group width min(69.27%, 1003px),
+   divider 32.10% of that, metadata 23.93%. These internal proportions are
+   traced from the reference and must not drift; only the group's position
+   on the screen is ours to place. */
+.hero-type {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -469,72 +584,139 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   margin-inline: auto;
 }
 
-/* --- hero actions --- */
+/* --- hero actions ---
+   No local glow behind these: .hero-scrim already blooms across the whole
+   content group, and a second ellipse here sat in its own stacking context
+   and washed out the names above it. One readability layer, not two. */
 .hero-actions {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(6.5rem, 16vh, 10rem);
-  z-index: 4;
-  transform: translateX(-50%);
+  margin-top: clamp(2rem, 5.2vh, 3.4rem);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(.7rem, 2.2vw, 1.1rem);
+  flex-wrap: wrap;
 }
-.hero-actions::before,
-.hero-cue::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: -1;
-  width: 26rem;
-  height: 9rem;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  background: radial-gradient(ellipse 50% 50% at 50% 50%,
-      rgba(252,250,246,.86) 0%,
-      rgba(252,250,246,.58) 38%,
-      rgba(252,250,246,.22) 62%,
-      rgba(252,250,246,0)   80%);
-}
-.hero-cue::before { width: 9rem; height: 8rem; }
-/* Deliberately not a button: a tracked serif line on a hairline rule,
-   so it sits on the painting like an engraved note rather than a chip. */
-.btn-cal {
+
+/* Two invitation cards, not two pieces of website UI: soft-cornered,
+   generously padded, small tracked caps in the page serif. The pair reads
+   as printed stock laid on the painting. */
+.btn {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: .7em;
-  padding: .35em .1em .55em;
-  border: 0;
-  border-bottom: 1px solid rgba(168,131,79,.5);
-  color: var(--ink);
-  font-size: clamp(.7rem, 2.9vw, .78rem);
+  justify-content: center;
+  gap: .18em;
+  min-height: 2.9rem;
+  padding: .82em 1.55em .78em;
+  border: 1px solid transparent;
+  border-radius: 2rem;
+  font-family: inherit;
+  font-size: clamp(.68rem, 2.7vw, .75rem);
   font-weight: 500;
-  letter-spacing: .26em;
-  text-indent: .26em;
+  line-height: 1.15;
+  letter-spacing: .2em;
+  text-indent: .2em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
-  text-shadow: 0 0 14px rgba(250,246,238,.9), 0 0 6px rgba(250,246,238,.8);
-  transition: border-color .55s var(--ease-soft), color .55s var(--ease-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform .26s var(--ease-reveal),
+    background-color .26s var(--ease-soft),
+    border-color .26s var(--ease-soft),
+    color .26s var(--ease-soft),
+    box-shadow .26s var(--ease-soft);
+}
+.btn-label { display: block; }
+
+/* primary — warm ivory stock, charcoal ink */
+.btn-cal {
+  flex-direction: row;
+  gap: .68em;
+  background: rgba(252,249,243,.93);
+  border-color: rgba(196,159,108,.34);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 6px 18px rgba(93,74,44,.07);
 }
 .btn-cal svg {
   width: 1.05em; height: 1.05em; flex: none;
   color: var(--gold-deep);
-  filter: drop-shadow(0 0 6px rgba(250,246,238,.9));
 }
-.btn-cal:hover { border-color: var(--gold-deep); color: var(--gold-deep); }
 
-/* --- scroll cue: a growing stem rather than a chevron --- */
+/* Secondary — lighter stock, gold hairline, no shadow. It sits over the
+   trees and the lodge, which is the busiest quarter of the painting, so it
+   is only barely translucent: a properly glassy button was unreadable
+   against the dark conifers. Hierarchy comes from the shadow and the border,
+   not from making this one hard to read. */
+.btn-lodge {
+  background: rgba(252,249,243,.82);
+  border-color: rgba(168,131,79,.42);
+  color: var(--ink);
+}
+.btn-note {
+  display: block;
+  margin-top: .1em;
+  font-size: .82em;
+  font-weight: 400;
+  letter-spacing: .1em;
+  text-indent: .1em;
+  text-transform: none;
+  font-style: italic;
+  color: var(--stone-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-cal:hover {
+    transform: translateY(-2px);
+    background: #fdfbf7;
+    border-color: rgba(168,131,79,.6);
+    box-shadow: 0 2px 4px rgba(93,74,44,.07), 0 10px 24px rgba(93,74,44,.1);
+  }
+  .btn-lodge:hover {
+    transform: translateY(-2px);
+    background: rgba(252,249,243,.62);
+    border-color: #fdfbf7;
+  }
+}
+.btn:active { transform: translateY(0); }
+.btn-cal:active   { background: #f6f0e5; }
+.btn-lodge:active { background: rgba(252,249,243,.58); }
+
+/* --- scroll cue: a tracked line and a growing botanical stem ---
+   The stem draws itself over ~4.4s, which is slower than any chevron
+   would dare to be, and that slowness is the point. */
 .hero-cue {
   position: absolute;
   left: 50%;
-  bottom: calc(2rem + var(--safe-b));
+  bottom: calc(1.6rem + var(--safe-b));
   z-index: 4;
-  width: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  width: max-content;
   transform: translateX(-50%);
   color: var(--olive);
-  opacity: .8;
+  opacity: .85;
+  text-decoration: none;
   transition: opacity .6s ease;
 }
-.hero-cue svg { width: 100%; height: auto; }
+.cue-label {
+  font-size: clamp(.58rem, 2.2vw, .65rem);
+  font-weight: 500;
+  letter-spacing: .32em;
+  text-indent: .32em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  /* The cue lands over the marina, which is the fussiest passage in the
+     painting. A tight double halo lifts it without becoming a plate. */
+  text-shadow:
+    0 0 4px  rgba(250,246,238,1),
+    0 0 10px rgba(250,246,238,.95),
+    0 0 20px rgba(250,246,238,.8);
+}
+.hero-cue svg { width: 22px; height: auto; }
 .hero-cue .cue-stem { stroke-dasharray: 60; animation: cue-draw 4.4s var(--ease-inout) infinite; }
 .hero-cue .cue-tip  { animation: cue-tip 4.4s var(--ease-inout) infinite; }
 @keyframes cue-draw {
@@ -548,6 +730,84 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   100%     { opacity: 0; transform: translateY(0); }
 }
 .hero.is-scrolled .hero-cue { opacity: 0; pointer-events: none; }
+
+
+/* Framing per breakpoint lives with the rest of the responsive rules in §8. */
+
+
+/* --- §2.2 first-load reveal ---------------------------------------------
+   Opacity and transform only, staggered, all on --ease-reveal. The hero
+   is armed by save-the-date.js the moment the page becomes visible —
+   after the envelope hands off, or immediately for anyone who skipped it. */
+.hero-media,
+.hero-title,
+.hero-divider,
+.hero-meta,
+.hero-actions,
+.hero-cue {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity   .9s var(--ease-reveal),
+    transform 1.1s var(--ease-reveal);
+}
+.hero-media { transform: none; }          /* the painting fades, it never slides */
+.hero-cue   { transform: translateX(-50%) translateY(14px); }
+
+.hero.is-revealed .hero-media,
+.hero.is-revealed .hero-title,
+.hero.is-revealed .hero-divider,
+.hero.is-revealed .hero-meta,
+.hero.is-revealed .hero-actions {
+  opacity: 1;
+  transform: none;
+}
+.hero.is-revealed .hero-cue { opacity: .85; transform: translateX(-50%); }
+
+.hero.is-revealed .hero-media    { transition-delay: .10s; }
+.hero.is-revealed .hero-title    { transition-delay: .50s; }
+.hero.is-revealed .hero-divider  { transition-delay: .68s; }
+.hero.is-revealed .hero-meta     { transition-delay: .80s; }
+.hero.is-revealed .hero-actions  { transition-delay: 1.10s; }
+.hero.is-revealed .hero-cue      { transition-delay: 1.50s; }
+
+
+/* --- §2.3 scroll response ------------------------------------------------
+   One number, --hero-p (0 → 1 across the runway), drives every layer.
+   JS writes it from a rAF-throttled scroll listener and touches nothing
+   else, so the whole hand-off stays on the compositor.
+
+     0 → ~20%   copy lifts and begins to go
+     ~20 → 60%  copy finishes leaving, ivory starts to climb
+     ~60 → 100% ivory takes the lower painting and meets the next section
+   The painting itself never moves and never scales. */
+.hero-content {
+  opacity: clamp(0, calc(1 - var(--hero-p) * 1.7), 1);
+  transform:
+    translate(-50%, -50%)
+    translateY(calc(var(--hero-p) * -20px));
+  will-change: opacity, transform;
+}
+/* The actions lag the lettering by 8px, so the group has a little depth
+   instead of sliding as one slab. Scoped to .is-scrolling and written with
+   the same specificity as the reveal rule above (three classes) so that it
+   wins on source order — plain `.hero-actions` here would lose to
+   `.hero.is-revealed .hero-actions { transform: none }` and never move. */
+.hero.is-scrolling .hero-actions {
+  transform: translateY(calc(var(--hero-p) * 8px));
+}
+.hero.is-scrolling .hero-cue { opacity: clamp(0, calc(.85 - var(--hero-p) * 5), .85); }
+.hero-wash {
+  opacity: clamp(0, calc((var(--hero-p) - .18) * 1.55), 1);
+  transform: translateY(calc((1 - var(--hero-p)) * 10%));
+  will-change: opacity, transform;
+}
+
+/* Scroll-driven transforms must not fight the entrance transition. Once
+   the guest starts scrolling the reveal is over, so drop its timing. */
+.hero.is-scrolling .hero-content,
+.hero.is-scrolling .hero-actions,
+.hero.is-scrolling .hero-cue { transition: none; }
 
 
 /* ==========================================================================
@@ -937,36 +1197,59 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
    8 · RESPONSIVE
    ========================================================================== */
 
-/* --- phones: recompose the hero crop so the type clears the mountains ---
-   The painting is landscape and the phone is not, so `cover` has to throw
-   away width. Biasing the crop right keeps the lodge, the tent and the
-   ceremony chairs — the parts of the picture that are about the wedding. */
+/* --- reframing the painting per breakpoint ------------------------------
+   The artwork is 4:3 and almost no viewport is, so `object-position` is
+   doing real compositional work. On a wide screen `cover` crops height, so
+   only the vertical number matters; on a phone it crops width brutally —
+   roughly a third of the painting survives — so the horizontal number
+   decides what the picture is even about.
+
+   Biasing right keeps the lodge, the tent and the ceremony chairs. Going
+   too far right (we tried 74%) throws away the mountain gap and the lake
+   opening, which is the subject the whole composition is built around.
+   These values hold both: the valley on the left of frame, the lodge and
+   tent on the right. */
+@media (max-width: 1023px) {
+  .hero-still, .hero-video { object-position: 58% 48%; }
+}
+
 @media (max-width: 767px) {
-  .hero-still, .hero-video { object-position: 74% 50%; }
+  .hero-still, .hero-video { object-position: 66% 50%; }
 
   /* The phone hero is not the reference 4:3 crop, so the composition opens
      up: the divider and the metadata grow against the title to stay legible.
      They grow together — 240/322 is the reference ratio between them. */
-  .hero-type { top: 24.5%; width: min(84%, 1003px); }
+  .hero-content { width: min(84%, 1003px); }
   .hero-divider { width: 46%; margin-top: 1.1rem; }
   .hero-meta { margin-top: .85rem; }
   .hero-meta-art { width: 34.3%; }   /* 46% x 240/322 */
-
-  .hero-scrim {
-    background: radial-gradient(ellipse 82% 24% at 50% 31%,
-        rgba(252,250,246,.74) 0%,
-        rgba(252,250,246,.55) 42%,
-        rgba(252,250,246,.24) 70%,
-        rgba(252,250,246,0)   100%);
-  }
-
-  .hero-actions { bottom: clamp(5.5rem, 14vh, 8rem); }
 }
 
-/* very short phones in landscape, or small windows */
+@media (max-width: 480px) {
+  .hero-still, .hero-video { object-position: 69% 50%; }
+}
+
+/* Stack the actions only once they genuinely run out of width, and give
+   them the full column so both stay comfortably thumb-sized. */
+@media (max-width: 430px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: min(18.5rem, 100%);
+    margin-inline: auto;
+    gap: .6rem;
+  }
+}
+
+/* Very short phones in landscape, or small windows. Wide and short crops
+   like a desktop, so the framing goes back to centre. The actions stay —
+   they are the point of the page — but the group tightens and the scroll
+   cue steps aside rather than colliding with it. */
 @media (max-height: 560px) and (max-width: 900px) {
-  .hero-type { top: 19%; }
-  .hero-actions { display: none; }
+  .hero-still, .hero-video { object-position: 50% 46%; }
+  :root { --hero-anchor: 52%; }
+  .hero-actions { margin-top: clamp(.9rem, 3vh, 1.5rem); }
+  .hero-cue { display: none; }
   .env { width: min(62vh, 420px); }
 }
 
@@ -1018,6 +1301,26 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 
   .page { transition: opacity .5s linear !important; }
   html.is-sealed .page { transform: none; }
+
+  /* The hero arrives whole. No stagger, no lift, no sticky hand-off —
+     the runway collapses to one screen and the painting simply meets the
+     paper on the dissolve it already had. Everything stays readable the
+     instant it is on screen. */
+  .hero { height: 100svh; --hero-p: 0 !important; }
+  .hero-viewport { position: relative; }
+  .hero-media,
+  .hero-title,
+  .hero-divider,
+  .hero-meta,
+  .hero-actions,
+  .hero-cue { opacity: 1; transform: none; transition: none !important; }
+  .hero-cue { transform: translateX(-50%); opacity: .85; }
+  .hero-content { opacity: 1; transform: translate(-50%, -50%); }
+  .hero-actions { transform: none; }
+  .hero-wash { opacity: 0; transform: none; }
+  .hero-cue .cue-stem { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+  .hero-cue .cue-tip { animation: none; opacity: 1; }
+  .btn { transition: none !important; }
 
   /* the vine is simply drawn, and the photos are simply there */
   .vine-stem { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
