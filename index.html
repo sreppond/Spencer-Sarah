@@ -1,519 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spencer & Sarah | June 18, 2027</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:wght@300;400;500;600&family=Bodoni+Moda:opsz,wght@6..96,400&family=Pinyon+Script&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- ================================================================
+     Sarah & Spencer — Save the Date
+     Content + asset paths live in assets/js/config.js.
+     The strings below are the no-JS / crawler mirror of that config;
+     config.js overwrites them at runtime and warns on localhost if
+     the two ever drift apart.
+     ================================================================ -->
+
+<title>Sarah &amp; Spencer | Save the Date</title>
+<meta name="description" content="Sarah &amp; Spencer are getting married. June 12, 2027 · Whitefish, Montana. Formal invitation and weekend details to follow.">
+<meta name="theme-color" content="#f7f2e9">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="https://sreppond.github.io/Spencer-Sarah/">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+
+<!-- Link preview: iMessage / SMS / WhatsApp / social.
+     Absolute HTTPS URLs are required — these are read by crawlers
+     that never execute JavaScript, so they stay static here. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sarah &amp; Spencer">
+<meta property="og:title" content="Sarah &amp; Spencer | Save the Date">
+<meta property="og:description" content="June 12, 2027 · Whitefish, Montana">
+<meta property="og:url" content="https://sreppond.github.io/Spencer-Sarah/">
+<meta property="og:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+<meta property="og:image:secure_url" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sarah &amp; Spencer — June 12, 2027 — Whitefish, Montana, over a painting of Whitefish Lake">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sarah &amp; Spencer | Save the Date">
+<meta name="twitter:description" content="June 12, 2027 · Whitefish, Montana">
+<meta name="twitter:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+<meta name="twitter:image:alt" content="Sarah &amp; Spencer — June 12, 2027 — Whitefish, Montana">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="image" href="images/hero-lake.jpg" fetchpriority="high">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/save-the-date.css">
+
+<!-- Marks the document as script-capable before first paint so the
+     envelope overlay only ever appears when it can actually open. -->
+<script>document.documentElement.className += ' js';</script>
+
+<script defer src="assets/js/config.js"></script>
+<script defer src="assets/js/save-the-date.js"></script>
 </head>
+
 <body>
 
-  <!-- Centered editorial navigation: hairline-divided serif links
-       with the RSVP pill held to the right edge. -->
-  <nav id="navbar">
-    <div class="nav-inner">
-      <div class="nav-links">
-        <a href="#story">Our Story</a>
-        <a href="#venue">The Venue</a>
-        <a href="#details">Details</a>
-        <a href="#travel">Travel</a>
-        <a href="#faq">FAQ</a>
-      </div>
-      <a href="#rsvp" class="nav-cta">RSVP</a>
-      <button class="nav-toggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </nav>
+<!-- ============================================================
+     1 · THE ENVELOPE
+     Full-screen, tactile, one interaction. Charcoal paper,
+     embossed botanical linework, bronze wax seal.
+     ============================================================ -->
+<div id="envelope-scene" class="env-scene" aria-hidden="false">
+  <div class="env-vignette" aria-hidden="true"></div>
 
-  <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobile-menu">
-    <a href="#story">Our Story</a>
-    <a href="#venue">The Venue</a>
-    <a href="#details">Details</a>
-    <a href="#travel">Travel</a>
-    <a href="#faq">FAQ</a>
-    <a href="#rsvp" class="nav-cta">Submit RSVP</a>
-  </div>
+  <div class="env-stage">
+    <button type="button" id="envelope" class="env" aria-label="Open your save the date from Sarah and Spencer">
 
-  <!-- ============================================
-       HERO — painted lake-and-mountain hero image
-       ============================================ -->
-  <section id="hero-video">
-    <div class="hero-video-stage" id="hero-video-stage">
-      <img
-        class="hero-video-el"
-        src="images/hero-lake.jpg"
-        alt="Painting of the Lodge at Whitefish Lake, with tents on the shore and boats on the water beneath the Rocky Mountains"
-      >
-      <div class="hero-overlay"></div>
-      <div class="hero-content" id="hero-content">
-        <h1 class="hero-names">
-          <span class="name-line">Spencer</span>
-          <span class="ampersand">&amp;</span>
-          <span class="name-line">Sarah</span>
-        </h1>
-        <div class="hero-rule">
-          <span class="hero-rule-line"></span>
-          <svg class="hero-sprig" viewBox="0 0 64 22" aria-hidden="true" focusable="false">
-            <!-- Olive sprig: pointed leaves stepping up a stem that rises right -->
-            <path class="sprig-stem" d="M3 17.2 C20 16, 42 11.6, 61 6.8"/>
-            <g class="sprig-leaves">
-              <path d="M0 0 Q5.6 -2.7 11.2 0 Q5.6 2.7 0 0Z" transform="translate(3.5 17) rotate(-19)"/>
-              <path d="M0 0 Q5.5 -2.65 11 0 Q5.5 2.65 0 0Z" transform="translate(15 15.1) rotate(-19)"/>
-              <path d="M0 0 Q5.3 -2.55 10.6 0 Q5.3 2.55 0 0Z" transform="translate(26.5 13.1) rotate(-19)"/>
-              <path d="M0 0 Q5 -2.4 10 0 Q5 2.4 0 0Z" transform="translate(37.5 11.2) rotate(-19)"/>
-              <path d="M0 0 Q4.4 -2.1 8.8 0 Q4.4 2.1 0 0Z" transform="translate(48 9.4) rotate(-19)"/>
+      <!-- interior / lining: what you see once the flap swings back -->
+      <span class="env-lining" aria-hidden="true"></span>
+
+      <!-- the card that lifts out -->
+      <span class="env-card" aria-hidden="true">
+        <span class="env-card-rule"></span>
+        <span class="env-card-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+              <path d="M20 33V13"/>
+              <path d="M20 20c0-4 3.2-7.2 7.2-7.2C27.2 16.8 24 20 20 20Z"/>
+              <path d="M20 26c0-3.4 2.7-6.1 6.1-6.1C26.1 23.3 23.4 26 20 26Z"/>
+              <path d="M20 20c0-4-3.2-7.2-7.2-7.2C12.8 16.8 16 20 20 20Z"/>
+              <path d="M20 26c0-3.4-2.7-6.1-6.1-6.1C13.9 23.3 16.6 26 20 26Z"/>
             </g>
           </svg>
-          <span class="hero-rule-line"></span>
-        </div>
-        <div class="hero-date">
-          <p class="hero-date-line">June 18, 2027</p>
-          <p class="hero-place">whitefish, montana</p>
-        </div>
-      </div>
-      <div class="scroll-indicator" id="scroll-indicator">
-        <div class="scroll-arrow"></div>
-      </div>
-      <!-- Dissolves the painting into the next section's ivory so the
-           two never meet on a hard edge. -->
-      <div class="hero-fade" aria-hidden="true"></div>
-    </div>
-    <!-- Scroll runway the hero choreography plays across -->
-    <div class="hero-video-spacer"></div>
-  </section>
+        </span>
+        <span class="env-card-names">Sarah <i>&amp;</i> Spencer</span>
+        <span class="env-card-rule"></span>
+      </span>
 
-  <!-- Invitation Text Reveal -->
-  <section id="invitation" data-text-reveal>
-    <div class="reveal-sticky">
-      <p class="reveal-words">You're cordially invited to celebrate the marriage of Spencer &amp; Sarah, on the shore of Whitefish Lake, the eighteenth of June, two thousand twenty-seven.</p>
-    </div>
-  </section>
+      <!-- front panel: a plain charcoal face, embossed low and centred -->
+      <span class="env-front" aria-hidden="true">
+        <svg class="env-emboss" viewBox="0 0 520 195" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+            <path d="M260 168V96"/>
+            <path d="M260 132c0-19 15-34 34-34 0 19-15 34-34 34Z"/>
+            <path d="M260 156c0-16 13-29 29-29 0 16-13 29-29 29Z"/>
+            <path d="M260 132c0-19-15-34-34-34 0 19 15 34 34 34Z"/>
+            <path d="M260 156c0-16-13-29-29-29 0 16 13 29 29 29Z"/>
+            <path d="M196 176c-30-4-54-24-64-52"/>
+            <path d="M324 176c30-4 54-24 64-52"/>
+          </g>
+        </svg>
+      </span>
 
-  <!-- Countdown Section -->
-  <section id="intro">
-    <div class="container">
-      <div class="intro-text reveal">
-        <p class="script-accent">so please join us...</p>
-        <h2 class="countdown-date">june 18, 2027</h2>
-        <div class="countdown" id="countdown">
-          <div class="countdown-unit">
-            <span class="countdown-number" id="days">---</span>
-            <span class="countdown-label">Days</span>
-          </div>
-          <div class="countdown-sep">:</div>
-          <div class="countdown-unit">
-            <span class="countdown-number" id="hours">--</span>
-            <span class="countdown-label">Hours</span>
-          </div>
-          <div class="countdown-sep">:</div>
-          <div class="countdown-unit">
-            <span class="countdown-number" id="minutes">--</span>
-            <span class="countdown-label">Minutes</span>
-          </div>
-          <div class="countdown-sep">:</div>
-          <div class="countdown-unit">
-            <span class="countdown-number" id="seconds">--</span>
-            <span class="countdown-label">Seconds</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="confetti-container" id="confetti"></div>
-  </section>
-
-  <!-- Our Story Section -->
-  <section id="story">
-    <div class="section-header reveal">
-      <h2 class="section-title">Best Friends First</h2>
-    </div>
-    <div class="story-content container">
-      <div class="story-block">
-        <div class="story-image reveal-left">
-          <div class="image-frame">
-            <img src="images/story-1.svg" alt="Spencer and Sarah">
-          </div>
-        </div>
-        <div class="story-text reveal-right">
-          <h3>How We Started</h3>
-          <p>We're best friends first. Sarah brings a warmth and energy into my life and I like to think I keep the two of us grounded. We're easy together, whether it's a good laugh, a long walk with the dogs, or figuring things out side by side. We just work.</p>
-          <p>We've built a strong foundation, and we can't wait to spend the rest of our lives building on it together.</p>
-        </div>
-      </div>
-      <div class="story-block reverse">
-        <div class="story-image reveal-right">
-          <div class="image-frame">
-            <img src="images/story-2.svg" alt="Adventures together">
-          </div>
-        </div>
-        <div class="story-text reveal-left">
-          <h3>Our Adventures</h3>
-          <p>We love going on adventures together, usually with our two pups, Cooper and Marley, in tow. Whether it's a hike, a day out on the water, or a trip somewhere we've never been, we're at our best when we're exploring.</p>
-          <p>When we're not out adventuring, we're happy keeping it simple at home with good food and good company.</p>
-        </div>
-      </div>
-      <div class="story-block">
-        <div class="story-image reveal-left">
-          <div class="image-frame">
-            <img src="images/story-3.svg" alt="The proposal">
-          </div>
-        </div>
-        <div class="story-text reveal-right">
-          <h3>The Proposal</h3>
-          <p>And then came the moment everything changed. The question, the "yes," and the beginning of this next chapter. Celebrating that with the people we love most is what this whole weekend is about.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Full-width Photo Break -->
-  <section class="photo-break">
-    <div class="photo-break-inner">
-      <img src="images/whitefish-lodge.jpg" alt="The Lodge at Whitefish Lake">
-    </div>
-  </section>
-
-  <!-- Venue Section -->
-  <section id="venue">
-    <div class="venue-intro container">
-      <div class="section-header reveal">
-        <p class="section-tag">The Venue</p>
-        <h2 class="section-title">The Lodge at<br>Whitefish Lake</h2>
-        <p class="venue-location">Whitefish, Montana</p>
-      </div>
-      <div class="venue-description reveal">
-        <p>Nestled on the shores of Whitefish Lake with the Rocky Mountains as a backdrop, The Lodge at Whitefish Lake is the perfect setting for our celebration. Long days, perfect weather, and celebrations right on the water. There's nothing like Whitefish, Montana in the summer.</p>
-        <p>We're envisioning the tent open to the lake, lush white and cream florals with plenty of greenery, and tables that feel abundant but never fussy. A long, candlelit dinner that gives way to a dance floor that goes late.</p>
-      </div>
-    </div>
-    <div class="venue-gallery">
-      <div class="venue-gallery-grid">
-        <div class="vg-item vg-large reveal">
-          <img src="images/venue-1.svg" alt="Lodge at Whitefish Lake ceremony">
-        </div>
-        <div class="vg-item vg-tall reveal">
-          <img src="images/venue-2.svg" alt="Lakeside dock">
-        </div>
-        <div class="vg-item vg-wide reveal">
-          <img src="images/venue-3.svg" alt="Mountain views from the venue">
-        </div>
-      </div>
-    </div>
-    <div class="venue-features container">
-      <div class="venue-feature reveal">
-        <div class="feature-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4L28 16H40L30 24L34 36L24 28L14 36L18 24L8 16H20L24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+      <!-- the upper flap: rotates back on its top edge -->
+      <span class="env-flap" aria-hidden="true">
+        <span class="env-flap-face env-flap-outer">
+          <svg class="env-emboss" viewBox="0 0 520 212" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+              <path d="M150 36c50 20 90 54 116 96"/>
+              <path d="M180 40c-10 14-8 32 4 42 10-14 8-32-4-42Z"/>
+              <path d="M208 62c-11 12-12 30-2 42 11-12 12-30 2-42Z"/>
+              <path d="M234 88c-12 11-15 29-6 42 12-11 15-29 6-42Z"/>
+              <path d="M370 36c-50 20-90 54-116 96"/>
+              <path d="M340 40c10 14 8 32-4 42-10-14-8-32 4-42Z"/>
+              <path d="M312 62c11 12 12 30 2 42-11-12-12-30-2-42Z"/>
+              <path d="M286 88c12 11 15 29 6 42-12-11-15-29-6-42Z"/>
+            </g>
           </svg>
-        </div>
-        <h4>Lakeside Ceremony</h4>
-        <p>Exchange vows with stunning lake and mountain views</p>
-      </div>
-      <div class="venue-feature reveal">
-        <div class="feature-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 40V20L24 8L40 20V40H28V28H20V40H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
+        </span>
+        <span class="env-flap-face env-flap-inner"></span>
+      </span>
+
+      <!-- wax seal: two halves so it can part rather than explode -->
+      <span class="env-seal" aria-hidden="true">
+        <span class="env-seal-half env-seal-l">
+          <svg viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+            <use href="#seal-art"></use>
           </svg>
-        </div>
-        <h4>Tented Reception</h4>
-        <p>An elegant tent open to the waters of Whitefish Lake</p>
-      </div>
-      <div class="venue-feature reveal">
-        <div class="feature-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <path d="M24 12V24L32 28" stroke="#8a7968" stroke-width="1.5" stroke-linecap="round"/>
+        </span>
+        <span class="env-seal-half env-seal-r">
+          <svg viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+            <use href="#seal-art"></use>
           </svg>
-        </div>
-        <h4>Weekend Celebration</h4>
-        <p>A full weekend of events with the people we love most</p>
-      </div>
-    </div>
-  </section>
+        </span>
+      </span>
+    </button>
 
-  <!-- Details / Schedule Section -->
-  <section id="details">
-    <div class="section-header reveal">
-      <h2 class="section-title">Wedding Weekend</h2>
-    </div>
-    <div class="timeline container">
-      <div class="timeline-event reveal">
-        <div class="timeline-date">
-          <span class="event-day">Thursday</span>
-          <span class="event-date">June 17</span>
-        </div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-info">
-          <h3>Welcome Gathering</h3>
-          <p>Join us for a casual welcome gathering as our guests arrive in Whitefish. Details to follow.</p>
-        </div>
-      </div>
-      <div class="timeline-event reveal">
-        <div class="timeline-date">
-          <span class="event-day">Friday</span>
-          <span class="event-date">June 18</span>
-        </div>
-        <div class="timeline-dot active"></div>
-        <div class="timeline-info">
-          <h3>The Wedding</h3>
-          <div class="event-detail">
-            <span class="detail-time">4:30 PM</span>
-            <span class="detail-desc">Ceremony on the Lake Lawn</span>
-          </div>
-          <div class="event-detail">
-            <span class="detail-time">5:30 PM</span>
-            <span class="detail-desc">Cocktail Hour</span>
-          </div>
-          <div class="event-detail">
-            <span class="detail-time">7:00 PM</span>
-            <span class="detail-desc">Dinner &amp; Reception</span>
-          </div>
-          <div class="event-detail">
-            <span class="detail-time">Late</span>
-            <span class="detail-desc">Dancing Under the Stars</span>
-          </div>
-        </div>
-      </div>
-      <div class="timeline-event reveal">
-        <div class="timeline-date">
-          <span class="event-day">Saturday</span>
-          <span class="event-date">June 19</span>
-        </div>
-        <div class="timeline-dot"></div>
-        <div class="timeline-info">
-          <h3>Farewell Brunch</h3>
-          <p>One last chance to celebrate before we all head our separate ways. Details to follow.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    <p class="env-hint" id="env-hint">tap to open</p>
+  </div>
+</div>
 
-  <!-- Dress Code -->
-  <section id="dresscode">
-    <div class="dresscode-content container reveal">
-      <h2 class="script-heading">Attire</h2>
-      <p class="dresscode-label">Formal / Black Tie Optional</p>
-      <p class="dresscode-note">Please dress to celebrate. We want our guests to feel elegant and comfortable. Think floor-length gowns and suits or tuxedos. The ceremony and cocktail hour will be outdoors on the lawn, so plan footwear accordingly.</p>
-    </div>
-  </section>
+<!-- Wax-seal artwork, referenced twice above so the two halves stay identical -->
+<svg class="svg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <radialGradient id="wax" cx="38%" cy="30%" r="78%">
+      <stop offset="0%" stop-color="#d59a63"/>
+      <stop offset="44%" stop-color="#b0743f"/>
+      <stop offset="100%" stop-color="#70441f"/>
+    </radialGradient>
+    <g id="seal-art">
+      <circle cx="48" cy="48" r="46" fill="url(#wax)"/>
+      <circle cx="48" cy="48" r="45" fill="none" stroke="#f0c393" stroke-opacity=".34" stroke-width="1.6"/>
+      <circle cx="48" cy="49.6" r="45.4" fill="none" stroke="#3d2109" stroke-opacity=".5" stroke-width="2.4"/>
+      <circle cx="48" cy="48" r="38" fill="none" stroke="#5f3a1a" stroke-opacity=".42" stroke-width="1.1"/>
+      <circle cx="48" cy="48" r="36.6" fill="none" stroke="#f0c393" stroke-opacity=".2" stroke-width=".9"/>
+      <g fill="none" stroke="#3f2109" stroke-opacity=".62" stroke-width="1.7" stroke-linecap="round">
+        <path d="M48 68V32"/>
+        <path d="M48 44c0-6.4 5.2-11.6 11.6-11.6C59.6 38.8 54.4 44 48 44Z"/>
+        <path d="M48 54c0-5.4 4.4-9.8 9.8-9.8C57.8 49.6 53.4 54 48 54Z"/>
+        <path d="M48 44c0-6.4-5.2-11.6-11.6-11.6C36.4 38.8 41.6 44 48 44Z"/>
+        <path d="M48 54c0-5.4-4.4-9.8-9.8-9.8C38.2 49.6 42.6 54 48 54Z"/>
+      </g>
+      <g fill="none" stroke="#f2c896" stroke-opacity=".22" stroke-width="1.7" stroke-linecap="round" transform="translate(0 -1.3)">
+        <path d="M48 68V32"/>
+        <path d="M48 44c0-6.4 5.2-11.6 11.6-11.6C59.6 38.8 54.4 44 48 44Z"/>
+        <path d="M48 54c0-5.4 4.4-9.8 9.8-9.8C57.8 49.6 53.4 54 48 54Z"/>
+        <path d="M48 44c0-6.4-5.2-11.6-11.6-11.6C36.4 38.8 41.6 44 48 44Z"/>
+        <path d="M48 54c0-5.4-4.4-9.8-9.8-9.8C38.2 49.6 42.6 54 48 54Z"/>
+      </g>
+    </g>
+  </defs>
+</svg>
 
-  <!-- Travel Section -->
-  <section id="travel">
-    <div class="section-header reveal">
-      <p class="section-tag">Getting There</p>
-      <h2 class="section-title">Travel &amp; Logistics</h2>
-    </div>
-    <div class="travel-grid container">
-      <div class="travel-card reveal">
-        <div class="travel-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4C20 4 14 8 14 16C14 26 24 44 24 44C24 44 34 26 34 16C34 8 28 4 24 4Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <circle cx="24" cy="16" r="4" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-          </svg>
-        </div>
-        <h3>The Venue</h3>
-        <p class="travel-venue-name">The Lodge at Whitefish Lake</p>
-        <p>1380 Wisconsin Ave<br>Whitefish, MT 59937</p>
-      </div>
-      <div class="travel-card reveal">
-        <div class="travel-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 36L24 4L40 36H8Z" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <path d="M24 36V20" stroke="#8a7968" stroke-width="1.5"/>
-            <path d="M18 28L30 28" stroke="#8a7968" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3>Getting There</h3>
-        <p>Fly into Glacier Park International Airport (FCA), located just 15 minutes from the venue.</p>
-        <p class="travel-tip">We recommend booking flights early. Summer is peak season in Whitefish!</p>
-      </div>
-      <div class="travel-card reveal">
-        <div class="travel-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="8" y="12" width="32" height="24" rx="2" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <path d="M8 20H40" stroke="#8a7968" stroke-width="1.5"/>
-            <path d="M16 28H24" stroke="#8a7968" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3>Where to Stay</h3>
-        <p>We have a room block at The Lodge at Whitefish Lake. Details and booking link coming soon.</p>
-        <p class="travel-tip">There are also many wonderful hotels, vacation rentals, and Airbnbs in the area.</p>
-      </div>
-      <div class="travel-card reveal">
-        <div class="travel-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="16" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <path d="M16 24C16 20 20 16 24 16C28 16 32 20 32 24" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-            <path d="M20 32C20 28 22 26 24 26C26 26 28 28 28 32" stroke="#8a7968" stroke-width="1.5" fill="none"/>
-          </svg>
-        </div>
-        <h3>Things to Do</h3>
-        <p>Whitefish is an outdoor paradise. Hiking, lake activities, golf, and the charming downtown are all within reach. Perfect for extending your trip!</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Registry -->
-  <section id="registry">
-    <div class="registry-content container reveal">
-      <p class="section-tag">Registry</p>
-      <h2 class="script-heading">Gifts</h2>
-      <p>Your presence is the greatest gift. But if you'd like to honor us with something, we've put together a small registry.</p>
-      <a href="#" class="btn-outline">View Our Registry</a>
-    </div>
-  </section>
+<!-- ============================================================
+     2 · THE PAGE
+     ============================================================ -->
+<main id="page" class="page">
 
-  <!-- FAQ Section -->
-  <section id="faq">
-    <div class="section-header reveal">
-      <h2 class="section-title">FAQ</h2>
+  <!-- ---------- HERO ---------- -->
+  <header class="hero" id="hero">
+    <div class="hero-media" aria-hidden="true">
+      <img class="hero-still" id="hero-still" src="images/hero-lake.jpg" alt="" decoding="async" fetchpriority="high">
+      <video class="hero-video" id="hero-video" muted playsinline loop preload="none" tabindex="-1" aria-hidden="true"></video>
     </div>
-    <div class="faq-list container">
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>Can I bring a plus one?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>We've done our best to include everyone's significant others. If your invitation includes a plus one, it will be noted. Due to venue capacity, we kindly ask that only those listed on the invitation attend.</p>
-          </div>
-        </div>
-      </div>
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>Are children welcome?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>While we love your little ones, our wedding will be an adults-only celebration. We hope this gives you a chance to enjoy a night out!</p>
-          </div>
-        </div>
-      </div>
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>What's the weather like in Whitefish in June?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>June in Whitefish is beautiful. Expect warm days (70s to 80s°F) and cooler evenings (50s°F). The ceremony and cocktail hour will be outdoors, so a light layer for the evening is recommended.</p>
-          </div>
-        </div>
-      </div>
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>Is there parking at the venue?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>Yes! The Lodge at Whitefish Lake has complimentary parking on-site. If you're staying at the Lodge, you'll be able to walk to the ceremony and reception.</p>
-          </div>
-        </div>
-      </div>
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>When should I RSVP by?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>Please RSVP by April 18, 2027, two months before the wedding. This helps us finalize all the details to make the weekend perfect for everyone.</p>
-          </div>
-        </div>
-      </div>
-      <div class="faq-item reveal">
-        <button class="faq-question">
-          <span>Will there be transportation?</span>
-          <span class="faq-toggle">+</span>
-        </button>
-        <div class="faq-answer">
-          <div class="faq-answer-inner">
-            <p>We're working on arranging shuttle service between nearby hotels and the venue. More details will be shared closer to the wedding.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-dissolve" aria-hidden="true"></div>
 
-  <!-- RSVP Section -->
-  <section id="rsvp">
-    <div class="rsvp-bg">
-      <img src="images/rsvp-bg.svg" alt="" aria-hidden="true">
+    <div class="hero-type">
+      <h1 class="hero-title">
+        <span class="ht-name" data-config="names.first">Sarah</span><span class="ht-amp" aria-hidden="true">&amp;</span><span class="ht-name" data-config="names.second">Spencer</span>
+      </h1>
+      <img class="hero-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+      <p class="hero-meta">
+        <span class="hero-date" data-config="date.displayUpper">JUNE 12, 2027</span>
+        <span class="hero-place" data-config="location.displayLower">whitefish, montana</span>
+      </p>
     </div>
-    <div class="rsvp-overlay"></div>
-    <div class="rsvp-content">
-      <div class="rsvp-header reveal">
-        <p class="section-tag light">RSVP</p>
-        <h2 class="section-title light">We Can't Wait<br>to Celebrate With You</h2>
-        <p class="rsvp-deadline">Please respond by April 18, 2027</p>
-      </div>
-      <form class="rsvp-form reveal" id="rsvp-form">
-        <div class="form-group">
-          <input type="text" id="guest-name" name="name" required placeholder=" ">
-          <label for="guest-name">Full Name</label>
-        </div>
-        <div class="form-group">
-          <input type="email" id="guest-email" name="email" required placeholder=" ">
-          <label for="guest-email">Email Address</label>
-        </div>
-        <div class="form-group">
-          <select id="attending" name="attending" required>
-            <option value="" disabled selected>Will you be attending?</option>
-            <option value="yes">Joyfully Accepts</option>
-            <option value="no">Regretfully Declines</option>
-          </select>
-        </div>
-        <div class="form-group" id="guest-count-group" style="display:none;">
-          <select id="guest-count" name="guest_count">
-            <option value="1">1 Guest</option>
-            <option value="2">2 Guests</option>
-          </select>
-        </div>
-        <div class="form-group" id="plus-one-group" style="display:none;">
-          <input type="text" id="plus-one-name" name="plus_one_name" placeholder=" ">
-          <label for="plus-one-name">Plus One's Full Name</label>
-        </div>
-        <div class="form-group" id="dietary-group" style="display:none;">
-          <input type="text" id="dietary" name="dietary" placeholder=" ">
-          <label for="dietary">Dietary Restrictions (if any)</label>
-        </div>
-        <div class="form-group">
-          <textarea id="message" name="message" rows="3" placeholder=" "></textarea>
-          <label for="message">Leave us a note (optional)</label>
-        </div>
-        <button type="submit" class="btn-submit">Send RSVP</button>
-      </form>
-      <div class="rsvp-success" id="rsvp-success" style="display:none;">
-        <div class="success-icon">
-          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="32" cy="32" r="28" stroke="#fff" stroke-width="2"/>
-            <path d="M20 32L28 40L44 24" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>Thank You!</h3>
-        <p>Your RSVP has been received. We can't wait to celebrate with you!</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer id="footer">
-    <div class="footer-content">
-      <h2 class="footer-names">Spencer &amp; Sarah</h2>
-      <p class="footer-date">June 18, 2027</p>
-      <p class="footer-location">Whitefish, Montana</p>
-      <div class="footer-divider"></div>
-      <p class="footer-tag">Made with love</p>
+    <div class="hero-actions">
+      <a class="btn-cal" id="add-to-calendar" href="#" download>
+        <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+            <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
+            <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
+          </g>
+        </svg>
+        <span>Add to calendar</span>
+      </a>
     </div>
-  </footer>
 
-  <script src="script.js"></script>
+    <a class="hero-cue" href="#details" aria-label="Continue to the page">
+      <svg viewBox="0 0 24 64" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+          <path class="cue-stem" d="M12 2c0 22-4 30 0 46"/>
+          <path d="M12 22c0-4.4-3.4-8-7.6-8C4.4 18.4 7.8 22 12 22Z"/>
+          <path d="M12 34c0-4 3.1-7.3 7-7.3C19 30.7 15.9 34 12 34Z"/>
+        </g>
+        <circle class="cue-tip" cx="12" cy="50" r="1.8" fill="currentColor"/>
+      </svg>
+    </a>
+  </header>
+
+  <!-- ---------- PAPER ---------- -->
+  <div class="paper">
+
+    <!-- One botanical thread ties the page together. Drawn by scroll.
+         Two path variants: the wide one loops, the narrow one hugs the
+         edge on phones. Geometry generated by tools/make-botanicals.js. -->
+    <div class="vine-track" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 2400" class="vine vine-wide" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMin meet">
+        <path class="vine-stem" d="M100 0C100 140 60 224 46 322C32 420 72 470 116 452C150 438 152 392 120 384C82 374 58 420 66 478C80 580 150 640 160 762C170 884 96 950 60 1052C24 1154 60 1242 120 1230C168 1220 176 1166 140 1150C104 1134 66 1180 72 1252C82 1382 150 1470 150 1602C150 1734 70 1812 56 1932C44 2038 84 2122 120 2202C142 2252 150 2322 146 2400"/>
+        <g class="vine-leaves">
+          <g data-at="0.055" transform="translate(81.19 163.74) rotate(158.4)"><path d="M0 0C3.41 -5.89 11.16 -5.89 15.50 0C11.16 5.89 3.41 5.89 0 0Z"/></g>
+          <g data-at="0.1" transform="translate(50.46 295.32) rotate(-19.3)"><path d="M0 0C2.64 -4.56 8.64 -4.56 12.00 0C8.64 4.56 2.64 4.56 0 0Z"/></g>
+          <g data-at="0.245" transform="translate(67.97 490.19) rotate(139.4)"><path d="M0 0C3.08 -5.32 10.08 -5.32 14.00 0C10.08 5.32 3.08 5.32 0 0Z"/></g>
+          <g data-at="0.3" transform="translate(128.63 643.28) rotate(-57.3)"><path d="M0 0C2.42 -4.18 7.92 -4.18 11.00 0C7.92 4.18 2.42 4.18 0 0Z"/></g>
+          <g data-at="0.375" transform="translate(148.57 862.53) rotate(165.7)"><path d="M0 0C3.30 -5.7 10.80 -5.7 15.00 0C10.80 5.70 3.30 5.70 0 0Z"/></g>
+          <g data-at="0.47" transform="translate(45.7 1126.17) rotate(-26.7)"><path d="M0 0C2.75 -4.75 9.00 -4.75 12.50 0C9.00 4.75 2.75 4.75 0 0Z"/></g>
+          <g data-at="0.61" transform="translate(73.65 1268.97) rotate(143.3)"><path d="M0 0C3.19 -5.51 10.44 -5.51 14.50 0C10.44 5.51 3.19 5.51 0 0Z"/></g>
+          <g data-at="0.68" transform="translate(129.09 1471.34) rotate(-48.4)"><path d="M0 0C2.53 -4.37 8.28 -4.37 11.50 0C8.28 4.37 2.53 4.37 0 0Z"/></g>
+          <g data-at="0.755" transform="translate(137.05 1693.21) rotate(161.7)"><path d="M0 0C3.30 -5.7 10.80 -5.7 15.00 0C10.80 5.70 3.30 5.70 0 0Z"/></g>
+          <g data-at="0.845" transform="translate(54.49 1949.25) rotate(-26.5)"><path d="M0 0C2.64 -4.56 8.64 -4.56 12.00 0C8.64 4.56 2.64 4.56 0 0Z"/></g>
+          <g data-at="0.93" transform="translate(116.37 2193.95) rotate(125.7)"><path d="M0 0C2.97 -5.13 9.72 -5.13 13.50 0C9.72 5.13 2.97 5.13 0 0Z"/></g>
+        </g>
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 2400" class="vine vine-narrow" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMin meet">
+        <path class="vine-stem" d="M40 0C40 150 16 244 16 352C16 442 56 482 68 422C74 390 46 380 36 410C24 450 34 522 48 602C64 702 20 792 18 912C16 1032 58 1092 66 1202C74 1312 26 1402 24 1522C22 1642 62 1702 66 1822C70 1942 32 2052 34 2182C35 2292 40 2352 44 2400"/>
+        <g class="vine-leaves">
+          <g data-at="0.07" transform="translate(29.29 179.67) rotate(154.0)"><path d="M0 0C2.31 -3.99 7.56 -3.99 10.50 0C7.56 3.99 2.31 3.99 0 0Z"/></g>
+          <g data-at="0.13" transform="translate(16.23 333.41) rotate(-28.6)"><path d="M0 0C1.87 -3.23 6.12 -3.23 8.50 0C6.12 3.23 1.87 3.23 0 0Z"/></g>
+          <g data-at="0.265" transform="translate(36.22 527.24) rotate(142.5)"><path d="M0 0C2.20 -3.8 7.20 -3.8 10.00 0C7.20 3.80 2.20 3.80 0 0Z"/></g>
+          <g data-at="0.36" transform="translate(36.02 769.34) rotate(-21.3)"><path d="M0 0C1.76 -3.04 5.76 -3.04 8.00 0C5.76 3.04 1.76 3.04 0 0Z"/></g>
+          <g data-at="0.47" transform="translate(35.39 1049.46) rotate(134.0)"><path d="M0 0C2.31 -3.99 7.56 -3.99 10.50 0C7.56 3.99 2.31 3.99 0 0Z"/></g>
+          <g data-at="0.58" transform="translate(55.11 1328.26) rotate(-18.6)"><path d="M0 0C1.87 -3.23 6.12 -3.23 8.50 0C6.12 3.23 1.87 3.23 0 0Z"/></g>
+          <g data-at="0.7" transform="translate(34.44 1633.41) rotate(136.9)"><path d="M0 0C2.20 -3.8 7.20 -3.8 10.00 0C7.20 3.80 2.20 3.80 0 0Z"/></g>
+          <g data-at="0.82" transform="translate(59.16 1938.82) rotate(-22.7)"><path d="M0 0C1.87 -3.23 6.12 -3.23 8.50 0C6.12 3.23 1.87 3.23 0 0Z"/></g>
+          <g data-at="0.915" transform="translate(34 2181.63) rotate(149.4)"><path d="M0 0C2.09 -3.61 6.84 -3.61 9.50 0C6.84 3.61 2.09 3.61 0 0Z"/></g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ---------- FORM ---------- -->
+    <section class="sheet form-sheet" id="details" aria-labelledby="form-heading">
+      <div class="sheet-inner">
+        <p class="eyebrow">Save the date</p>
+        <h2 class="sheet-title" id="form-heading">Stay in the loop</h2>
+        <p class="sheet-lede">Leave us your details and we'll make sure the invitation
+          and weekend plans find you.</p>
+
+        <form class="gform" id="guest-form" novalidate>
+          <div class="field">
+            <label for="g-name">Full name</label>
+            <input id="g-name" name="name" type="text" autocomplete="name"
+                   required aria-describedby="g-name-err" enterkeyhint="next">
+            <p class="field-err" id="g-name-err" role="alert" hidden></p>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="g-email">Email</label>
+              <input id="g-email" name="email" type="email" autocomplete="email"
+                     inputmode="email" required aria-describedby="g-email-err" enterkeyhint="next">
+              <p class="field-err" id="g-email-err" role="alert" hidden></p>
+            </div>
+            <div class="field">
+              <label for="g-phone">Mobile number</label>
+              <input id="g-phone" name="phone" type="tel" autocomplete="tel"
+                     inputmode="tel" required aria-describedby="g-phone-err" enterkeyhint="next">
+              <p class="field-err" id="g-phone-err" role="alert" hidden></p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="g-address">Mailing address</label>
+            <textarea id="g-address" name="address" rows="2" autocomplete="street-address"
+                      required aria-describedby="g-address-hint g-address-err"
+                      enterkeyhint="done"></textarea>
+            <p class="field-hint" id="g-address-hint">Street, city, state, ZIP — however you'd write it on a letter.</p>
+            <p class="field-err" id="g-address-err" role="alert" hidden></p>
+          </div>
+
+          <!-- Simple bot trap. Real guests never see or fill this. -->
+          <div class="hp" aria-hidden="true">
+            <label for="g-company">Company</label>
+            <input id="g-company" name="company" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <button class="btn-send" type="submit" id="guest-submit">
+            <span class="btn-send-label">Send our details</span>
+          </button>
+
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="form-done" id="form-done" hidden>
+          <img class="done-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+          <p class="done-line">Thank you — you're all set.</p>
+          <p class="done-sub">We'll be in touch well before June.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PHOTOS ---------- -->
+    <section class="sheet photo-sheet" aria-label="A few photographs">
+      <div class="photo-art">
+        <figure class="ph ph-1" data-photo="0">
+          <span class="ph-frame"></span>
+        </figure>
+        <figure class="ph ph-2" data-photo="1">
+          <span class="ph-frame"></span>
+        </figure>
+        <figure class="ph ph-3" data-photo="2">
+          <span class="ph-frame"></span>
+        </figure>
+      </div>
+
+    </section>
+
+    <!-- ---------- END ---------- -->
+    <footer class="sheet end-sheet">
+      <img class="end-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+      <p class="end-names" data-config="couple">Sarah &amp; Spencer</p>
+      <p class="end-meta">
+        <span data-config="date.display">June 12, 2027</span>
+        <span class="end-dot" aria-hidden="true">·</span>
+        <span data-config="location.display">Whitefish, Montana</span>
+      </p>
+      <p class="end-note">Formal invitation and weekend details to follow.</p>
+    </footer>
+
+  </div><!-- /paper -->
+</main>
+
+<!-- Ambient lake audio. Only ever started by the envelope tap. -->
+<audio id="ambient" loop preload="none" playsinline></audio>
+<button type="button" id="audio-toggle" class="audio-toggle" hidden
+        aria-pressed="false" aria-label="Turn on ambient lake sound">
+  <svg class="ico-on" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
+      <path d="M13.6 8.2a4 4 0 0 1 0 5.6M16.1 5.8a7.4 7.4 0 0 1 0 10.4"/>
+    </g>
+  </svg>
+  <svg class="ico-off" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
+      <path d="M13.8 8.8l4.4 4.4M18.2 8.8l-4.4 4.4"/>
+    </g>
+  </svg>
+</button>
+
 </body>
 </html>
