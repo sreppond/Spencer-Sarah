@@ -14,14 +14,22 @@ index.html                     the whole public experience
 assets/js/config.js            ← names, date, place, asset paths, form endpoint
 assets/js/save-the-date.js     envelope, hero, audio, vine, form
 assets/css/save-the-date.css
-assets/typography/             botanical divider + the two vine paths
+assets/typography/             the hero lettering + vines (see its README)
 assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card
 assets/photos/                 the photo journey (see its README)
 assets/video/                  Higgsfield hero loop goes here (see its README)
 assets/audio/                  ambient lake loop goes here (see its README)
 images/hero-lake.jpg           the source painting; hero poster + OG source
-tools/                         regenerate the OG card and the vine artwork
+images/IMG_3091.png            the comp the hero typography was lifted from
+tools/                         regenerate the OG card, the vines, the lettering
 ```
+
+**One exception to config-driven content:** the hero title, divider and
+date/place block are vector artwork traced out of `images/IMG_3091.png`, not
+live text — the comp's lettering does not resolve to any one font. Changing a
+name or the date means re-running `tools/extract-typography.py` and updating
+`config.baked`; the page warns on localhost until you do. Full story in
+`assets/typography/README.md`.
 
 **Change anything here first:** `assets/js/config.js`. It is the single source
 of truth for the couple's names, the date, the location, every asset path and

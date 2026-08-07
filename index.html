@@ -43,6 +43,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="images/hero-lake.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="assets/typography/sarah-spencer-exact-title.svg" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/save-the-date.css">
 
@@ -188,14 +189,22 @@
     <div class="hero-scrim" aria-hidden="true"></div>
     <div class="hero-dissolve" aria-hidden="true"></div>
 
+    <!-- The hero lettering is artwork, not live text. It was traced out of
+         the painted reference by tools/extract-typography.py, so the exact
+         letterforms, the gold ampersand and the sprig survive at any size.
+         The alt strings are the readable copy and config.js drives them —
+         see assets/typography/README.md before changing any of this. -->
     <div class="hero-type">
       <h1 class="hero-title">
-        <span class="ht-name" data-config="names.first">Sarah</span><span class="ht-amp" aria-hidden="true">&amp;</span><span class="ht-name" data-config="names.second">Spencer</span>
+        <img class="hero-title-art" src="assets/typography/sarah-spencer-exact-title.svg"
+             alt="Sarah &amp; Spencer" data-config-alt="couple"
+             width="1003" height="93" fetchpriority="high" decoding="async">
       </h1>
-      <img class="hero-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+      <img class="hero-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30" decoding="async">
       <p class="hero-meta">
-        <span class="hero-date" data-config="date.displayUpper">JUNE 12, 2027</span>
-        <span class="hero-place" data-config="location.displayLower">whitefish, montana</span>
+        <img class="hero-meta-art" src="assets/typography/event-meta-exact.svg"
+             alt="June 12, 2027 — Whitefish, Montana" data-hero-meta-alt
+             width="240" height="59" decoding="async">
       </p>
     </div>
 
@@ -316,7 +325,7 @@
         </form>
 
         <div class="form-done" id="form-done" hidden>
-          <img class="done-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+          <img class="done-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
           <p class="done-line">Thank you — you're all set.</p>
           <p class="done-sub">We'll be in touch well before June.</p>
         </div>
@@ -341,7 +350,7 @@
 
     <!-- ---------- END ---------- -->
     <footer class="sheet end-sheet">
-      <img class="end-divider" src="assets/typography/botanical-divider.svg" alt="" aria-hidden="true" width="322" height="30">
+      <img class="end-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="end-names" data-config="couple">Sarah &amp; Spencer</p>
       <p class="end-meta">
         <span data-config="date.display">June 12, 2027</span>

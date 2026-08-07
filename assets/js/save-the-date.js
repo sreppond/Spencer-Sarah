@@ -42,6 +42,45 @@
       }
       el.textContent = value;
     });
+
+    /* The hero lettering is baked artwork, so its alt text is the only
+       readable copy there is. Keep it driven by config all the same. */
+    $$('[data-config-alt]').forEach(function (el) {
+      var value = pick(el.getAttribute('data-config-alt'));
+      if (typeof value === 'string' && value) el.alt = value;
+    });
+
+    var metaArt = $('[data-hero-meta-alt]');
+    if (metaArt && CFG.date && CFG.location) {
+      metaArt.alt = CFG.date.display + ' — ' + CFG.location.display;
+    }
+
+    warnIfArtworkIsStale();
+  }
+
+
+  /* The hero title, divider and metadata were traced out of the painted
+     reference and cannot re-typeset themselves. config.baked records what
+     that artwork actually says, so changing a name in config.js without
+     re-running tools/extract-typography.py is loud rather than silent. */
+  function warnIfArtworkIsStale() {
+    if (!/localhost|127\.0\.0\.1/.test(location.hostname)) return;
+    var baked = CFG.baked;
+    if (!baked) return;
+    [
+      ['couple', CFG.couple],
+      ['date', CFG.date && CFG.date.display],
+      ['location', CFG.location && CFG.location.display]
+    ].forEach(function (pair) {
+      if (baked[pair[0]] && pair[1] && baked[pair[0]] !== pair[1]) {
+        console.warn(
+          '[save-the-date] the hero artwork still reads "' + baked[pair[0]] +
+          '" but config.js now says "' + pair[1] + '". Re-run ' +
+          'tools/extract-typography.py (or redraw the assets) and update ' +
+          'config.baked.' + pair[0] + '.'
+        );
+      }
+    });
   }
 
 

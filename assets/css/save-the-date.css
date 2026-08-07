@@ -432,67 +432,41 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   pointer-events: none;
 }
 
+/* The three hero pieces are artwork traced from the painted reference, so
+   they are sized by width alone and always keep their own aspect ratio.
+   Widths are the measured reference proportions: the title spans the whole
+   1003px composition, the divider is 322/1003 of it, the metadata 240/1003.
+   Nothing here may set fill, stroke, filter or a text property — that would
+   fight the artwork. There is deliberately no shadow or glow: the reference
+   has none, and .hero-scrim already lifts the sky behind the lettering. */
 .hero-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  white-space: nowrap;
-  font-weight: 400;
-  font-size: min(6.85vw, 99px);
-  line-height: 1;
-  color: var(--ink);
-  text-shadow: 0 0 26px rgba(250,246,238,.6), 0 0 8px rgba(250,246,238,.45);
+  display: block;
+  width: 100%;
+  line-height: 0;
 }
-.ht-name {
-  text-transform: uppercase;
-  letter-spacing: .22em;
-  transform: scaleX(.88);
-  transform-origin: center;
-}
-.ht-amp {
-  font-style: italic;
-  font-size: 1.02em;
-  letter-spacing: 0;
-  color: var(--gold);
-  margin: 0 -.06em;
-  transform: translateY(.02em);
-  text-shadow: 0 0 20px rgba(250,246,238,.55);
+.hero-title-art {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .hero-divider {
-  width: 32.1%;
+  display: block;
+  width: 32.1%;            /* 322 / 1003 */
   height: auto;
   margin-top: clamp(14px, 2.14vw, 31px);
-  opacity: .95;
 }
 
 .hero-meta {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin-top: clamp(10px, 1.45vw, 21px);
+  line-height: 0;
 }
-.hero-date {
-  font-size: min(1.588vw, 23px);
-  font-weight: 500;
-  letter-spacing: .39em;
-  text-indent: .39em;
-  text-transform: uppercase;
-  color: var(--date);
-  white-space: nowrap;
-  text-shadow: 0 0 16px rgba(250,246,238,.7);
-}
-.hero-place {
-  margin-top: .55em;
-  font-size: min(1.865vw, 27px);
-  font-weight: 300;
-  font-style: italic;
-  letter-spacing: .12em;
-  text-indent: .12em;
-  color: var(--stone);
-  white-space: nowrap;
-  text-shadow: 0 0 16px rgba(250,246,238,.7);
+.hero-meta-art {
+  display: block;
+  width: 23.93%;           /* 240 / 1003 */
+  height: auto;
+  margin-inline: auto;
 }
 
 /* --- hero actions --- */
@@ -970,12 +944,13 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 @media (max-width: 767px) {
   .hero-still, .hero-video { object-position: 74% 50%; }
 
+  /* The phone hero is not the reference 4:3 crop, so the composition opens
+     up: the divider and the metadata grow against the title to stay legible.
+     They grow together — 240/322 is the reference ratio between them. */
   .hero-type { top: 24.5%; width: min(84%, 1003px); }
-  .hero-title { font-size: min(7.9vw, 44px); }
-  .hero-date  { font-size: clamp(9.5px, 2.6vw, 12px); }
-  .hero-place { font-size: clamp(11px, 3.15vw, 15px); }
   .hero-divider { width: 46%; margin-top: 1.1rem; }
   .hero-meta { margin-top: .85rem; }
+  .hero-meta-art { width: 34.3%; }   /* 46% x 240/322 */
 
   .hero-scrim {
     background: radial-gradient(ellipse 82% 24% at 50% 31%,

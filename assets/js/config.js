@@ -31,6 +31,21 @@ window.SAVE_THE_DATE = {
     icsLocation: 'The Lodge at Whitefish Lake, 1380 Wisconsin Ave, Whitefish, MT 59937'
   },
 
+  /* ---- What the hero artwork actually says ------------------
+     The hero title, divider and date/place block are vector artwork
+     traced out of the painted reference — they are not live text and
+     cannot re-typeset themselves when the strings above change.
+     This block records what the artwork depicts. If it drifts from the
+     values above, the page says so in the console on localhost.
+     To change it for real: edit the strings above, then re-run
+     tools/extract-typography.py and update these to match.
+     See assets/typography/README.md. */
+  baked: {
+    couple: 'Sarah & Spencer',
+    date: 'June 12, 2027',
+    location: 'Whitefish, Montana'
+  },
+
   /* ---- Canonical URL (used for Open Graph + the .ics UID) --- */
   siteUrl: 'https://sreppond.github.io/Spencer-Sarah/',
 
