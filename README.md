@@ -57,7 +57,10 @@ treatment, because touch and keyboard never hover.
 
 **The page is five beats, in this order:** the envelope, the hero (names,
 date, and one instruction — "Scroll for detail"), the invitation line, the
-mosaic, then the form. Nothing competes with the invitation on the first
+mosaic, then the form. The hero is exactly one screen and scrolls away like
+one — there is no sticky runway and no scroll-driven parallax. It had both,
+and it read as the page refusing to move; the transition into the paper is
+now just the static dissolve the painting carries at its foot. Nothing competes with the invitation on the first
 screen; the lodging ask waits until the last screen of the form, where it
 lands on someone who has just told us they are coming.
 
