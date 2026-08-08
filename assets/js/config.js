@@ -64,7 +64,10 @@ window.SAVE_THE_DATE = {
     heroPoster: 'assets/video/whitefish-hero-poster.jpg',
     heroVideo: 'assets/video/whitefish-hero-loop.mp4',
     heroVideoMobile: 'assets/video/whitefish-hero-loop-mobile.mp4', // optional portrait crop
-    ambientAudio: 'assets/audio/lake-waves-loop.mp3',
+    /* Ambient bed. Mastered to -18 LUFS so the 0.16 gain below lands it
+       around -34 LUFS in the room. Rebuild it with tools/make-ambient-loop.sh
+       rather than dropping a raw clip in — see assets/audio/README.md. */
+    ambientAudio: 'assets/audio/whitefish-ambience-loop.mp3',
     socialPreview: 'assets/img/social-preview.jpg'
   },
 

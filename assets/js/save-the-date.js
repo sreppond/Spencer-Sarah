@@ -348,7 +348,7 @@
 
 
   /* ------------------------------------------------------------------
-     Ambient lake audio
+     Ambient audio
      ------------------------------------------------------------------ */
   var audio = $('#ambient');
   var toggle = $('#audio-toggle');
@@ -393,7 +393,7 @@
   function setPressed(on) {
     if (!toggle) return;
     toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-    toggle.setAttribute('aria-label', on ? 'Turn off ambient lake sound' : 'Turn on ambient lake sound');
+    toggle.setAttribute('aria-label', on ? 'Turn off ambient sound' : 'Turn on ambient sound');
   }
 
   function revealAudioToggle() {
