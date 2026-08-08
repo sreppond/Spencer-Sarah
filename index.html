@@ -49,14 +49,24 @@
      only the large display lines. EB Garamond is a true text face and takes
      every word a guest actually has to read. See CSS §0. -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/save-the-date.css">
+<!-- ?v= is a cache buster, and it is not optional.
+     GitHub Pages serves every file with its own long-lived cache entry, so a
+     returning guest can pick up a new index.html while still holding the old
+     stylesheet and script — which renders the new markup with rules that no
+     longer exist for it. That is not a subtle degradation: the buttons lose
+     their shape and fall back to blue underlined links, and the arrow SVGs
+     become full-size black triangles down the middle of the painting.
+
+     BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
+     The date is only a convention — any value the browser has not seen works. -->
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260808">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
 <script>document.documentElement.className += ' js';</script>
 
-<script defer src="assets/js/config.js"></script>
-<script defer src="assets/js/save-the-date.js"></script>
+<script defer src="assets/js/config.js?v=20260808"></script>
+<script defer src="assets/js/save-the-date.js?v=20260808"></script>
 </head>
 
 <body>

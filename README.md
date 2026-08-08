@@ -31,6 +31,14 @@ name or the date means re-running `tools/extract-typography.py` and updating
 `config.baked`; the page warns on localhost until you do. Full story in
 `assets/typography/README.md`.
 
+**Bump `?v=` in `index.html` whenever the CSS or JS changes.** Both are loaded
+with a `?v=<date>` token. GitHub Pages gives every file its own cache entry, so
+without it a returning guest can get the new `index.html` while still holding
+the old stylesheet — the buttons lose their shape and fall back to blue
+underlined links, and the arrow SVGs render as full-size black triangles over
+the painting. It looks broken, not stale, which makes it easy to misdiagnose as
+a bad deploy.
+
 **Two fonts, and they are not interchangeable.** Cormorant Garamond is a
 display cut with a very small x-height — it is the large lines only
 (`--font-display`: section titles, step labels, the end card). Every word a
