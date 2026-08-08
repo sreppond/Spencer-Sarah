@@ -1218,13 +1218,25 @@ html.js [data-hero-layer="3"] { transform: translateY(calc(var(--hero-p) * 9%));
   color: var(--gold-text);
 }
 
-/* It rises as it arrives, like everything else that enters on scroll. */
-html.js .celebrate {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 1s var(--ease-reveal), transform 1.1s var(--ease-reveal);
+/* It rises as it arrives, like everything else that enters on scroll —
+   but a word at a time, so the sentence assembles rather than appears.
+   The .word spans are wrapped by JS; the three knobs below are the whole
+   feel of it, and --word-i (set per span) is the word's place in line. */
+.celebrate {
+  --word-rise: 20px;
+  --word-duration: .7s;
+  --word-stagger: 65ms;
 }
-html.js .celebrate.is-in { opacity: 1; transform: none; }
+html.js .celebrate .word {
+  display: inline-block;      /* translateY needs a block box */
+  opacity: 0;
+  transform: translateY(var(--word-rise));
+  transition:
+    opacity   var(--word-duration) var(--ease-reveal),
+    transform var(--word-duration) var(--ease-reveal);
+  transition-delay: calc(var(--word-i, 0) * var(--word-stagger));
+}
+html.js .celebrate.is-in .word { opacity: 1; transform: none; }
 
 
 /* ==========================================================================
@@ -2109,8 +2121,8 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .step-dot.is-done::after, .done-mark::after { animation: none; }
   .step-dot.is-current { transform: none; }
 
-  /* The invitation line is simply there. */
-  html.js .celebrate { opacity: 1; transform: none; }
+  /* The invitation line is simply there — every word, at once, in place. */
+  html.js .celebrate .word { opacity: 1; transform: none; transition: none; }
 
   /* The mosaic is assembled, not assembling: --mosaic-p pinned at 1 puts
      every card at its final position, the runway collapses to one screen,

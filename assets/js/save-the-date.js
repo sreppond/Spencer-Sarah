@@ -437,11 +437,46 @@
 
 
   /* ------------------------------------------------------------------
-     The invitation line rises as it arrives.
+     The invitation line rises as it arrives, one word after another.
+
+     The words are wrapped here rather than written into index.html so the
+     markup stays a sentence a human can edit. Two things this must not
+     break, both of them CSS §3.5:
+
+       · the <em> is display:block and carries the second line, so we walk
+         the child nodes and wrap in place rather than flattening
+         textContent, which would throw the element away;
+       · the words are rejoined with ordinary spaces, never non-breaking
+         ones — .celebrate is a 20ch measure that has to wrap to three
+         lines on a phone, and nbsp would make it one unbreakable run.
+
+     Each span carries --word-i, its place in the line; the stagger is the
+     stylesheet's business, not ours.
      ------------------------------------------------------------------ */
   (function celebrate() {
     var el = $('.celebrate');
     if (!el) return;
+
+    var count = 0;
+    (function wrapWords(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 1) { wrapWords(child); return; }   /* the em */
+        if (child.nodeType !== 3 || !child.nodeValue.trim()) return;
+
+        var frag = document.createDocumentFragment();
+        child.nodeValue.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          var span = document.createElement('span');
+          span.className = 'word';
+          span.style.setProperty('--word-i', String(count++));
+          span.textContent = part;
+          frag.appendChild(span);
+        });
+        node.replaceChild(frag, child);
+      });
+    }(el));
+
     if (reduced || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
