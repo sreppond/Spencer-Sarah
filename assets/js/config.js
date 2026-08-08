@@ -105,11 +105,6 @@ window.SAVE_THE_DATE = {
       src: 'assets/photos/couple-02.jpg',
       alt: 'Sarah and Spencer',
       caption: ''
-    },
-    {
-      src: 'assets/photos/whitefish-lake.jpg',
-      alt: 'Watercolour of the shoreline and marina at Whitefish Lake',
-      caption: ''
     }
   ],
 
