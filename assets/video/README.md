@@ -7,7 +7,7 @@ needed to swap a file.
 | --- | --- | --- |
 | `whitefish-hero-loop.mp4` | **shipped** | 1664×1248 (4:3), 12.04s, 24fps, H.264 High, no audio track, `+faststart`. 4.3 MB. |
 | `whitefish-hero-poster.jpg` | **shipped** | The loop's own frame 0. See below — this is not interchangeable with `images/hero-lake.jpg`. |
-| `whitefish-hero-loop-mobile.mp4` | optional | Portrait crop of the same loop. Served automatically below 768px when present. |
+| `whitefish-hero-loop-mobile.mp4` | optional, **not cut yet** | Portrait crop of the same loop. Served below 768px once it exists *and* `config.media.heroVideoMobile` names it. Leave that config value empty until then — see below. |
 
 If the video is ever missing the hero falls back to the poster and the page
 still looks finished — a missing file, a refused autoplay and an unsupported
@@ -95,3 +95,13 @@ it at the same URL.
 (low power mode, data saver) it retries once on the first interaction. The
 video only fades in on the `playing` event, so a slow or refused start is
 invisible — the still simply stays. A missing file is handled the same way.
+
+The sources are a list, tried in order, and `heroVideo` is always the last
+entry: below 768px the portrait crop is tried first, and anything that errors
+— missing file, unsupported codec — steps to the next source rather than
+giving up. That ordering matters because a 404 is still a response, so the
+element cannot tell "not cut yet" from "broken"; before the fallback existed,
+naming an uncut crop in `config.media.heroVideoMobile` left every guest on a
+phone looking at a dead still. Prefer leaving that value empty until the file
+actually ships — the fallback is a safety net, not a reason to point at
+nothing.
