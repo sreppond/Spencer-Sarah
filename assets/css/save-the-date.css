@@ -71,8 +71,19 @@
   /* the reveal easing: a long, slow settle with no overshoot */
   --ease-reveal: cubic-bezier(.22, 1, .36, 1);
 
-  /* how far down the hero the painting starts dissolving into paper */
+  /* How far down the hero the painting starts dissolving into paper.
+     This is the *static* dissolve — the one used wherever the ivory can
+     never arrive on scroll instead (no JS, no sticky runway, reduced
+     motion). Where the scroll hand-off does run, it is pushed almost to
+     the bottom edge (see the `overflow-x: clip` block in §2) so the
+     painting is whole until the guest actually starts scrolling. */
   --hero-fade-start: 76%;
+
+  /* 0 → 1: how much of the ivory at the foot of the painting is present.
+     The default is 1 — fully there, from the first paint — because with
+     no JS there is no --hero-p to bring it in and the picture would meet
+     the paper on a cut edge. html.js hands it over to the scroll. */
+  --hero-ivory: 1;
 
   /* Where the name/date/actions group centres in the viewport. Deliberately
      below middle: it leaves the clouds and the mountain line — the only
@@ -469,6 +480,14 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 @supports (overflow-x: clip) {
   :root { --hero-runway: 118svh; }
   @supports not (height: 100svh) { :root { --hero-runway: 118vh; } }
+
+  /* This is the one configuration where the ivory genuinely arrives on
+     scroll — sticky runway present, JS writing --hero-p — so it is the
+     one configuration allowed to hold the dissolve back. What is left at
+     rest is a hairline feather at the very bottom edge, small enough to
+     read as the edge of the paper rather than as a wash, and there only
+     so a stale runway measurement can never expose a cut edge. */
+  html.js { --hero-fade-start: 97%; }
 }
 
 /* Exactly the visible screen, and deliberately no min-height: a sticky pane
@@ -568,13 +587,18 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 }
 
 /* Fallback dissolve for engines without mask-image, plus a soft warm bloom
-   at the join in every engine. */
+   at the join in every engine. Like the mask above it, it is held at zero
+   until the guest scrolls wherever something else can bring it in —
+   --hero-ivory is what decides that, and it is 1 by default. */
 .hero-dissolve {
   position: absolute;
   left: 0; right: 0; bottom: -1px;
   height: 34%;
   z-index: 2;
   pointer-events: none;
+  /* full strength where this layer *is* the dissolve; halved where the
+     mask is doing the real work and this is only the warm bloom */
+  --dissolve-peak: 1;
   background: linear-gradient(to bottom,
       rgba(247,242,233,0) 0%,
       rgba(247,242,233,.03) 22%,
@@ -587,8 +611,9 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
       rgba(247,242,233,1)  100%);
 }
 @supports (mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000)) {
-  .hero-dissolve { opacity: .5; }
+  .hero-dissolve { --dissolve-peak: .5; }
 }
+.hero-dissolve { opacity: calc(var(--dissolve-peak) * var(--hero-ivory)); }
 
 /* The ivory that climbs over the painting on scroll. It starts as nothing,
    so at rest the artwork is completely untouched; by the end of the runway
@@ -991,10 +1016,19 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
    JS writes it from a rAF-throttled scroll listener and touches nothing
    else, so the whole hand-off stays on the compositor.
 
-     0 → ~20%   copy lifts and begins to go
-     ~20 → 60%  copy finishes leaving, ivory starts to climb
-     ~60 → 100% ivory takes the lower painting and meets the next section
+     0          the painting is whole, top to bottom, and there is no ivory
+     0 → ~30%   copy lifts and begins to go; the warm bloom at the foot arrives
+     ~30 → 60%  copy finishes leaving, ivory starts to climb
+     ~60 → 92%  ivory takes the lower painting and meets the next section
    The painting itself never moves and never scales. */
+
+/* With JS driving the hand-off, the ivory at the foot of the painting is
+   no longer a fixture — it belongs to the scroll. Only opacity reads it,
+   so this stays a compositor-level change; the mask under it is static by
+   design, because re-resolving a twelve-stop gradient every frame is a
+   repaint of the whole picture. */
+html.js .hero { --hero-ivory: clamp(0, calc(var(--hero-p) * 1.9), 1); }
+
 .hero-content {
   opacity: clamp(0, calc(1 - var(--hero-p) * 1.7), 1);
   transform:
@@ -1003,8 +1037,13 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
   will-change: opacity, transform;
 }
 .hero.is-scrolling .hero-cue { opacity: clamp(0, calc(.85 - var(--hero-p) * 5), .85); }
+/* The wash is now the whole of the ivory rather than the last coat on top
+   of a dissolve that was already there, so it is given the run of the
+   runway instead of finishing early: it waits until the copy is properly
+   on its way out (.28) and is not solid until .92, a hair before the
+   sticky pane lets go and the paper below comes up to meet it. */
 .hero-wash {
-  opacity: clamp(0, calc((var(--hero-p) - .18) * 1.55), 1);
+  opacity: clamp(0, calc((var(--hero-p) - .28) * 1.56), 1);
   transform: translateY(calc((1 - var(--hero-p)) * 10%));
   will-change: opacity, transform;
 }
@@ -1997,8 +2036,14 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   /* The hero arrives whole. No stagger, no lift, no sticky hand-off —
      the runway collapses to one screen and the painting simply meets the
      paper on the dissolve it already had. Everything stays readable the
-     instant it is on screen. */
+     instant it is on screen.
+
+     "The dissolve it already had" is the static one: with the runway gone
+     there is no --hero-p to bring the ivory in on scroll, so both the mask
+     and the bloom are handed back their resting values. */
   .hero { height: 100svh; --hero-p: 0 !important; }
+  html.js { --hero-fade-start: 76%; }
+  html.js .hero { --hero-ivory: 1; }
   .hero-viewport { position: relative; }
   .hero-media,
   .hero-title,
