@@ -608,7 +608,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 
 /* .hero-wash and the three .hero-layer planes are gone with the parallax —
    the dissolve at the foot of the painting does the whole hand-off now. The
-   plane artwork and tools/make-parallax-layers.py are still in the repo. */
+   plane artwork and its generator were deleted with them. */
 
 /* --- hero content group --------------------------------------------------
    Names, divider, date/place and the two actions travel as one block,
