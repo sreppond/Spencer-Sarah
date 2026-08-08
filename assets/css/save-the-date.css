@@ -86,9 +86,9 @@
   --hero-ivory: 1;
 
   /* How the 4:3 artwork is framed inside a viewport that is never 4:3.
-     One token, because the still, the video and the three parallax planes
-     must crop identically or the planes slide out of register with the
-     picture they were cut from — see §8 for what the numbers are doing. */
+     One token rather than a value repeated per breakpoint: the still and
+     the video must crop identically or the poster jumps the moment the
+     loop fades in over it — see §8 for what the numbers are doing. */
   --hero-framing: 50% 46%;
 
   /* Where the name/date/actions group centres in the viewport. Deliberately
@@ -542,36 +542,17 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
    under §2.1. No transform, no scale, no Ken Burns: the loop already
    contains its own camera and a second one would fight it. */
 .hero-still,
-.hero-video,
-.hero-layer {
+.hero-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: var(--hero-framing);
+  background: var(--paper-deep);
 }
-.hero-still,
-.hero-video { background: var(--paper-deep); }
 .hero-video { opacity: 0; transition: opacity 1.2s var(--ease-soft); }
 .hero-video.is-playing { opacity: 1; }
-
-/* --- the parallax planes -------------------------------------------------
-   Three slices of the poster — far mountains, mid shore, marina — stacked
-   over the video and cut by tools/make-parallax-layers.py. There is no sky
-   plane on purpose: the video is the back plane and its drifting clouds are
-   the only thing in the hero that actually moves, so nothing is allowed to
-   cover them.
-
-   They are invisible until the guest scrolls, which is what lets the video
-   keep its own life at rest — a static cut-out over a loop would stop the
-   boats bobbing and freeze the water. Once scrolling starts they fade in
-   over frame 0 of that same loop, which is the picture already on screen,
-   so the hand-off has nothing to see. Then they separate. */
-.hero-layer {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Warm scrim: lifts the lettering off the water without a panel.
    Deliberately not a rectangle and not grey — it is a soft ivory bloom
@@ -1076,23 +1057,6 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
    design, because re-resolving a twelve-stop gradient every frame is a
    repaint of the whole picture. */
 html.js .hero { --hero-ivory: clamp(0, calc(var(--hero-p) * 1.9), 1); }
-
-/* The parallax planes. They arrive fast — solid by ~11% — because they are
-   arriving over an identical picture and there is nothing to reveal, only
-   the loop's live water and bobbing boats to take over from. Then they fall,
-   near plane furthest, which is the whole of the depth cue.
-
-   The travel distances are not free numbers. Each plane was cut with a
-   feathered edge (9%, 9%, 12% of the frame) and none may travel further than
-   its own feather is wide, or the copy of itself still sitting in the video
-   underneath stops reading as haze and starts reading as a second mountain.
-   2.5 / 5.5 / 9 against 9 / 9 / 12 keeps every plane inside its ramp.
-   tools/make-parallax-layers.py carries the same rule at the top. */
-html.js .hero-layer { opacity: clamp(0, calc(var(--hero-p) * 9), 1); }
-html.js [data-hero-layer="1"] { transform: translateY(calc(var(--hero-p) * 2.5%)); }
-html.js [data-hero-layer="2"] { transform: translateY(calc(var(--hero-p) * 5.5%)); }
-html.js [data-hero-layer="3"] { transform: translateY(calc(var(--hero-p) * 9%)); }
-.hero.is-scrolling .hero-layer { will-change: transform, opacity; }
 
 .hero-content {
   opacity: clamp(0, calc(1 - var(--hero-p) * 1.7), 1);

@@ -219,22 +219,6 @@
                muted playsinline autoplay loop preload="none"
                disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback"
                tabindex="-1" aria-hidden="true"></video>
-        <!-- Depth planes for the scroll hand-off, cut from the loop's frame 0
-             by tools/make-parallax-layers.py. They sit over the video and
-             under nothing — there is no sky plane, so the drifting clouds are
-             never covered. src is deferred to data-src and swapped in by
-             save-the-date.js once the page has loaded: they are worth ~260 KB
-             that nobody who never scrolls, and nobody on reduced motion, ever
-             needs to see. Until then --hero-p holds them at opacity 0. -->
-        <img class="hero-layer" data-hero-layer="1" alt=""
-             data-src="assets/video/whitefish-hero-layer-1.webp"
-             width="1400" height="1050" decoding="async" fetchpriority="low">
-        <img class="hero-layer" data-hero-layer="2" alt=""
-             data-src="assets/video/whitefish-hero-layer-2.webp"
-             width="1400" height="1050" decoding="async" fetchpriority="low">
-        <img class="hero-layer" data-hero-layer="3" alt=""
-             data-src="assets/video/whitefish-hero-layer-3.webp"
-             width="1400" height="1050" decoding="async" fetchpriority="low">
       </div>
       <div class="hero-scrim" aria-hidden="true"></div>
       <div class="hero-dissolve" aria-hidden="true"></div>

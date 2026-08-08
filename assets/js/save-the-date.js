@@ -577,37 +577,6 @@
   }());
 
   /* ------------------------------------------------------------------
-     Hero parallax planes
-
-     The three depth slices are ~260 KB that only ever matter to someone
-     who scrolls with motion enabled, so their src is held in data-src and
-     swapped in after load — behind the video, the poster and everything
-     else that is actually on screen first. Reduced motion never fetches
-     them at all: CSS pins --hero-p at 0 there, so they would download and
-     then sit at opacity 0 forever.
-
-     If this never runs the hero is exactly what it was before the planes
-     existed. That is the intended failure mode.
-     ------------------------------------------------------------------ */
-  (function heroLayers() {
-    if (reduced) return;
-
-    var layers = $$('.hero-layer[data-src]');
-    if (!layers.length) return;
-
-    function load() {
-      layers.forEach(function (img) {
-        img.src = img.getAttribute('data-src');
-        img.removeAttribute('data-src');
-      });
-    }
-
-    if (document.readyState === 'complete') load();
-    else addEventListener('load', load, { once: true });
-  }());
-
-
-  /* ------------------------------------------------------------------
      Hero scroll hand-off
 
      Publishes one number — --hero-p, 0 to 1 across the hero's runway —
@@ -615,8 +584,7 @@
      layout inside the scroll event: the runway length is measured once up
      front and re-measured only on resize, so a scroll frame is a single
      scrollY read and one custom-property write. The painting itself is
-     never transformed; the copy, the ivory wash and the depth planes
-     respond, and the video underneath them never moves at all.
+     never transformed; only the copy and the ivory wash respond.
      ------------------------------------------------------------------ */
   (function heroScroll() {
     var hero = $('#hero');
