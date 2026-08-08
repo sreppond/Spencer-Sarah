@@ -8,7 +8,6 @@ needed to swap a file.
 | `whitefish-hero-loop.mp4` | **shipped** | 1664×1248 (4:3), 12.04s, 24fps, H.264 High, no audio track, `+faststart`. 4.3 MB. |
 | `whitefish-hero-poster.jpg` | **shipped** | The loop's own frame 0. See below — this is not interchangeable with `images/hero-lake.jpg`. |
 | `whitefish-hero-loop-mobile.mp4` | optional | Portrait crop of the same loop. Served automatically below 768px when present. |
-| `whitefish-hero-layer-{1,2,3}.webp` | **shipped** | Depth planes for the scroll hand-off, cut from the poster. 1400×1050 RGBA, ~260 KB the three. See below. |
 
 If the video is ever missing the hero falls back to the poster and the page
 still looks finished — a missing file, a refused autoplay and an unsupported
@@ -32,32 +31,6 @@ tools/make-hero-poster.sh
 
 `images/hero-lake.jpg` stays as the source for the Open Graph card
 (`tools/make-social-preview.py`) and as the original artwork.
-
-## The parallax planes depend on the locked camera
-
-`whitefish-hero-layer-{1,2,3}.webp` are three slices of the poster — far
-mountains, mid shore, marina — that fade in over the video once the guest
-starts scrolling and then drift down at different rates. Regenerate with:
-
-```
-python3 tools/make-parallax-layers.py
-```
-
-They are cut from frame 0 and pinned to the same framing, so **they only stay
-in register because the loop's camera is locked**. A loop re-cut with a zoom,
-pan or tilt would drag the picture out from under three static copies of its
-own lower half, and the hand-off would tear. If the camera ever has to move,
-these planes have to go — that is a real constraint on the loop, not a
-preference.
-
-There is deliberately **no sky plane**. The clouds are the loop's primary
-motion and nothing is allowed to cover them; the video is the back plane and
-plays untouched for the whole transition. That is also why the planes sit at
-opacity 0 at rest rather than simply being part of the picture: a static
-cut-out over a running loop would stop the boats bobbing and freeze the water.
-
-Travel distances live in CSS §2.3 and are bounded by the feather widths this
-script cuts — see the note at the top of it before changing either.
 
 ## Keep it 4:3
 
