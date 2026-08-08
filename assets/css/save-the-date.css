@@ -931,6 +931,29 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   text-decoration: none;
   transition: opacity .6s ease;
 }
+
+/* Its own bloom. The cue lands on the marina — the busiest passage in the
+   painting — and now that the ivory is held back until the scroll starts,
+   that passage is at full detail on arrival rather than half dissolved.
+   A halo on the text alone was not enough against boats and decking, so
+   the light sits behind the whole group. Still a bloom, not a plate: it
+   has no edge at any point. */
+.hero-cue::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 168%;
+  height: 190%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+      rgba(250,246,238,.92) 0%,
+      rgba(250,246,238,.72) 42%,
+      rgba(250,246,238,.34) 68%,
+      rgba(250,246,238,0)   100%);
+}
 .cue-label {
   /* Was 9.3px of tracked caps over the busiest passage of the painting —
      the least readable text on the page, doing the most important job.
