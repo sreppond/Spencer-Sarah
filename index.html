@@ -42,7 +42,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="images/hero-lake.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="assets/video/whitefish-hero-poster.jpg" fetchpriority="high">
 <link rel="preload" as="image" href="assets/typography/sarah-spencer-exact-title.svg" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/save-the-date.css">
@@ -189,7 +189,9 @@
     <div class="hero-viewport">
 
       <div class="hero-media" aria-hidden="true">
-        <img class="hero-still" id="hero-still" src="images/hero-lake.jpg" alt="" decoding="async" fetchpriority="high">
+        <!-- The loop's own first frame, so the video fades in over an identical
+             picture. See config.media.heroPoster. -->
+        <img class="hero-still" id="hero-still" src="assets/video/whitefish-hero-poster.jpg" alt="" decoding="async" fetchpriority="high">
         <!-- Muted + playsinline + autoplay is the whole iOS autoplay contract;
              save-the-date.js also calls play() explicitly and falls back to
              the still above if the browser or the file says no. -->

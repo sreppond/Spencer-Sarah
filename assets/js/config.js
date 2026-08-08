@@ -54,7 +54,14 @@ window.SAVE_THE_DATE = {
      the video paths below and it takes over automatically —
      no markup changes needed. Until then the still is the hero. */
   media: {
-    heroPoster: 'images/hero-lake.jpg',
+    /* The poster is the loop's own first frame, not images/hero-lake.jpg.
+       The loop was generated from that painting but is not a pixel-faithful
+       animation of it — the clouds are redrawn and the framing sits slightly
+       differently — so posting the original made the whole picture visibly
+       shift the moment the video faded in. Frame 0 makes that hand-off
+       invisible. Re-export it with tools/make-hero-poster.sh if the loop
+       is ever replaced. images/hero-lake.jpg remains the social-card source. */
+    heroPoster: 'assets/video/whitefish-hero-poster.jpg',
     heroVideo: 'assets/video/whitefish-hero-loop.mp4',
     heroVideoMobile: 'assets/video/whitefish-hero-loop-mobile.mp4', // optional portrait crop
     ambientAudio: 'assets/audio/lake-waves-loop.mp3',

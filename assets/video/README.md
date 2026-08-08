@@ -1,16 +1,45 @@
 # Hero video
 
-Drop the Higgsfield loop here. `assets/js/config.js` already points at these paths —
-no markup or CSS changes are needed.
+`assets/js/config.js` points at these paths — no markup or CSS changes are
+needed to swap a file.
 
-| File | Required | Notes |
+| File | Status | Notes |
 | --- | --- | --- |
-| `whitefish-hero-loop.mp4` | primary | Landscape 4:3, ~12s seamless loop generated from `images/hero-lake.jpg`. H.264, `-movflags +faststart`, no audio track (the ambient lake sound is a separate layer). |
+| `whitefish-hero-loop.mp4` | **shipped** | 1664×1248 (4:3), 12.04s, 24fps, H.264 High, no audio track, `+faststart`. 4.3 MB. |
+| `whitefish-hero-poster.jpg` | **shipped** | The loop's own frame 0. See below — this is not interchangeable with `images/hero-lake.jpg`. |
 | `whitefish-hero-loop-mobile.mp4` | optional | Portrait crop of the same loop. Served automatically below 768px when present. |
 
-Until a file exists the hero shows `images/hero-lake.jpg` — the same painting the
-loop is generated from — so the page never looks unfinished. The still is also
-the video's `poster`, which is why there is never a black frame before playback.
+If the video is ever missing the hero falls back to the poster and the page
+still looks finished — a missing file, a refused autoplay and an unsupported
+codec all land in the same place.
+
+## The poster must come from the loop, not from the painting
+
+The loop was generated from `images/hero-lake.jpg`, but it is **not** a
+pixel-faithful animation of it: the clouds are redrawn and the framing sits
+slightly differently. Measured mean difference between the painting and the
+loop's frame 0 is ~13.6/255 — larger than the clouds move across an entire
+half-cycle of the loop — so posting the painting made the whole picture
+visibly shift the instant the video faded in over it.
+
+Frame 0 makes that hand-off invisible. Regenerate it whenever the loop
+changes:
+
+```
+tools/make-hero-poster.sh
+```
+
+`images/hero-lake.jpg` stays as the source for the Open Graph card
+(`tools/make-social-preview.py`) and as the original artwork.
+
+## Keep it 4:3
+
+Both files are 4:3 and the two must match, because the poster and the video
+share one set of `object-position` values. The hero crops with
+`object-fit: cover` and the framing per breakpoint (§8 of the stylesheet) is
+tuned against that ratio — on a phone roughly two thirds of the width is
+cropped away, and those values are what keep the mountain gap, the lodge and
+the tent in frame.
 
 The loop must keep the source painting exactly: locked camera, no zoom/pan/tilt,
 clouds drifting left to right as the primary motion, restrained water, boats
@@ -27,17 +56,37 @@ lodge and the tent are held in frame by those values.
 
 ## Encoding
 
+This is what the shipped file was made with, from a 28 MB / 19.5 Mbps master:
+
 ```
-ffmpeg -i loop.mp4 -c:v libx264 -crf 20 -preset slow \
-       -pix_fmt yuv420p -an -movflags +faststart \
-       whitefish-hero-loop.mp4
+ffmpeg -i master.mp4 -an -c:v libx264 -crf 23 -preset slow \
+       -profile:v high -level 4.0 -pix_fmt yuv420p -g 48 \
+       -movflags +faststart whitefish-hero-loop.mp4
 ```
 
 `-pix_fmt yuv420p` is what makes it decodable on iOS; `-an` drops the audio
 track so Safari never treats the element as sound-bearing; `+faststart` moves
-the index to the front so playback can begin before the file has finished
-downloading. Aim to stay under ~6 MB — this is the first thing a guest loads,
-usually on a phone, often on cellular.
+the index to the front so playback can begin before the file finishes
+downloading. Keep it under ~6 MB — this is the first thing a guest loads,
+usually on a phone, often on cellular, straight from a text message.
+
+CRF 23 was measured, not guessed. The risk with this artwork is banding: it is
+mostly wide, smooth sky gradients, which is exactly what a low bitrate
+destroys. Against the master, CRF 23 holds the same number of distinct luma
+levels in the sky (72 vs 72) with no new flat plateaus — i.e. no banding
+introduced — at a mean error below one luma level. CRF 26 saves another 1.3 MB
+but pushes peak error to 15/255, which is visible. CRF 20 costs 2 MB more for
+no measurable gain.
+
+## A note on testing this locally
+
+Playwright's bundled Chromium is the open-source build and ships **no H.264
+decoder at all** — `canPlayType('video/mp4; codecs="avc1.42E01E"')` returns
+empty, and the hero will silently fall back to the poster. That is a property
+of that browser, not of the file. Real Chrome, Safari, Firefox and Edge all
+play H.264, and iOS requires it, so H.264 remains the right thing to ship. To
+exercise the play path in automation, transcode a VP9/WebM stand-in and serve
+it at the same URL.
 
 ## How the hero uses it
 
