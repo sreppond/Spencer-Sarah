@@ -96,18 +96,16 @@
   /* the reveal easing: a long, slow settle with no overshoot */
   --ease-reveal: cubic-bezier(.22, 1, .36, 1);
 
-  /* How far down the hero the painting starts dissolving into paper.
-     This is the *static* dissolve — the one used wherever the ivory can
-     never arrive on scroll instead (no JS, no sticky runway, reduced
-     motion). Where the scroll hand-off does run, it is pushed almost to
-     the bottom edge (see the `overflow-x: clip` block in §2) so the
-     painting is whole until the guest actually starts scrolling. */
+  /* How far down the hero the painting starts dissolving into paper. One
+     value in every configuration now — there is no scroll hand-off to hold
+     it back for, so the painting carries the same soft foot always. */
   --hero-fade-start: 76%;
 
   /* 0 → 1: how much of the ivory at the foot of the painting is present.
-     The default is 1 — fully there, from the first paint — because with
-     no JS there is no --hero-p to bring it in and the picture would meet
-     the paper on a cut edge. html.js hands it over to the scroll. */
+     Always 1. It used to be handed to the scroll under html.js so the
+     ivory arrived as you moved; that was part of what made the scroll down
+     from the hero feel wrong, and it is gone. Kept as a variable because
+     the dissolve and its warm bloom both read it. */
   --hero-ivory: 1;
 
   /* How the 4:3 artwork is framed inside a viewport that is never 4:3.
@@ -498,36 +496,22 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   height: var(--hero-runway);
   min-height: 30rem;
   isolation: isolate;
-  /* 0 → 1 across the runway; JS writes it, every layer below reads it. */
-  --hero-p: 0;
 }
 @supports not (height: 100svh) { :root { --hero-runway: 100vh; } }
 
-/* The sticky hand-off, opted into only where it actually works: `clip`
-   support is what lets html/body clip horizontally without becoming scroll
-   containers, and a sticky child of a scroll container never sticks.
-   Everywhere else the hero is simply one screen tall and the painting meets
-   the paper on the dissolve it already had — reliable beats clever. */
-@supports (overflow-x: clip) {
-  :root { --hero-runway: 118svh; }
-  @supports not (height: 100svh) { :root { --hero-runway: 118vh; } }
-
-  /* This is the one configuration where the ivory genuinely arrives on
-     scroll — sticky runway present, JS writing --hero-p — so it is the
-     one configuration allowed to hold the dissolve back. What is left at
-     rest is a hairline feather at the very bottom edge, small enough to
-     read as the edge of the paper rather than as a wash, and there only
-     so a stale runway measurement can never expose a cut edge. */
-  html.js { --hero-fade-start: 97%; }
-}
+/* There is no sticky hand-off any more. The hero was 118svh of runway with
+   a pinned pane inside it: the painting held still while the copy lifted
+   away, an ivory wash climbed over it and three depth planes slid against
+   each other. It read as the page refusing to move. The hero is one screen
+   now and it scrolls like one, so the transition into the paper is just
+   the dissolve the painting already carries at its foot. */
 
 /* Exactly the visible screen, and deliberately no min-height: a sticky pane
    that is as tall as the block it sticks inside has nowhere to stick, which
    is what a shared 30rem floor did to short landscape windows. .hero keeps
    the floor; the pane just tracks the viewport. */
 .hero-viewport {
-  position: sticky;
-  top: 0;
+  position: relative;
   height: 100svh;
   overflow: hidden;
   isolation: isolate;
@@ -567,8 +551,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
    under §2.1. No transform, no scale, no Ken Burns: the loop already
    contains its own camera and a second one would fight it. */
 .hero-still,
-.hero-video,
-.hero-layer {
+.hero-video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -580,23 +563,6 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 .hero-video { background: var(--paper-deep); }
 .hero-video { opacity: 0; transition: opacity 1.2s var(--ease-soft); }
 .hero-video.is-playing { opacity: 1; }
-
-/* --- the parallax planes -------------------------------------------------
-   Three slices of the poster — far mountains, mid shore, marina — stacked
-   over the video and cut by tools/make-parallax-layers.py. There is no sky
-   plane on purpose: the video is the back plane and its drifting clouds are
-   the only thing in the hero that actually moves, so nothing is allowed to
-   cover them.
-
-   They are invisible until the guest scrolls, which is what lets the video
-   keep its own life at rest — a static cut-out over a loop would stop the
-   boats bobbing and freeze the water. Once scrolling starts they fade in
-   over frame 0 of that same loop, which is the picture already on screen,
-   so the hand-off has nothing to see. Then they separate. */
-.hero-layer {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Warm scrim: lifts the lettering off the water without a panel.
    Deliberately not a rectangle and not grey — it is a soft ivory bloom
@@ -665,27 +631,9 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 }
 .hero-dissolve { opacity: calc(var(--dissolve-peak) * var(--hero-ivory)); }
 
-/* The ivory that climbs over the painting on scroll. It starts as nothing,
-   so at rest the artwork is completely untouched; by the end of the runway
-   its bottom edge is solid --paper and is the same colour the next section
-   starts on, which is what removes the seam between them. */
-.hero-wash {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 74%;
-  z-index: 5;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(to bottom,
-      rgba(247,242,233,0)    0%,
-      rgba(247,242,233,.10) 22%,
-      rgba(247,242,233,.28) 40%,
-      rgba(247,242,233,.52) 56%,
-      rgba(247,242,233,.74) 70%,
-      rgba(247,242,233,.90) 82%,
-      rgba(247,242,233,.98) 92%,
-      var(--paper)         100%);
-}
+/* .hero-wash and the three .hero-layer planes are gone with the parallax —
+   the dissolve at the foot of the painting does the whole hand-off now. The
+   plane artwork and its generator were deleted with them. */
 
 /* --- hero content group --------------------------------------------------
    Names, divider, date/place and the two actions travel as one block,
@@ -1037,7 +985,6 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   0%, 100% { transform: translateY(-2px); opacity: .75; }
   50%      { transform: translateY(4px);  opacity: 1; }
 }
-.hero.is-scrolled .hero-cue { opacity: 0; pointer-events: none; }
 
 
 /* Framing per breakpoint lives with the rest of the responsive rules in §8. */
@@ -1083,65 +1030,36 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 .hero.is-revealed .hero-meta     { transition-delay: .80s; }
 .hero.is-revealed .hero-cue      { transition-delay: 1.50s; }
 
+/* The cue has said its piece the moment you start scrolling, so it goes.
+
+   This has to sit after the reveal rules: it and `.hero.is-revealed
+   .hero-cue` are both three classes, so source order alone decides. It
+   used to be higher up and was only ever beaten to the punch by a
+   `.hero.is-scrolling` rule in the old scroll-response section — which
+   went with the parallax, taking the cue's fade-out with it. The entrance
+   delay is dropped too: waiting 1.5s to fade out is not a fade-out. */
+.hero.is-scrolled .hero-cue {
+  opacity: 0;
+  pointer-events: none;
+  transition-delay: 0s;
+}
+
 
 /* --- §2.3 scroll response ------------------------------------------------
-   One number, --hero-p (0 → 1 across the runway), drives every layer.
-   JS writes it from a rAF-throttled scroll listener and touches nothing
-   else, so the whole hand-off stays on the compositor.
+   There isn't one any more, and that is the point.
 
-     0          the painting is whole, top to bottom, and there is no ivory
-     0 → ~30%   copy lifts and begins to go; the warm bloom at the foot arrives
-     ~30 → 60%  copy finishes leaving, ivory starts to climb
-     ~60 → 92%  ivory takes the lower painting and meets the next section
-   The painting itself never moves and never scales. */
+   What used to live here: --hero-p (0 → 1 across a 118svh runway) drove
+   the copy's opacity and lift, the arrival of the ivory at the foot of the
+   painting, an ivory wash climbing 74% up over it, and three depth planes
+   falling at 2.5 / 5.5 / 9%. With the pane pinned, all of that moved while
+   the painting did not, which is what made the scroll down from the hero
+   feel wrong rather than smooth.
 
-/* With JS driving the hand-off, the ivory at the foot of the painting is
-   no longer a fixture — it belongs to the scroll. Only opacity reads it,
-   so this stays a compositor-level change; the mask under it is static by
-   design, because re-resolving a twelve-stop gradient every frame is a
-   repaint of the whole picture. */
-html.js .hero { --hero-ivory: clamp(0, calc(var(--hero-p) * 1.9), 1); }
-
-/* The parallax planes. They arrive fast — solid by ~11% — because they are
-   arriving over an identical picture and there is nothing to reveal, only
-   the loop's live water and bobbing boats to take over from. Then they fall,
-   near plane furthest, which is the whole of the depth cue.
-
-   The travel distances are not free numbers. Each plane was cut with a
-   feathered edge (9%, 9%, 12% of the frame) and none may travel further than
-   its own feather is wide, or the copy of itself still sitting in the video
-   underneath stops reading as haze and starts reading as a second mountain.
-   2.5 / 5.5 / 9 against 9 / 9 / 12 keeps every plane inside its ramp.
-   tools/make-parallax-layers.py carries the same rule at the top. */
-html.js .hero-layer { opacity: clamp(0, calc(var(--hero-p) * 9), 1); }
-html.js [data-hero-layer="1"] { transform: translateY(calc(var(--hero-p) * 2.5%)); }
-html.js [data-hero-layer="2"] { transform: translateY(calc(var(--hero-p) * 5.5%)); }
-html.js [data-hero-layer="3"] { transform: translateY(calc(var(--hero-p) * 9%)); }
-.hero.is-scrolling .hero-layer { will-change: transform, opacity; }
-
-.hero-content {
-  opacity: clamp(0, calc(1 - var(--hero-p) * 1.7), 1);
-  transform:
-    translate(-50%, -50%)
-    translateY(calc(var(--hero-p) * -20px));
-  will-change: opacity, transform;
-}
-.hero.is-scrolling .hero-cue { opacity: clamp(0, calc(.85 - var(--hero-p) * 5), .85); }
-/* The wash is now the whole of the ivory rather than the last coat on top
-   of a dissolve that was already there, so it is given the run of the
-   runway instead of finishing early: it waits until the copy is properly
-   on its way out (.28) and is not solid until .92, a hair before the
-   sticky pane lets go and the paper below comes up to meet it. */
-.hero-wash {
-  opacity: clamp(0, calc((var(--hero-p) - .28) * 1.56), 1);
-  transform: translateY(calc((1 - var(--hero-p)) * 10%));
-  will-change: opacity, transform;
-}
-
-/* Scroll-driven transforms must not fight the entrance transition. Once
-   the guest starts scrolling the reveal is over, so drop its timing. */
-.hero.is-scrolling .hero-content,
-.hero.is-scrolling .hero-cue { transition: none; }
+   Now the hero is one screen, --hero-ivory stays at its default of 1, and
+   the painting's foot carries the same gentle dissolve at every moment —
+   nothing to time, nothing to catch up with. The one scroll-linked thing
+   left is the cue fading out once you have taken its advice, which is a
+   plain opacity transition on a class, up in §2.2. */
 
 
 /* ==========================================================================
@@ -1303,13 +1221,25 @@ html.js [data-hero-layer="3"] { transform: translateY(calc(var(--hero-p) * 9%));
   color: var(--gold-text);
 }
 
-/* It rises as it arrives, like everything else that enters on scroll. */
-html.js .celebrate {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 1s var(--ease-reveal), transform 1.1s var(--ease-reveal);
+/* It rises as it arrives, like everything else that enters on scroll —
+   but a word at a time, so the sentence assembles rather than appears.
+   The .word spans are wrapped by JS; the three knobs below are the whole
+   feel of it, and --word-i (set per span) is the word's place in line. */
+.celebrate {
+  --word-rise: 20px;
+  --word-duration: .7s;
+  --word-stagger: 65ms;
 }
-html.js .celebrate.is-in { opacity: 1; transform: none; }
+html.js .celebrate .word {
+  display: inline-block;      /* translateY needs a block box */
+  opacity: 0;
+  transform: translateY(var(--word-rise));
+  transition:
+    opacity   var(--word-duration) var(--ease-reveal),
+    transform var(--word-duration) var(--ease-reveal);
+  transition-delay: calc(var(--word-i, 0) * var(--word-stagger));
+}
+html.js .celebrate.is-in .word { opacity: 1; transform: none; }
 
 
 /* ==========================================================================
@@ -2145,18 +2075,9 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .page { transition: opacity .5s linear !important; }
   html.is-sealed .page { transform: none; }
 
-  /* The hero arrives whole. No stagger, no lift, no sticky hand-off —
-     the runway collapses to one screen and the painting simply meets the
-     paper on the dissolve it already had. Everything stays readable the
-     instant it is on screen.
-
-     "The dissolve it already had" is the static one: with the runway gone
-     there is no --hero-p to bring the ivory in on scroll, so both the mask
-     and the bloom are handed back their resting values. */
-  .hero { height: 100svh; --hero-p: 0 !important; }
-  html.js { --hero-fade-start: 76%; }
-  html.js .hero { --hero-ivory: 1; }
-  .hero-viewport { position: relative; }
+  /* The hero arrives whole: no stagger, no lift. The runway and the sticky
+     hand-off are gone for everyone now, so the only thing left to undo
+     here is the staged entrance. */
   .hero-media,
   .hero-title,
   .hero-divider,
@@ -2164,7 +2085,6 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .hero-cue { opacity: 1; transform: none; transition: none !important; }
   .hero-cue { transform: translateX(-50%); opacity: .85; }
   .hero-content { opacity: 1; transform: translate(-50%, -50%); }
-  .hero-wash { opacity: 0; transform: none; }
 
   /* The flow button keeps its meaning and loses its choreography: no arrow
      flight, no radius morph, no expanding circle. The state change is a
@@ -2194,8 +2114,8 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .step-dot.is-done::after, .done-mark::after { animation: none; }
   .step-dot.is-current { transform: none; }
 
-  /* The invitation line is simply there. */
-  html.js .celebrate { opacity: 1; transform: none; }
+  /* The invitation line is simply there — every word, at once, in place. */
+  html.js .celebrate .word { opacity: 1; transform: none; transition: none; }
 
   /* The mosaic is assembled, not assembling: --mosaic-p pinned at 1 puts
      every card at its final position, the runway collapses to one screen,

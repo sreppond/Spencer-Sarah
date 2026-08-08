@@ -437,11 +437,46 @@
 
 
   /* ------------------------------------------------------------------
-     The invitation line rises as it arrives.
+     The invitation line rises as it arrives, one word after another.
+
+     The words are wrapped here rather than written into index.html so the
+     markup stays a sentence a human can edit. Two things this must not
+     break, both of them CSS §3.5:
+
+       · the <em> is display:block and carries the second line, so we walk
+         the child nodes and wrap in place rather than flattening
+         textContent, which would throw the element away;
+       · the words are rejoined with ordinary spaces, never non-breaking
+         ones — .celebrate is a 20ch measure that has to wrap to three
+         lines on a phone, and nbsp would make it one unbreakable run.
+
+     Each span carries --word-i, its place in the line; the stagger is the
+     stylesheet's business, not ours.
      ------------------------------------------------------------------ */
   (function celebrate() {
     var el = $('.celebrate');
     if (!el) return;
+
+    var count = 0;
+    (function wrapWords(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 1) { wrapWords(child); return; }   /* the em */
+        if (child.nodeType !== 3 || !child.nodeValue.trim()) return;
+
+        var frag = document.createDocumentFragment();
+        child.nodeValue.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          var span = document.createElement('span');
+          span.className = 'word';
+          span.style.setProperty('--word-i', String(count++));
+          span.textContent = part;
+          frag.appendChild(span);
+        });
+        node.replaceChild(frag, child);
+      });
+    }(el));
+
     if (reduced || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -703,101 +738,38 @@
   }());
 
   /* ------------------------------------------------------------------
-     Hero parallax planes
+     Hero scroll state
 
-     The three depth slices are ~260 KB that only ever matter to someone
-     who scrolls with motion enabled, so their src is held in data-src and
-     swapped in after load — behind the video, the poster and everything
-     else that is actually on screen first. Reduced motion never fetches
-     them at all: CSS pins --hero-p at 0 there, so they would download and
-     then sit at opacity 0 forever.
+     There is no hand-off left to drive. This used to publish --hero-p
+     (0 → 1 across a 118svh runway) so CSS could lift and fade the copy,
+     climb an ivory wash over a pinned painting, and slide three depth
+     planes against each other. The hero is one ordinary screen now and
+     simply scrolls away.
 
-     If this never runs the hero is exactly what it was before the planes
-     existed. That is the intended failure mode.
-     ------------------------------------------------------------------ */
-  (function heroLayers() {
-    if (reduced) return;
-
-    var layers = $$('.hero-layer[data-src]');
-    if (!layers.length) return;
-
-    function load() {
-      layers.forEach(function (img) {
-        img.src = img.getAttribute('data-src');
-        img.removeAttribute('data-src');
-      });
-    }
-
-    if (document.readyState === 'complete') load();
-    else addEventListener('load', load, { once: true });
-  }());
-
-
-  /* ------------------------------------------------------------------
-     Hero scroll hand-off
-
-     Publishes one number — --hero-p, 0 to 1 across the hero's runway —
-     and lets CSS decide what every layer does with it. Nothing here reads
-     layout inside the scroll event: the runway length is measured once up
-     front and re-measured only on resize, so a scroll frame is a single
-     scrollY read and one custom-property write. The painting itself is
-     never transformed; the copy, the ivory wash and the depth planes
-     respond, and the video underneath them never moves at all.
+     All that survives is one class. The cue has said its piece the moment
+     you start scrolling, so it gets out of the way — a plain opacity
+     transition in CSS, not a scrub.
      ------------------------------------------------------------------ */
   (function heroScroll() {
     var hero = $('#hero');
     if (!hero) return;
 
-    // Under reduced motion the hero is one static screen; CSS pins
-    // --hero-p at 0 and there is nothing to drive.
-    if (reduced) {
-      addEventListener('scroll', function () {
-        hero.classList.toggle('is-scrolled', window.scrollY > 40);
-      }, { passive: true });
-      return;
-    }
-
-    var runway = 0;
-    var last = -1;
     var ticking = false;
-
-    function measure() {
-      // How far you can scroll before the sticky pane lets go. On engines
-      // without the sticky runway this is ~0, and dividing by it would snap
-      // the copy to invisible on the first pixel of scroll — so below a
-      // sensible floor we simply do not run the hand-off at all.
-      var r = hero.offsetHeight - window.innerHeight;
-      runway = r > 40 ? r : 0;
-    }
+    var last = null;
 
     function frame() {
       ticking = false;
-      var p = runway ? window.scrollY / runway : 0;
-      p = p < 0 ? 0 : p > 1 ? 1 : p;
-
-      // Two decimals is well under one rendered pixel of difference and
-      // keeps us from writing a new value on every sub-pixel scroll.
-      p = Math.round(p * 100) / 100;
-      if (p === last) return;
-      last = p;
-
-      hero.style.setProperty('--hero-p', p);
-      hero.classList.toggle('is-scrolling', p > 0);
-      hero.classList.toggle('is-scrolled', window.scrollY > 40);
+      var on = window.scrollY > 40;
+      if (on === last) return;      // one class write per crossing, not per frame
+      last = on;
+      hero.classList.toggle('is-scrolled', on);
     }
 
-    function onScroll() {
+    addEventListener('scroll', function () {
       if (!ticking) { ticking = true; requestAnimationFrame(frame); }
-    }
+    }, { passive: true });
 
-    measure();
     frame();
-    addEventListener('scroll', onScroll, { passive: true });
-    addEventListener('resize', function () { measure(); last = -1; onScroll(); }, { passive: true });
-    // iOS fires orientationchange before the new viewport height is settled.
-    addEventListener('orientationchange', function () {
-      setTimeout(function () { measure(); last = -1; onScroll(); }, 250);
-    });
   }());
 
 
