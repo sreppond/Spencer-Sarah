@@ -12,16 +12,16 @@ itinerary, travel, registry, FAQ or RSVP yet.
 ```
 index.html                     the whole public experience
 assets/js/config.js            ← names, date, place, asset paths, form endpoint
-assets/js/save-the-date.js     envelope, hero, audio, vine, form
+assets/js/save-the-date.js     envelope, hero, audio, mosaic, form
 assets/css/save-the-date.css
-assets/typography/             the hero lettering + vines (see its README)
+assets/typography/             the hero lettering (see its README)
 assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card
 assets/photos/                 the photo journey (see its README)
 assets/video/                  Higgsfield hero loop goes here (see its README)
 assets/audio/                  the ambient loop (see its README)
 images/hero-lake.jpg           the source painting; hero poster + OG source
 images/IMG_3091.png            the comp the hero typography was lifted from
-tools/                         regenerate the OG card, the vines, the lettering,
+tools/                         regenerate the OG card, the lettering,
                                the hero poster, the ambient loop
 ```
 

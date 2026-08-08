@@ -1141,44 +1141,6 @@ html.js .hero { --hero-ivory: clamp(0, calc(var(--hero-p) * 1.9), 1); }
   text-wrap: pretty;
 }
 
-/* --- the vine -------------------------------------------------------------
-   One continuous thread from the hero dissolve down to the end card.
-   Two path variants share the same scroll progress; only one is shown at a
-   time, and the hidden one stays laid out so its geometry stays measurable. */
-.vine-track {
-  position: absolute;
-  inset: 0 0 7rem;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-.vine {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: auto;
-  overflow: visible;
-}
-.vine-stem {
-  fill: none;
-  stroke: var(--olive);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: .46;
-  vector-effect: non-scaling-stroke;
-}
-.vine-leaves g {
-  opacity: 0;
-  transition: opacity 1s var(--ease-out);
-}
-.vine-leaves g.is-out { opacity: .58; }
-.vine-leaves path { fill: var(--leaf); }
-
-.vine-wide   { left: max(-2.5rem, calc(50% - 32rem)); }
-.vine-narrow { left: .25rem; }
-
-@media (min-width: 900px)  { .vine-narrow { opacity: 0; visibility: hidden; } }
-@media (max-width: 899px)  { .vine-wide   { opacity: 0; visibility: hidden; } }
 
 
 /* ==========================================================================
@@ -1822,7 +1784,7 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
 
 /* ==========================================================================
    5.5 · SUB-PAGES (lodging.html and anything after it)
-   Sub-pages have no envelope, no hero and no vine — just paper. They reuse
+   Sub-pages have no envelope and no hero — just paper. They reuse
    .sheet / .sheet-inner / .sheet-title / .sheet-lede / .flow-btn as-is, so
    this section is only what those pages need on top.
    ========================================================================== */
@@ -2118,7 +2080,4 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .m-card { will-change: auto; }
   .cue-arrow { animation: none; opacity: .9; }
 
-  /* the vine is simply drawn */
-  .vine-stem { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
-  .vine-leaves g { opacity: .58; }
 }

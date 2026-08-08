@@ -7,8 +7,15 @@ The hero lettering is **artwork, not live text**. This directory holds it, and
 sarah-spencer-exact-title.svg   1003 x 93   the two names + the gold ampersand
 botanical-divider-exact.svg      322 x 30   two hairlines + the olive sprig
 event-meta-exact.svg             240 x 59   JUNE 12, 2027 / whitefish, montana
-vine-wide.svg, vine-narrow.svg              scroll-drawn vines (make-botanicals.js)
+vine-wide.svg, vine-narrow.svg              NO LONGER USED — see below
 ```
+
+**The vines are not on the site.** They ran as one scroll-drawn thread down
+`.paper`, but the geometry is a fixed 2400-unit path stretched to the height of
+that column, so as the page grew the stem read as a stretched line with its
+leaves drifting off it — and it passed behind the mosaic cards, arriving cut.
+The files and `tools/make-botanicals.js` are kept here in case they are wanted
+again; nothing loads them today.
 
 ## Why it is artwork
 
