@@ -18,10 +18,11 @@ assets/typography/             the hero lettering + vines (see its README)
 assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card
 assets/photos/                 the photo journey (see its README)
 assets/video/                  Higgsfield hero loop goes here (see its README)
-assets/audio/                  ambient lake loop goes here (see its README)
+assets/audio/                  the ambient loop (see its README)
 images/hero-lake.jpg           the source painting; hero poster + OG source
 images/IMG_3091.png            the comp the hero typography was lifted from
-tools/                         regenerate the OG card, the vines, the lettering
+tools/                         regenerate the OG card, the vines, the lettering,
+                               the hero poster, the ambient loop
 ```
 
 **One exception to config-driven content:** the hero title, divider and
