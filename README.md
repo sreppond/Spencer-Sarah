@@ -31,6 +31,28 @@ name or the date means re-running `tools/extract-typography.py` and updating
 `config.baked`; the page warns on localhost until you do. Full story in
 `assets/typography/README.md`.
 
+**Two fonts, and they are not interchangeable.** Cormorant Garamond is a
+display cut with a very small x-height — it is the large lines only
+(`--font-display`: section titles, step labels, the end card). Every word a
+guest actually reads is EB Garamond (`--font-text`: paragraphs, form labels,
+inputs, buttons, hints, errors). Setting body copy in Cormorant is what made
+the page hard to read; please do not put it back. Minimum sizes live in
+`--t-micro` / `--t-small` / `--t-body`, and `--t-micro` (12.5px) is only ever
+allowed for tracked uppercase labels of three words or fewer.
+
+**One button component.** `.flow-btn` in CSS §2.4 — an ink circle floods out,
+an arrow crosses the button, the pill relaxes into a card. Variants set
+`--fb-ink` / `--fb-on-ink` / `--fb-line` and inherit the rest; the markup owes
+it three spans. Hover, `:focus-visible` and `:active` all get the full
+treatment, because touch and keyboard never hover.
+
+**The form is four steps, and the stepping is optional.** CSS §4.1 plus the
+stepper in `save-the-date.js`. The markup is a plain, complete, natively
+submittable form; the script hides three of the four panes only once it is
+running. Anything hidden by default and revealed by JavaScript must be scoped
+to `html.js` — the hero and photo reveals are, and that is the only reason the
+page is not blank without JavaScript.
+
 **Change anything here first:** `assets/js/config.js`. It is the single source
 of truth for the couple's names, the date, the location, every asset path and
 the form endpoint. The same strings appear once more in `index.html` as a
