@@ -453,6 +453,167 @@
 
 
   /* ------------------------------------------------------------------
+     The silk — a slow moiré weave drifting under everything below the
+     painting. What it is and why it is this quiet is written up in CSS
+     §3.1; this is only how it gets drawn.
+
+     The short version of the performance story: the reference
+     implementation ran a per-pixel loop over every second pixel of the
+     full viewport, every frame. Measured at 1440x900 that is ~49ms a
+     frame — a pinned core and a 20fps ceiling — on a page already
+     running a video loop, three parallax planes and two scroll-driven
+     sequences. Three changes make it free, and none of them are visible:
+     the field is drawn into a ~300px buffer and scaled up by the browser
+     (it is smooth and low-frequency, so the interpolation costs nothing);
+     it redraws a dozen times a second rather than sixty; and it only runs
+     while the paper is actually on screen and the tab is actually in
+     front of someone.
+     ------------------------------------------------------------------ */
+  (function paperSilk() {
+    var host = $('.paper-silk');
+    var cv = $('#paper-silk');
+    if (!host || !cv || !cv.getContext) return;
+
+    var ctx = cv.getContext('2d');
+    if (!ctx) return;
+
+    /* Tuning lives in CSS §3.1, so that stays the one place to change how
+       this looks. Only the two values a canvas cannot read for itself
+       come across; the strength is plain CSS opacity on the element. */
+    var css = getComputedStyle(root);
+    var ink = (css.getPropertyValue('--silk-ink') || '').split(',');
+    var inkR = parseInt(ink[0], 10) || 156;
+    var inkG = parseInt(ink[1], 10) || 147;
+    var inkB = parseInt(ink[2], 10) || 130;
+    var scale = parseFloat(css.getPropertyValue('--silk-scale')) || 1.15;
+
+    var BUFFER = 300;          // longest edge of the backing store
+    var FRAME_MS = 1000 / 12;  // redraw rate
+    /* The reference drifts at 1.2 radians of phase a second. Halved: this
+       page's motion language is slow and eased, and a sheen at 7% should
+       be something a guest notices on the second look, not the first. */
+    var DRIFT = 0.01;
+
+    var time = 0;
+    var last = 0;
+    var raf = 0;
+    var onScreen = true;
+    var awake = !document.hidden;
+
+    function measure() {
+      var w = Math.max(1, host.clientWidth || window.innerWidth);
+      var h = Math.max(1, window.innerHeight);
+      var k = BUFFER / Math.max(w, h);
+      cv.width = Math.max(2, Math.round(w * k));
+      cv.height = Math.max(2, Math.round(h * k));
+    }
+
+    /* One frame, drawn as ink at a per-pixel alpha and nothing else — no
+       fill, no vignette — so every part of the paper this does not darken
+       stays exactly the paper underneath it.
+
+       The reference also mixed in a per-pixel "noise" term. It is dropped
+       on purpose: it is not noise but a second periodic function, and
+       sampled into a buffer this size it aliases into banding rather than
+       grain. The paper's own tooth (CSS §3) already supplies grain, at
+       full resolution, over the top, which is where it belongs. */
+    function draw() {
+      var w = cv.width;
+      var h = cv.height;
+      var img = ctx.createImageData(w, h);
+      var d = img.data;
+      var t = DRIFT * time;
+      var i = 0;
+      var x, y, u, v, wy, band;
+
+      /* One pattern unit, in buffer pixels. The reference normalised x by
+         the width and y by the height, which stretches the weave by the
+         aspect ratio of whatever window it lands in — the same page reads
+         as fine ripples on a phone and vague smears on a desktop. Both
+         axes here share the width's unit, so the weave is isotropic and
+         --silk-scale means one honest thing: how many wave periods cross
+         the viewport, on any screen. */
+      var per = scale / w;
+
+      for (y = 0; y < h; y++) {
+        v = y * per;
+        for (x = 0; x < w; x++) {
+          u = x * per;
+          wy = v + 0.03 * Math.sin(8 * u - t);
+          band = 0.6 + 0.4 * Math.sin(
+            5 * (u + wy + Math.cos(3 * u + 5 * wy) + 0.02 * t) +
+            Math.sin(20 * (u + wy - 0.1 * t))
+          );
+          d[i] = inkR;
+          d[i + 1] = inkG;
+          d[i + 2] = inkB;
+          d[i + 3] = (255 * clamp(1 - band, 0, 1)) | 0;
+          i += 4;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function tick(now) {
+      raf = requestAnimationFrame(tick);
+      if (now - last < FRAME_MS) return;
+      // Advance on wall-clock, so the weave drifts at one speed whatever
+      // frame rate the device actually gives us.
+      time += (now - last) / 16.667;
+      last = now;
+      draw();
+    }
+
+    function start() {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+
+    function stop() {
+      if (!raf) return;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    function sync() { if (onScreen && awake) start(); else stop(); }
+
+    measure();
+    draw();
+
+    /* Stays wired under reduced motion too: the buffer is cut to the shape
+       of the window, so a rotated phone that never re-measures shows the
+       weave stretched. Redrawing on resize is not motion, it is staying
+       the same. */
+    var resizeTimer = 0;
+    addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () { measure(); draw(); }, 160);
+    }, { passive: true });
+
+    /* "Reduce" asks for less motion, not for a blank page. The weave is
+       drawn once, the paper keeps its drape, and nothing ever moves. */
+    if (reduced) return;
+
+    document.addEventListener('visibilitychange', function () {
+      awake = !document.hidden;
+      sync();
+    });
+
+    // Nothing to draw while the guest is still standing on the painting.
+    if ('IntersectionObserver' in window) {
+      onScreen = false;
+      new IntersectionObserver(function (entries) {
+        onScreen = entries[0].isIntersecting;
+        sync();
+      }).observe(host);
+    }
+
+    sync();
+  }());
+
+
+  /* ------------------------------------------------------------------
      The mosaic — one photograph that shrinks into a framed card while
      five more fly in around it.
 
