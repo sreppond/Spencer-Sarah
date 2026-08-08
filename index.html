@@ -44,7 +44,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="assets/video/whitefish-hero-poster.jpg" fetchpriority="high">
 <link rel="preload" as="image" href="assets/typography/sarah-spencer-exact-title.svg" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<!-- Two Garamonds, on purpose. Cormorant is a display cut with a very small
+     x-height — beautiful at 40px, unreadable as body copy — so it now sets
+     only the large display lines. EB Garamond is a true text face and takes
+     every word a guest actually has to read. See CSS §0. -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/save-the-date.css">
 
 <!-- Marks the document as script-capable before first paint so the
@@ -56,6 +60,8 @@
 </head>
 
 <body>
+
+<a class="skip-link" href="#details">Skip to the form</a>
 
 <!-- ============================================================
      1 · THE ENVELOPE
@@ -139,6 +145,10 @@
     </button>
 
     <p class="env-hint" id="env-hint">tap to open</p>
+
+    <!-- The gate needs a stated way out. Anyone who does not read the hint
+         as a literal instruction was otherwise stuck on a dark screen. -->
+    <button type="button" class="env-skip" id="env-skip">Skip to the save the date</button>
   </div>
 </div>
 
@@ -225,24 +235,44 @@
           </p>
         </div>
 
+        <!-- Both actions are flow buttons — see CSS §2.4. The arrow pair,
+             the ink flood and the radius morph are all CSS; the only thing
+             the markup owes them is the three spans. -->
         <div class="hero-actions">
-          <a class="btn btn-cal" id="add-to-calendar" href="#" download>
-            <svg viewBox="0 0 18 18" aria-hidden="true" focusable="false">
-              <g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
-                <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
-                <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
-              </g>
-            </svg>
-            <span class="btn-label">Add to calendar</span>
-          </a>
+          <div class="hero-actions-row">
+            <a class="flow-btn flow-btn--stock" id="add-to-calendar" href="#" download>
+              <span class="flow-btn__ink" aria-hidden="true"></span>
+              <svg class="flow-btn__icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+                <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                  <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
+                  <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
+                </g>
+              </svg>
+              <span class="flow-btn__label">Add to calendar</span>
+              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
 
-          <!-- href, label and note all come from config.lodging; an empty
-               href removes this button rather than shipping a dead link. -->
-          <a class="btn btn-lodge" id="lodging-link" href="https://lodgeatwhitefishlake.com/"
-             target="_blank" rel="noopener noreferrer">
-            <span class="btn-label" data-lodging-label>Lodging</span>
-            <span class="btn-note" data-lodging-note>Book before October</span>
-          </a>
+            <!-- href, label and note all come from config.lodging; an empty
+                 href removes this button rather than shipping a dead link. -->
+            <a class="flow-btn flow-btn--quiet" id="lodging-link" href="https://lodgeatwhitefishlake.com/"
+               target="_blank" rel="noopener noreferrer">
+              <span class="flow-btn__ink" aria-hidden="true"></span>
+              <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="flow-btn__label" data-lodging-label>Lodging</span>
+              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+
+          <!-- The booking deadline is an annotation, not part of a button
+               label. Inside the control it made one action read as two and
+               forced both buttons to the taller one's height. -->
+          <p class="hero-note" id="lodging-note" data-lodging-note>Book before October</p>
         </div>
       </div>
 
@@ -308,36 +338,77 @@
         <p class="sheet-lede">Leave us your details and we'll make sure the invitation
           and weekend plans find you.</p>
 
+        <!-- Four questions, asked one at a time — see CSS §4.1 and the
+             stepper in save-the-date.js. The stepping is entirely
+             progressive enhancement: this markup is a plain, complete,
+             natively-submittable form, and the script hides three of the
+             four panes only once it is running. Nothing here depends on
+             JavaScript to be readable, fillable or valid. -->
         <form class="gform" id="guest-form" novalidate>
-          <div class="field">
-            <label for="g-name">Full name</label>
-            <input id="g-name" name="name" type="text" autocomplete="name"
-                   required aria-describedby="g-name-err" enterkeyhint="next">
-            <p class="field-err" id="g-name-err" role="alert" hidden></p>
+
+          <!-- Stepper chrome. Ships hidden; the script reveals it. -->
+          <div class="stepper" id="form-stepper" hidden>
+            <ol class="stepper-dots" id="stepper-dots"></ol>
+            <div class="stepper-rail" aria-hidden="true">
+              <span class="stepper-rail-fill" id="stepper-rail-fill"></span>
+            </div>
           </div>
 
-          <div class="field-row">
+          <!-- Step changes are a visual event; this is how they reach a
+               screen reader. Kept out of the panes so re-rendering a pane
+               never re-announces a stale message. -->
+          <p class="sr-only" id="step-live" role="status" aria-live="polite"></p>
+
+          <div class="step" data-step="0">
             <div class="field">
-              <label for="g-email">Email</label>
+              <div class="step-head">
+                <label class="step-q" for="g-name">Your full name</label>
+                <span class="step-count" aria-hidden="true"></span>
+              </div>
+              <input id="g-name" name="name" type="text" autocomplete="name"
+                     autocapitalize="words" spellcheck="false"
+                     required aria-describedby="g-name-err" enterkeyhint="next">
+              <p class="field-err" id="g-name-err" role="alert" hidden></p>
+            </div>
+          </div>
+
+          <div class="step" data-step="1">
+            <div class="field">
+              <div class="step-head">
+                <label class="step-q" for="g-email">Your email</label>
+                <span class="step-count" aria-hidden="true"></span>
+              </div>
               <input id="g-email" name="email" type="email" autocomplete="email"
-                     inputmode="email" required aria-describedby="g-email-err" enterkeyhint="next">
+                     inputmode="email" autocapitalize="off" spellcheck="false"
+                     required aria-describedby="g-email-err" enterkeyhint="next">
               <p class="field-err" id="g-email-err" role="alert" hidden></p>
             </div>
+          </div>
+
+          <div class="step" data-step="2">
             <div class="field">
-              <label for="g-phone">Mobile number</label>
+              <div class="step-head">
+                <label class="step-q" for="g-phone">A number we can text</label>
+                <span class="step-count" aria-hidden="true"></span>
+              </div>
               <input id="g-phone" name="phone" type="tel" autocomplete="tel"
                      inputmode="tel" required aria-describedby="g-phone-err" enterkeyhint="next">
               <p class="field-err" id="g-phone-err" role="alert" hidden></p>
             </div>
           </div>
 
-          <div class="field">
-            <label for="g-address">Mailing address</label>
-            <textarea id="g-address" name="address" rows="2" autocomplete="street-address"
-                      required aria-describedby="g-address-hint g-address-err"
-                      enterkeyhint="done"></textarea>
-            <p class="field-hint" id="g-address-hint">Street, city, state, ZIP — however you'd write it on a letter.</p>
-            <p class="field-err" id="g-address-err" role="alert" hidden></p>
+          <div class="step" data-step="3">
+            <div class="field">
+              <div class="step-head">
+                <label class="step-q" for="g-address">Where to post the invitation</label>
+                <span class="step-count" aria-hidden="true"></span>
+              </div>
+              <textarea id="g-address" name="address" rows="3" autocomplete="street-address"
+                        required aria-describedby="g-address-hint g-address-err"
+                        enterkeyhint="done"></textarea>
+              <p class="field-hint" id="g-address-hint">Street, city, state, ZIP — however you'd write it on a letter.</p>
+              <p class="field-err" id="g-address-err" role="alert" hidden></p>
+            </div>
           </div>
 
           <!-- Simple bot trap. Real guests never see or fill this. -->
@@ -346,15 +417,31 @@
             <input id="g-company" name="company" type="text" tabindex="-1" autocomplete="off">
           </div>
 
-          <button class="btn-send" type="submit" id="guest-submit">
-            <span class="btn-send-label">Send our details</span>
-          </button>
+          <div class="form-actions">
+            <!-- Stays type=submit on every step so Enter always advances;
+                 the script decides whether a submit means "next" or "send". -->
+            <button class="flow-btn flow-btn--gold btn-send" type="submit" id="guest-submit">
+              <span class="flow-btn__ink" aria-hidden="true"></span>
+              <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="flow-btn__label btn-send-label">Send our details</span>
+              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <button type="button" class="step-back" id="step-back" hidden>Go back</button>
+          </div>
 
           <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
         </form>
 
-        <div class="form-done" id="form-done" hidden>
-          <img class="done-divider" src="assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+        <!-- tabindex=-1 so the script can move focus here on success.
+             Swapping the form out without moving focus leaves a screen
+             reader parked on a button that no longer exists. -->
+        <div class="form-done" id="form-done" tabindex="-1" hidden>
+          <span class="done-mark" aria-hidden="true"></span>
           <p class="done-line">Thank you — you're all set.</p>
           <p class="done-sub">We'll be in touch well before June.</p>
         </div>

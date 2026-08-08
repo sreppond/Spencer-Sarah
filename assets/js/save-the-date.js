@@ -92,6 +92,39 @@
   var page = $('#page');
   var opened = false;
 
+  /* The ceremony is worth one viewing, not one per page load. A guest who
+     reloads, or comes back from the lodging tab, or restores the tab from
+     memory, has already opened this envelope and should land on the page.
+     sessionStorage, not localStorage, so a genuinely new visit still gets
+     the full thing. Private-mode Safari throws on access, hence the try. */
+  var SEEN_KEY = 'std:opened';
+
+  function alreadyOpened() {
+    try { return sessionStorage.getItem(SEEN_KEY) === '1'; }
+    catch (e) { return false; }
+  }
+  function rememberOpened() {
+    try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
+  }
+
+  /* Drop straight to the page with no envelope at all. Used for a repeat
+     view in the same session, and for the skip control. */
+  function bypassEnvelope() {
+    if (opened) return;
+    opened = true;
+    root.classList.remove('is-sealed');
+    if ('inert' in HTMLElement.prototype) page.inert = false;
+    else page.removeAttribute('aria-hidden');
+    if (scene) {
+      scene.classList.add('is-gone');
+      scene.setAttribute('aria-hidden', 'true');
+      scene.style.display = 'none';
+    }
+    startHeroVideo();
+    revealHero();
+    revealAudioToggle();
+  }
+
   function seal() {
     if (!scene || !envelope) return;
     root.classList.add('is-sealed');
@@ -102,6 +135,7 @@
   function openEnvelope() {
     if (opened || !envelope) return;
     opened = true;
+    rememberOpened();
 
     envelope.classList.add('is-open');
     envelope.setAttribute('aria-disabled', 'true');
@@ -137,26 +171,52 @@
   }
 
   if (scene && envelope) {
-    seal();
+    // Seen it already this session? Never seal the page in the first place.
+    if (alreadyOpened()) {
+      scene.style.display = 'none';
+      scene.setAttribute('aria-hidden', 'true');
+      opened = true;
+      revealHero();
+      startHeroVideo();
+      revealAudioToggle();
+    } else {
+      seal();
 
-    envelope.addEventListener('pointerdown', function () {
-      if (!opened) envelope.classList.add('is-pressed');
-    });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (evt) {
-      envelope.addEventListener(evt, function () { envelope.classList.remove('is-pressed'); });
-    });
-    envelope.addEventListener('click', openEnvelope);
-    // Space/Enter already fire click on a <button>; this only covers the
-    // press affordance so keyboard use feels the same as touch.
-    envelope.addEventListener('keydown', function (e) {
-      if ((e.key === 'Enter' || e.key === ' ') && !opened) envelope.classList.add('is-pressed');
-    });
-    envelope.addEventListener('keyup', function () { envelope.classList.remove('is-pressed'); });
+      var skip = $('#env-skip');
+      if (skip) {
+        skip.addEventListener('click', function () {
+          rememberOpened();
+          bypassEnvelope();
+          page.setAttribute('tabindex', '-1');
+          page.focus({ preventScroll: true });
+          page.removeAttribute('tabindex');
+        });
+      }
 
-    // Anyone arriving mid-page (a #details link, a restored scroll position)
-    // should not be trapped behind a ceremony they did not ask for.
-    if (location.hash && location.hash !== '#top') {
-      requestAnimationFrame(openEnvelope);
+      // Escape is what people press when a full-screen overlay has them.
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !opened) { rememberOpened(); bypassEnvelope(); }
+      });
+
+      envelope.addEventListener('pointerdown', function () {
+        if (!opened) envelope.classList.add('is-pressed');
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (evt) {
+        envelope.addEventListener(evt, function () { envelope.classList.remove('is-pressed'); });
+      });
+      envelope.addEventListener('click', openEnvelope);
+      // Space/Enter already fire click on a <button>; this only covers the
+      // press affordance so keyboard use feels the same as touch.
+      envelope.addEventListener('keydown', function (e) {
+        if ((e.key === 'Enter' || e.key === ' ') && !opened) envelope.classList.add('is-pressed');
+      });
+      envelope.addEventListener('keyup', function () { envelope.classList.remove('is-pressed'); });
+
+      // Anyone arriving mid-page (a #details link, a restored scroll position)
+      // should not be trapped behind a ceremony they did not ask for.
+      if (location.hash && location.hash !== '#top') {
+        requestAnimationFrame(bypassEnvelope);
+      }
     }
   }
 
@@ -251,23 +311,29 @@
      ------------------------------------------------------------------ */
   (function lodging() {
     var link = $('#lodging-link');
-    if (!link) return;
+    // The booking note now sits beside the button rather than inside its
+    // label — it is an annotation, not part of the control's name.
+    var note = $('[data-lodging-note]');
+    if (!link) { if (note) note.remove(); return; }
 
     var cfg = CFG.lodging || {};
-    if (!cfg.href) { link.remove(); return; }
+    if (!cfg.href) { link.remove(); if (note) note.remove(); return; }
 
     link.href = cfg.href;
     var label = link.querySelector('[data-lodging-label]');
-    var note = link.querySelector('[data-lodging-note]');
     if (label && cfg.label) label.textContent = cfg.label;
+
     if (note) {
-      if (cfg.note) note.textContent = cfg.note;
-      else note.remove();
+      if (cfg.note) {
+        note.textContent = cfg.note;
+        // Related, but not part of the name: describedby, not label.
+        if (note.id) link.setAttribute('aria-describedby', note.id);
+      } else {
+        note.remove();
+      }
     }
-    // The visible text is two stacked fragments; give assistive tech the
-    // whole sentence, and say that it leaves the site.
-    link.setAttribute('aria-label',
-      [cfg.label || 'Lodging', cfg.note].filter(Boolean).join(' — ') + ' (opens in a new tab)');
+    // Say that it leaves the site — the visual cue for that is nothing.
+    link.setAttribute('aria-label', (cfg.label || 'Lodging') + ' (opens in a new tab)');
   }());
 
 
@@ -670,6 +736,100 @@
       }
     };
 
+    /* ---- the stepper ------------------------------------------------
+       Four questions asked one at a time. Everything below is layered on
+       top of a form that already works: the panes only start hiding once
+       this runs, so with JavaScript off the same markup is one ordinary
+       form with a native submit. The order of the panes in the DOM is the
+       order of the steps — there is no separate list to keep in sync.  */
+    var panes = $$('.step', form);
+    var stepper = $('#form-stepper');
+    var dotList = $('#stepper-dots');
+    var rail = $('#stepper-rail-fill');
+    var live = $('#step-live');
+    var back = $('#step-back');
+    var sendLabel = $('.btn-send-label', submit);
+    var stepped = panes.length > 1 && !!dotList;
+    var at = 0;
+    var dots = [];
+    var sending = false;
+
+    function inputOf(pane) { return $('input, textarea', pane); }
+    function labelOf(pane) {
+      var l = $('.step-q', pane);
+      return l ? l.textContent.trim() : '';
+    }
+
+    function buildStepper() {
+      form.classList.add('is-stepped');
+      stepper.hidden = false;
+
+      panes.forEach(function (pane, i) {
+        var li = document.createElement('li');
+
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'step-dot';
+        dot.innerHTML = '<span class="step-dot-num">' + (i + 1) + '</span>';
+        // A step you have not reached is not a destination, so it is not a
+        // button you can land on — disabled keeps it out of the tab order.
+        dot.disabled = true;
+        dot.setAttribute('aria-label', 'Step ' + (i + 1) + ': ' + labelOf(pane));
+        dot.addEventListener('click', function () {
+          // Backwards only: jumping ahead would skip validation.
+          if (i < at) go(i);
+        });
+        li.appendChild(dot);
+        dots.push(dot);
+
+        if (i < panes.length - 1) {
+          var link = document.createElement('span');
+          link.className = 'step-link';
+          link.setAttribute('aria-hidden', 'true');
+          li.appendChild(link);
+        }
+        dotList.appendChild(li);
+      });
+
+      // Every pane keeps its own "n of m" so the end is always in sight.
+      $$('.step-count', form).forEach(function (el, i) {
+        el.textContent = (i + 1) + ' of ' + panes.length;
+      });
+    }
+
+    /* Move to step i. `focus` is false for the first paint — yanking focus
+       into a form the guest has not scrolled to yet would hijack the page. */
+    function go(i, focus) {
+      at = clamp(i, 0, panes.length - 1);
+      panes.forEach(function (pane, n) { pane.hidden = (n !== at); });
+
+      dots.forEach(function (dot, n) {
+        dot.classList.toggle('is-current', n === at);
+        dot.classList.toggle('is-done', n < at);
+        dot.disabled = n >= at;
+        if (n === at) dot.setAttribute('aria-current', 'step');
+        else dot.removeAttribute('aria-current');
+      });
+      $$('.step-link', dotList).forEach(function (link, n) {
+        link.classList.toggle('is-filled', n < at);
+      });
+
+      if (rail) rail.style.width = ((at + 1) / panes.length * 100) + '%';
+
+      var last = at === panes.length - 1;
+      if (sendLabel) sendLabel.textContent = last ? 'Send our details' : 'Continue';
+      if (back) back.hidden = at === 0;
+
+      setStatus('', false);
+
+      if (live) live.textContent = 'Step ' + (at + 1) + ' of ' + panes.length + ': ' + labelOf(panes[at]);
+
+      if (focus) {
+        var input = inputOf(panes[at]);
+        if (input) input.focus({ preventScroll: true });
+      }
+    }
+
     function fieldOf(input) { return input.closest('.field'); }
 
     function showError(input, message) {
@@ -713,20 +873,51 @@
       status.classList.toggle('is-error', !!isError);
     }
 
+    if (stepped) {
+      buildStepper();
+      go(0, false);
+      if (back) {
+        back.addEventListener('click', function () { go(at - 1, true); });
+      }
+    }
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+
+      // aria-disabled does not stop a click or an Enter the way disabled
+      // does, so the guard against a double send is explicit.
+      if (sending) return;
 
       // Honeypot: a real guest never sees this field.
       if (form.elements.company && form.elements.company.value) return;
 
-      var firstBad = null;
+      // Mid-flow, "submit" means "next": check this one answer and move on.
+      // Enter in the field does the same thing, because the button never
+      // stops being type=submit.
+      if (stepped && at < panes.length - 1) {
+        var current = inputOf(panes[at]);
+        if (current && !validate(current)) { current.focus(); return; }
+        go(at + 1, true);
+        return;
+      }
+
+      var bad = [];
       Object.keys(rules).forEach(function (name) {
         var input = form.elements[name];
-        if (input && !validate(input) && !firstBad) firstBad = input;
+        if (input && !validate(input)) bad.push(input);
       });
-      if (firstBad) {
-        setStatus('', false);
-        firstBad.focus();
+      if (bad.length) {
+        // The old version focused the first bad field and cleared the
+        // status, so a failed submit on a long form said nothing at all
+        // about why. Say how many, and go to the one that needs fixing.
+        if (stepped) {
+          var idx = panes.indexOf(bad[0].closest('.step'));
+          if (idx > -1 && idx !== at) go(idx, false);
+        }
+        setStatus(bad.length === 1
+          ? 'One detail needs a look before we can send this.'
+          : bad.length + ' details need a look before we can send this.', true);
+        bad[0].focus();
         return;
       }
 
@@ -752,8 +943,14 @@
         return;
       }
 
-      submit.disabled = true;
-      $('.btn-send-label', submit).textContent = 'Sending…';
+      // aria-disabled rather than disabled: a disabled button drops out of
+      // the accessibility tree mid-action, so a screen reader loses the
+      // element it was on at the exact moment there is news to report.
+      sending = true;
+      submit.setAttribute('aria-disabled', 'true');
+      submit.classList.add('is-sending');
+      form.setAttribute('aria-busy', 'true');
+      if (sendLabel) sendLabel.textContent = 'Sending…';
       setStatus('', false);
 
       var opts = CFG.form || {};
@@ -771,14 +968,23 @@
       fetch(endpoint, init)
         .then(function (res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
+          form.removeAttribute('aria-busy');
           form.hidden = true;
           done.hidden = false;
-          $('.sheet-lede', form.parentNode).hidden = true;
+          var lede = $('.sheet-lede', form.parentNode);
+          if (lede) lede.hidden = true;
           done.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+          // The form the guest was standing in has just been removed from
+          // the page. Without this, focus falls back to <body> and a screen
+          // reader is told nothing about what replaced it.
+          done.focus({ preventScroll: true });
         })
         .catch(function () {
-          submit.disabled = false;
-          $('.btn-send-label', submit).textContent = 'Send our details';
+          sending = false;
+          submit.removeAttribute('aria-disabled');
+          submit.classList.remove('is-sending');
+          form.removeAttribute('aria-busy');
+          if (sendLabel) sendLabel.textContent = 'Send our details';
           setStatus('Something went wrong sending that. Please try again, or text it to us directly.', true);
         });
     });
