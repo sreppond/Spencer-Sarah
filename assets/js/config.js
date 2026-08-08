@@ -71,18 +71,20 @@ window.SAVE_THE_DATE = {
     socialPreview: 'assets/img/social-preview.jpg'
   },
 
-  /* ---- Hero calls to action ---------------------------------
-     Two actions sit beneath the names. "Add to calendar" builds its
-     .ics in the browser and needs nothing here.
+  /* ---- Lodging ----------------------------------------------
+     This is the last screen of the form, not a hero button: it only
+     appears once someone has told us who they are, which is the first
+     moment the ask makes sense.
 
-     The lodging link points at the venue. Swap `href` for the room-block
-     / group-booking URL the moment it exists — the placeholder below is
-     the hotel's front door, not a reserved block. Set `href` to '' and
-     the button removes itself, leaving the calendar action centred. */
+     `href` points at lodging.html, the details page on this site. Point
+     it straight at a booking URL instead if you would rather skip the
+     page. Set `href` to '' and the button is removed rather than
+     shipped as a dead link — the deadline line stays. */
   lodging: {
-    label: 'Lodging',
-    note: 'Book before October',
-    href: 'https://lodgeatwhitefishlake.com/'
+    label: 'Lodging details',
+    deadline: 'Book lodging by October',
+    blurb: 'Rooms in Whitefish go early in June. Here\'s where to stay and how to book.',
+    href: 'lodging.html'
   },
 
   /* ---- Ambient audio --------------------------------------- */
@@ -91,21 +93,27 @@ window.SAVE_THE_DATE = {
     fadeInMs: 4000
   },
 
-  /* ---- Photo journey ----------------------------------------
-     Two or three images, no more. Any path that fails to load
-     renders a designed "photo to come" frame instead of a broken
-     image, so it is safe to ship before the photos exist. */
-  photos: [
-    {
-      src: 'assets/photos/couple-01.jpg',
-      alt: 'Sarah and Spencer',
-      caption: ''
-    },
-    {
-      src: 'assets/photos/couple-02.jpg',
-      alt: 'Sarah and Spencer',
-      caption: ''
-    }
+  /* ---- The mosaic -------------------------------------------
+     Six images. The first is the one that fills the screen and then
+     shrinks into a framed card; the other five fly in around it as you
+     scroll. Order matters and matches the frames in index.html:
+
+       0  centre   the photograph that opens full-bleed
+       1  top-left        2  bottom-left
+       3  top-right       4  bottom-right       5  middle-right
+
+     Any path that fails to load renders a designed "photograph to come"
+     frame instead of a broken image, so this is safe to ship before the
+     photos exist — drop files with these names into assets/photos/ and
+     they appear on their own. Put the strongest, widest photograph at
+     index 0: it is the only one seen at full width. */
+  mosaic: [
+    { src: 'assets/photos/mosaic-centre.jpg', alt: 'Sarah and Spencer' },
+    { src: 'assets/photos/mosaic-1.jpg', alt: '' },
+    { src: 'assets/photos/mosaic-2.jpg', alt: '' },
+    { src: 'assets/photos/mosaic-3.jpg', alt: '' },
+    { src: 'assets/photos/mosaic-4.jpg', alt: '' },
+    { src: 'assets/photos/mosaic-5.jpg', alt: '' }
   ],
 
   /* ---- Guest information form -------------------------------

@@ -55,6 +55,19 @@ an arrow crosses the button, the pill relaxes into a card. Variants set
 it three spans. Hover, `:focus-visible` and `:active` all get the full
 treatment, because touch and keyboard never hover.
 
+**The page is five beats, in this order:** the envelope, the hero (names,
+date, and one instruction — "Scroll for detail"), the invitation line, the
+mosaic, then the form. Nothing competes with the invitation on the first
+screen; the lodging ask waits until the last screen of the form, where it
+lands on someone who has just told us they are coming.
+
+**The mosaic** (CSS §3.6 + `mosaic()` in the script) is the original site's
+"Cordially-style scroll-driven hero mosaic", restored from commit `40cc855`:
+one photograph fills the screen and shrinks into a framed card while five
+more fly in from the edges. JS publishes one number, `--mosaic-p`, and CSS
+composes every card from it. Photographs come from `mosaic[]` in
+`config.js` — see `assets/photos/README.md` for what goes where.
+
 **The form is four steps, and the stepping is optional.** CSS §4.1 plus the
 stepper in `save-the-date.js`. The markup is a plain, complete, natively
 submittable form; the script hides three of the four panes only once it is

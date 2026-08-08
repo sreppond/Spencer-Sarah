@@ -311,29 +311,32 @@
      ------------------------------------------------------------------ */
   (function lodging() {
     var link = $('#lodging-link');
-    // The booking note now sits beside the button rather than inside its
-    // label — it is an annotation, not part of the control's name.
-    var note = $('[data-lodging-note]');
-    if (!link) { if (note) note.remove(); return; }
-
     var cfg = CFG.lodging || {};
-    if (!cfg.href) { link.remove(); if (note) note.remove(); return; }
+
+    var deadline = $('[data-lodging-deadline]');
+    var blurb = $('[data-lodging-blurb]');
+    if (deadline && cfg.deadline) deadline.textContent = cfg.deadline;
+    if (blurb) {
+      if (cfg.blurb) blurb.textContent = cfg.blurb;
+      else blurb.remove();
+    }
+
+    if (!link) return;
+    // No destination yet: drop the button, keep the deadline. A dead link
+    // on the last screen of the form is worse than no link at all.
+    if (!cfg.href) { link.remove(); return; }
 
     link.href = cfg.href;
     var label = link.querySelector('[data-lodging-label]');
     if (label && cfg.label) label.textContent = cfg.label;
 
-    if (note) {
-      if (cfg.note) {
-        note.textContent = cfg.note;
-        // Related, but not part of the name: describedby, not label.
-        if (note.id) link.setAttribute('aria-describedby', note.id);
-      } else {
-        note.remove();
-      }
+    // An off-site href leaves the site, and nothing about the button says
+    // so. A same-site page (lodging.html) does not need the warning.
+    if (/^https?:/i.test(cfg.href)) {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.setAttribute('aria-label', (cfg.label || 'Lodging details') + ' (opens in a new tab)');
     }
-    // Say that it leaves the site — the visual cue for that is nothing.
-    link.setAttribute('aria-label', (cfg.label || 'Lodging') + ' (opens in a new tab)');
   }());
 
 
@@ -434,88 +437,61 @@
 
 
   /* ------------------------------------------------------------------
-     Add to calendar (.ics generated in the browser, no backend)
+     The invitation line rises as it arrives.
      ------------------------------------------------------------------ */
-  (function calendar() {
-    var btn = $('#add-to-calendar');
-    if (!btn) return;
-
-    var d = CFG.date || {}, loc = CFG.location || {};
-
-    function toUtc(local, offset) {
-      // '20270612T163000' + '-06:00'  ->  '20270612T223000Z'
-      var m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/.exec(local || '');
-      if (!m) return null;
-      var iso = m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5] + ':' + m[6] + (offset || 'Z');
-      var date = new Date(iso);
-      if (isNaN(date)) return null;
-      return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    }
-
-    var start = toUtc(d.startLocal, d.utcOffset);
-    var end = toUtc(d.endLocal, d.utcOffset);
-    if (!start || !end) { btn.hidden = true; return; }
-
-    function esc(s) { return String(s || '').replace(/([,;\\])/g, '\\$1'); }
-
-    var ics = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'CALSCALE:GREGORIAN',
-      'PRODID:-//' + esc(CFG.couple) + '//Save the Date//EN',
-      'BEGIN:VEVENT',
-      'UID:' + (d.iso || 'wedding') + '-sarah-spencer@savethedate',
-      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''),
-      'DTSTART:' + start,
-      'DTEND:' + end,
-      'SUMMARY:' + esc(CFG.couple + '’s Wedding'),
-      'DESCRIPTION:Save the date. Formal invitation and weekend details to follow.\\n' + (CFG.siteUrl || ''),
-      'LOCATION:' + esc(loc.icsLocation || loc.display),
-      'URL:' + (CFG.siteUrl || ''),
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\r\n');
-
-    btn.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
-    btn.setAttribute('download', 'sarah-and-spencer-save-the-date.ics');
+  (function celebrate() {
+    var el = $('.celebrate');
+    if (!el) return;
+    if (reduced || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.1 });
+    io.observe(el);
   }());
 
 
   /* ------------------------------------------------------------------
-     Photo journey — paths come from config; a missing file renders a
-     designed placeholder rather than a broken image.
+     The mosaic — one photograph that shrinks into a framed card while
+     five more fly in around it.
+
+     Restored from the original site's "Cordially-style scroll-driven hero
+     mosaic" and rebuilt on this file's scroll idiom: the original wrote
+     six elements' worth of inline width/height/transform every frame,
+     which is a layout-and-paint per card per frame. This publishes one
+     number — --mosaic-p, 0 to 1 across the runway — and CSS composes
+     every card from it on the compositor.
      ------------------------------------------------------------------ */
-  (function photos() {
-    var frames = $$('[data-photo]');
-    var list = CFG.photos || [];
+  (function mosaic() {
+    var section = $('#mosaic');
+    if (!section) return;
+
+    var frames = $$('[data-mosaic]');
+    var list = CFG.mosaic || [];
 
     frames.forEach(function (fig, i) {
       var data = list[i];
       if (!data || !data.src) { markEmpty(fig); return; }
 
       var img = document.createElement('img');
-      img.loading = 'lazy';
+      // The centre card is the one thing on screen at full size when the
+      // section arrives, so it is not a lazy load; the satellites are.
+      img.loading = i === 0 ? 'eager' : 'lazy';
       img.decoding = 'async';
       img.alt = data.alt || '';
       img.addEventListener('error', function () { markEmpty(fig); }, { once: true });
       img.src = data.src;
       fig.insertBefore(img, fig.firstChild);
-
-      if (data.caption) {
-        var cap = document.createElement('figcaption');
-        cap.className = 'ph-caption';
-        cap.textContent = data.caption;
-        fig.appendChild(cap);
-      }
     });
 
     function markEmpty(fig) {
       if (fig.classList.contains('is-empty')) return;
       fig.classList.add('is-empty');
       var inner = document.createElement('span');
-      inner.className = 'ph-inner';
+      inner.className = 'm-inner';
       inner.innerHTML =
-        '<span class="ph-empty-mark" aria-hidden="true">' +
+        '<span class="m-empty-mark" aria-hidden="true">' +
         '<svg viewBox="0 0 40 40" focusable="false"><g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">' +
         '<path d="M20 34V12"/>' +
         '<path d="M20 20c0-4.2 3.4-7.6 7.6-7.6C27.6 16.6 24.2 20 20 20Z"/>' +
@@ -523,30 +499,47 @@
         '<path d="M20 20c0-4.2-3.4-7.6-7.6-7.6C12.4 16.6 15.8 20 20 20Z"/>' +
         '<path d="M20 27c0-3.6-2.9-6.5-6.5-6.5C13.5 24.1 16.4 27 20 27Z"/>' +
         '</g></svg></span>' +
-        '<span class="ph-empty-note">photograph to come</span>';
-      fig.insertBefore(inner, fig.querySelector('.ph-frame'));
+        '<span class="m-empty-note">photograph to come</span>';
+      fig.insertBefore(inner, fig.querySelector('.m-frame'));
     }
-  }());
 
+    // Reduced motion: CSS pins --mosaic-p at 1, so the arrangement is
+    // simply there, assembled, the moment it scrolls into view.
+    if (reduced) return;
 
-  /* ------------------------------------------------------------------
-     Reveals — photos fading up as they arrive
-     ------------------------------------------------------------------ */
-  (function reveals() {
-    var items = $$('.ph');
-    if (!items.length) return;
-    if (reduced || !('IntersectionObserver' in window)) {
-      items.forEach(function (el) { el.classList.add('is-in'); });
-      return;
+    var runway = 0;
+    var last = -1;
+    var ticking = false;
+
+    function measure() {
+      var r = section.offsetHeight - window.innerHeight;
+      runway = r > 40 ? r : 0;
     }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
-      });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
-    items.forEach(function (el) { io.observe(el); });
-  }());
 
+    function frame() {
+      ticking = false;
+      if (!runway) { section.style.setProperty('--mosaic-p', 1); return; }
+
+      var top = section.getBoundingClientRect().top;
+      var p = clamp(-top / runway, 0, 1);
+      p = Math.round(p * 100) / 100;
+      if (p === last) return;
+      last = p;
+      section.style.setProperty('--mosaic-p', p);
+    }
+
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+    }
+
+    measure();
+    frame();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', function () { measure(); last = -1; onScroll(); }, { passive: true });
+    addEventListener('orientationchange', function () {
+      setTimeout(function () { measure(); last = -1; onScroll(); }, 250);
+    });
+  }());
 
   /* ------------------------------------------------------------------
      The vine — scroll-linked stroke, smoothed so it never twitches

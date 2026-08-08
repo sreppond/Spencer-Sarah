@@ -59,14 +59,14 @@
 
      BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
      The date is only a convention — any value the browser has not seen works. -->
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260808b">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260808c">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
 <script>document.documentElement.className += ' js';</script>
 
-<script defer src="assets/js/config.js?v=20260808b"></script>
-<script defer src="assets/js/save-the-date.js?v=20260808b"></script>
+<script defer src="assets/js/config.js?v=20260808c"></script>
+<script defer src="assets/js/save-the-date.js?v=20260808c"></script>
 </head>
 
 <body>
@@ -245,56 +245,21 @@
           </p>
         </div>
 
-        <!-- Both actions are flow buttons — see CSS §2.4. The arrow pair,
-             the ink flood and the radius morph are all CSS; the only thing
-             the markup owes them is the three spans. -->
-        <div class="hero-actions">
-          <div class="hero-actions-row">
-            <a class="flow-btn flow-btn--stock" id="add-to-calendar" href="#" download>
-              <span class="flow-btn__ink" aria-hidden="true"></span>
-              <svg class="flow-btn__icon" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
-                <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
-                  <rect x="1.6" y="3.4" width="14.8" height="13" rx="1.2"/>
-                  <path d="M1.6 7.3h14.8M5.6 1.6v3.2M12.4 1.6v3.2"/>
-                </g>
-              </svg>
-              <span class="flow-btn__label">Add to calendar</span>
-              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-
-            <!-- href, label and note all come from config.lodging; an empty
-                 href removes this button rather than shipping a dead link. -->
-            <a class="flow-btn flow-btn--quiet" id="lodging-link" href="https://lodgeatwhitefishlake.com/"
-               target="_blank" rel="noopener noreferrer">
-              <span class="flow-btn__ink" aria-hidden="true"></span>
-              <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="flow-btn__label" data-lodging-label>Lodging</span>
-              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-          </div>
-
-          <!-- The booking deadline is an annotation, not part of a button
-               label. Inside the control it made one action read as two and
-               forced both buttons to the taller one's height. -->
-          <p class="hero-note" id="lodging-note" data-lodging-note>Book before October</p>
-        </div>
+        <!-- The hero carries the names, the date and one instruction. The
+             calendar and lodging actions used to live here; both were
+             errands competing with the invitation, and the lodging deadline
+             now lives where it is actually actionable — the end of the form,
+             once we know who you are. -->
       </div>
 
-      <a class="hero-cue" href="#details">
-        <span class="cue-label">Explore the weekend</span>
-        <svg viewBox="0 0 24 64" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
-            <path class="cue-stem" d="M12 2c0 22-4 30 0 46"/>
-            <path d="M12 22c0-4.4-3.4-8-7.6-8C4.4 18.4 7.8 22 12 22Z"/>
-            <path d="M12 34c0-4 3.1-7.3 7-7.3C19 30.7 15.9 34 12 34Z"/>
+      <!-- The only thing to do on this screen. Label above, arrow below. -->
+      <a class="hero-cue" href="#celebrate">
+        <span class="cue-label">Scroll for detail</span>
+        <svg class="cue-arrow" viewBox="0 0 28 34" aria-hidden="true" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3v25"/>
+            <path d="M5.5 20.5 14 29l8.5-8.5"/>
           </g>
-          <circle class="cue-tip" cx="12" cy="50" r="1.8" fill="currentColor"/>
         </svg>
       </a>
 
@@ -339,6 +304,37 @@
         </g>
       </svg>
     </div>
+
+    <!-- ---------- THE INVITATION LINE ----------
+         One sentence, set as large as the column allows. It is the first
+         thing under the painting and the only thing on its screen. -->
+    <section class="sheet celebrate-sheet" id="celebrate" aria-labelledby="celebrate-heading">
+      <h2 class="celebrate" id="celebrate-heading">
+        Come celebrate with us in <em>Whitefish, Montana!</em>
+      </h2>
+    </section>
+
+    <!-- ---------- MOSAIC ----------
+         One photograph, full width, that shrinks into a framed card as you
+         scroll while five more fly in from the edges around it. Restored
+         from the original site (commit 40cc855, "Cordially-style
+         scroll-driven hero mosaic") and rebuilt on this site's scroll
+         idiom: JS publishes one number, --mosaic-p, and every card reads
+         it. Images are config-driven — see config.mosaic — and any that is
+         missing renders the same "photograph to come" frame the old photo
+         strip used, so the section is safe to ship before the photos are. -->
+    <section class="mosaic" id="mosaic" aria-label="Photographs">
+      <div class="mosaic-viewport">
+        <div class="mosaic-stage">
+          <figure class="m-card m-hero" data-mosaic="0"><span class="m-frame"></span></figure>
+          <figure class="m-card m-sat m-tl" data-mosaic="1"><span class="m-frame"></span></figure>
+          <figure class="m-card m-sat m-bl" data-mosaic="2"><span class="m-frame"></span></figure>
+          <figure class="m-card m-sat m-tr" data-mosaic="3"><span class="m-frame"></span></figure>
+          <figure class="m-card m-sat m-br" data-mosaic="4"><span class="m-frame"></span></figure>
+          <figure class="m-card m-sat m-mr" data-mosaic="5"><span class="m-frame"></span></figure>
+        </div>
+      </div>
+    </section>
 
     <!-- ---------- FORM ---------- -->
     <section class="sheet form-sheet" id="details" aria-labelledby="form-heading">
@@ -450,29 +446,38 @@
         <!-- tabindex=-1 so the script can move focus here on success.
              Swapping the form out without moving focus leaves a screen
              reader parked on a button that no longer exists. -->
+        <!-- The completion screen is where the lodging ask belongs. On the
+             hero it was an errand thrown at someone who had not yet said
+             they were coming; here it lands on someone who just did, and it
+             is the single obvious next step. href, deadline and label all
+             come from config.lodging — an empty href drops the button
+             rather than shipping a dead link. -->
         <div class="form-done" id="form-done" tabindex="-1" hidden>
           <span class="done-mark" aria-hidden="true"></span>
           <p class="done-line">Thank you — you're all set.</p>
           <p class="done-sub">We'll be in touch well before June.</p>
+
+          <div class="done-next" id="done-next">
+            <span class="done-rule" aria-hidden="true"></span>
+            <p class="done-next-head" data-lodging-deadline>Book lodging by October</p>
+            <p class="done-next-sub" data-lodging-blurb>Rooms in Whitefish go early in June. Here's where to stay and how to book.</p>
+
+            <a class="flow-btn flow-btn--gold done-next-btn" id="lodging-link" href="lodging.html">
+              <span class="flow-btn__ink" aria-hidden="true"></span>
+              <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="flow-btn__label" data-lodging-label>Lodging details</span>
+              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ---------- PHOTOS ---------- -->
-    <section class="sheet photo-sheet" aria-label="A few photographs">
-      <div class="photo-art">
-        <figure class="ph ph-1" data-photo="0">
-          <span class="ph-frame"></span>
-        </figure>
-        <figure class="ph ph-2" data-photo="1">
-          <span class="ph-frame"></span>
-        </figure>
-        <figure class="ph ph-3" data-photo="2">
-          <span class="ph-frame"></span>
-        </figure>
-      </div>
-
-    </section>
+    <!-- The photo strip that used to sit here is now the mosaic above. -->
 
     <!-- ---------- END ---------- -->
     <footer class="sheet end-sheet">
