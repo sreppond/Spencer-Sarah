@@ -25,6 +25,27 @@
 
 
   /* ------------------------------------------------------------------
+     Elements — every lookup shared across the sections below happens
+     here, at the top, and nowhere else.
+
+     This is not tidiness, it is the fix for a real bug. `var` hoists the
+     declaration but not the lookup, so a section that ran its own
+     `var el = $('#el')` beside its handlers handed `undefined` to
+     anything the envelope called earlier in the file — and the envelope
+     calls into the hero, the loop and the audio toggle synchronously on
+     a repeat visit. The hero stayed hidden and the loop never started.
+     The script is `defer`red, so the document is fully parsed by now.
+     ------------------------------------------------------------------ */
+  var scene = $('#envelope-scene');
+  var envelope = $('#envelope');
+  var page = $('#page');
+  var heroEl = $('#hero');
+  var video = $('#hero-video');
+  var audio = $('#ambient');
+  var toggle = $('#audio-toggle');
+
+
+  /* ------------------------------------------------------------------
      Content — config.js is authoritative; the HTML carries the same
      strings only so the page still reads without JavaScript.
      ------------------------------------------------------------------ */
@@ -87,9 +108,6 @@
   /* ------------------------------------------------------------------
      Envelope
      ------------------------------------------------------------------ */
-  var scene = $('#envelope-scene');
-  var envelope = $('#envelope');
-  var page = $('#page');
   var opened = false;
 
   /* The ceremony is worth one viewing, not one per page load. A guest who
@@ -227,7 +245,6 @@
      anyone who skipped the envelope (deep link, no-JS-envelope, reduced
      motion). Everything it triggers is opacity and transform in CSS.
      ------------------------------------------------------------------ */
-  var heroEl = $('#hero');
   var heroRevealed = false;
 
   function revealHero() {
@@ -249,8 +266,14 @@
      play() by hand so we can catch a rejection and keep the painting up
      instead of showing a dead frame. The video only fades in on `playing`,
      so a slow or refused start is invisible — the still never blinks.
+
+     The portrait crop is optional and may not be in the repo. A source
+     that 404s is still a source, so the element cannot tell the
+     difference between "not shipped yet" and "broken" — it just errors
+     and the hero sits on a dead still for every guest on a phone, which
+     is most of them. So the sources are a list, tried in order, and the
+     landscape loop is always the last entry.
      ------------------------------------------------------------------ */
-  var video = $('#hero-video');
   var videoArmed = false;
 
   function startHeroVideo() {
@@ -259,8 +282,12 @@
 
     var media = CFG.media || {};
     var mobile = window.matchMedia('(max-width: 767px)').matches;
-    var src = (mobile && media.heroVideoMobile) || media.heroVideo;
-    if (!src) return;
+
+    // Preferred first, the loop that definitely ships last. De-duplicated
+    // so a config with one video does not try the same file twice.
+    var sources = [mobile ? media.heroVideoMobile : null, media.heroVideo]
+      .filter(function (src, i, all) { return src && all.indexOf(src) === i; });
+    if (!sources.length) return;
 
     // Same painting as the still beneath it, so there is never a black frame.
     if (media.heroPoster) video.poster = media.heroPoster;
@@ -269,28 +296,45 @@
       video.classList.add('is-playing');
     }, { once: true });
 
-    // If the file is not in the repo yet, fail silently — the poster stays.
-    video.addEventListener('error', function () {
-      video.classList.remove('is-playing');
-      video.removeAttribute('src');
-    }, { once: true });
-
     // muted must be true as a property, not just an attribute, for iOS to
     // treat play() as allowed without a gesture.
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
-
-    video.src = src;
     video.preload = 'auto';
-    video.load();
 
-    var p = video.play();
-    if (p && p.catch) {
+    var at = 0;
+
+    // Missing file, or a codec this browser has no decoder for: step to the
+    // next source. Once the list runs out, fail silently — the poster stays.
+    // Clearing src is itself a change to src, so the handler has to retire
+    // itself first or the giving-up path re-enters as another error.
+    function onError() {
+      video.classList.remove('is-playing');
+      if (at < sources.length) { attempt(); return; }
+      video.removeEventListener('error', onError);
+      video.removeAttribute('src');
+    }
+    video.addEventListener('error', onError);
+
+    function attempt() {
+      video.src = sources[at++];
+      video.load();
+      play();
+    }
+
+    var retryArmed = false;
+
+    function play() {
+      var p = video.play();
+      if (!p || !p.catch) return;
       p.catch(function () {
         // Refused (low power mode, data saver, a policy we do not control).
         // The still carries the hero; try once more on the first real
-        // interaction, which browsers always accept.
+        // interaction, which browsers always accept. Armed once, however
+        // many sources we work through.
+        if (retryArmed) return;
+        retryArmed = true;
         var retry = function () {
           ['pointerdown', 'keydown'].forEach(function (evt) {
             removeEventListener(evt, retry);
@@ -301,6 +345,8 @@
         addEventListener('keydown', retry);
       });
     }
+
+    attempt();
   }
 
 
@@ -342,8 +388,8 @@
 
   /* The envelope is optional markup. Without it nothing ever hands off to
      the hero, so the hero reveals itself and the loop starts immediately.
-     This lives here, below the definitions above, because `var` hoists the
-     declarations but not the element lookups they depend on. */
+     Function declarations hoist, and the elements they touch are all
+     looked up at the top of this file, so this is safe wherever it sits. */
   if (!scene || !envelope) {
     revealHero();
     startHeroVideo();
@@ -353,8 +399,6 @@
   /* ------------------------------------------------------------------
      Ambient audio
      ------------------------------------------------------------------ */
-  var audio = $('#ambient');
-  var toggle = $('#audio-toggle');
   var audioFailed = false;
   var fadeTimer = null;
 
