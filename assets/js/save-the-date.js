@@ -477,13 +477,53 @@
       });
     }(el));
 
-    if (reduced || !('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
-      });
-    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.1 });
-    io.observe(el);
+    el.style.setProperty('--word-n', String(count));
+
+    // Reduced motion: the line is set, not assembling. CSS pins the
+    // progress at 1 as well, so there is nothing to drive.
+    if (reduced) return;
+
+    /* The line is tied to the scroll rather than fired once on arrival,
+       which is the whole point: run the scroll backwards and the sentence
+       comes apart again, last word first, at the rate you scroll.
+
+       Progress is measured from the section's own position, not from a
+       runway, so nothing has to be pinned for it to work — the section
+       scrolls like any other and only the words read the number.
+
+         p = 0   the top edge is at the bottom of the viewport
+         p = 1   the top edge has risen to 38% of the viewport
+       Above that it stays 1, so scrolling past and coming back finds the
+       line where you left it. */
+    var ticking = false;
+    var last = -1;
+
+    function frame() {
+      ticking = false;
+      var vh = window.innerHeight;
+      var top = el.getBoundingClientRect().top;
+      var span = vh * 0.62;                 // vh → 38% of vh
+      var p = (vh - top) / span;
+      p = p < 0 ? 0 : p > 1 ? 1 : p;
+
+      // Two decimals is finer than the eye can follow on a 22px rise and
+      // keeps us off the property setter on every sub-pixel of scroll.
+      p = Math.round(p * 100) / 100;
+      if (p === last) return;
+      last = p;
+      el.style.setProperty('--celebrate-p', p);
+    }
+
+    function onScroll() {
+      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+    }
+
+    frame();
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', function () { last = -1; onScroll(); }, { passive: true });
+    addEventListener('orientationchange', function () {
+      setTimeout(function () { last = -1; onScroll(); }, 250);
+    });
   }());
 
 

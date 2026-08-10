@@ -1136,25 +1136,43 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
   color: var(--gold-text);
 }
 
-/* It rises as it arrives, like everything else that enters on scroll —
-   but a word at a time, so the sentence assembles rather than appears.
-   The .word spans are wrapped by JS; the three knobs below are the whole
-   feel of it, and --word-i (set per span) is the word's place in line. */
+/* The sentence assembles a word at a time, and it is tied to the scroll
+   rather than fired once on arrival — so scrolling back up takes it apart
+   again, last word first, at exactly the rate you scroll.
+
+   Nothing is pinned to do this. The section scrolls normally; only the
+   words read the progress. That is the difference between this and the
+   hero parallax that came out: there is no element holding still while
+   things move over it, so there is nothing for the motion to fight.
+
+   --celebrate-p (0 → 1) is published by the script as the section crosses
+   the viewport. Each word turns that one number into its own 0 → 1 by
+   offsetting it by its place in the line: word 0 starts immediately, and
+   each one after it waits a slot longer. --word-span is how many slots a
+   single word takes to arrive, so raising it makes the words overlap more
+   and the whole line softer. */
 .celebrate {
-  --word-rise: 20px;
-  --word-duration: .7s;
-  --word-stagger: 65ms;
+  --word-rise: 22px;
+  --word-span: 3.2;
+  --celebrate-p: 0;
 }
 html.js .celebrate .word {
   display: inline-block;      /* translateY needs a block box */
-  opacity: 0;
-  transform: translateY(var(--word-rise));
-  transition:
-    opacity   var(--word-duration) var(--ease-reveal),
-    transform var(--word-duration) var(--ease-reveal);
-  transition-delay: calc(var(--word-i, 0) * var(--word-stagger));
+  /* This word's own progress, carved out of the line's. */
+  --wp: clamp(0,
+    calc((var(--celebrate-p) * (var(--word-n, 6) + var(--word-span)) - var(--word-i, 0))
+         / var(--word-span)),
+    1);
+  opacity: var(--wp);
+  transform: translateY(calc(var(--word-rise) * (1 - var(--wp))));
+  /* Deliberately no transition: the scroll position *is* the timeline, and
+     a transition on top of it would lag behind the finger. Smoothness comes
+     from rAF and from rounding the progress, not from easing. */
+  will-change: opacity, transform;
 }
-html.js .celebrate.is-in .word { opacity: 1; transform: none; }
+/* Without the script there is no progress to read, so the line is simply
+   set — same rule the hero and the mosaic follow. */
+html:not(.js) .celebrate .word { opacity: 1; transform: none; }
 
 
 /* ==========================================================================
@@ -2029,8 +2047,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .step-dot.is-done::after, .done-mark::after { animation: none; }
   .step-dot.is-current { transform: none; }
 
-  /* The invitation line is simply there — every word, at once, in place. */
-  html.js .celebrate .word { opacity: 1; transform: none; transition: none; }
+  /* The invitation line is simply there — every word, at once, in place.
+     The script bails before it publishes any progress, so pinning the
+     variable here is belt and braces rather than a second source of truth. */
+  html.js .celebrate { --celebrate-p: 1 !important; }
+  html.js .celebrate .word { opacity: 1; transform: none; will-change: auto; }
 
   /* The mosaic is assembled, not assembling: --mosaic-p pinned at 1 puts
      every card at its final position, the runway collapses to one screen,
