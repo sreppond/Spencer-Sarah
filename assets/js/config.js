@@ -63,7 +63,11 @@ window.SAVE_THE_DATE = {
        is ever replaced. images/hero-lake.jpg remains the social-card source. */
     heroPoster: 'assets/video/whitefish-hero-poster.jpg',
     heroVideo: 'assets/video/whitefish-hero-loop.mp4',
-    heroVideoMobile: 'assets/video/whitefish-hero-loop-mobile.mp4', // optional portrait crop
+    /* Optional portrait crop, served below 768px. Not cut yet, so it is
+       left empty rather than pointed at a file that is not there: the
+       hero falls straight through to heroVideo above. Fill this in when
+       the crop ships — see assets/video/README.md. */
+    heroVideoMobile: '',
     /* Ambient bed. Mastered to -18 LUFS so the 0.16 gain below lands it
        around -34 LUFS in the room. Rebuild it with tools/make-ambient-loop.sh
        rather than dropping a raw clip in — see assets/audio/README.md. */
