@@ -36,31 +36,6 @@
   --gold-text:    #7a5c33;   /* 5.5:1 — eyebrows, accents, the send button */
   --err:          #8c4f39;   /* 5.6:1 — validation messages */
 
-  /* --- the silk ---------------------------------------------------
-     The sheen that moves under everything below the painting. See §3.1
-     for what it is and why it is set this quietly; these three tokens
-     are the whole tuning surface, and save-the-date.js reads the ink and
-     the scale straight out of them so this stays the only place to
-     change how it looks.
-
-     --silk-ink is given as raw channels because the canvas needs numbers,
-     not a colour string. It is --stone (#9c9382), the same grey-green the
-     hero location line is set in. */
-  --silk-ink:     156, 147, 130;
-  /* Held down deliberately. Below about .08 the weave disappears on a
-     desktop-width screen and the whole thing is dead code; much above .18
-     it stops being a sheen in the stock and starts reading as a
-     photograph of fabric behind the copy, which is a different — and
-     wrong — page. .13 is the point where you can see the folds without
-     the folds becoming the subject. */
-  --silk-opacity: .13;
-  /* How many wave periods cross the viewport, the same on every screen —
-     the weave is drawn isotropically, so this is not stretched by the
-     shape of the window. Too low and the ripples grow past the viewport
-     and read as a vague gradient rather than cloth; too high and they
-     tighten into moiré that vibrates against the paper tooth. */
-  --silk-scale:   2.6;
-
   /* --- envelope --- */
   --env-paper:    #24241f;
   --env-paper-hi: #33332c;
@@ -1078,75 +1053,15 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
       var(--paper-warm) 40rem,
       var(--paper) 100%);
 }
-/* fine tooth, so it reads as stock rather than a flat fill.
-   z-index puts it over the silk (§3.1): the tooth is the surface of the
-   paper, and the sheen is light moving under it. */
+/* fine tooth, so it reads as stock rather than a flat fill */
 .paper::before {
   content: '';
   position: absolute;
   inset: 12rem 0 0;
-  z-index: 1;
   pointer-events: none;
   opacity: .45;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
 }
-
-
-/* ==========================================================================
-   3.1 · THE SILK
-   A slow moiré weave drifting under everything below the painting.
-
-   This started as a full-contrast animated silk — luminous white ridges,
-   the kind of thing that is the whole point of the screen it is on. Two
-   things were wrong with it here and both are worth writing down, because
-   they are the reasons this file looks the way it does rather than that.
-
-   First, it does not invert. That effect works because the silk is *lit*:
-   bright ridges against black. Turn the ground white and the highlights
-   have nowhere brighter to go, so every bit of structure falls into the
-   shadows and you get flat grey cloth — not white silk. Rendered side by
-   side it is not a lighter version of the same idea, it is a worse one.
-
-   Second, at full contrast it is a photograph of fabric, and this page is
-   painted parchment. So what survived is the *motion*, carried in the
-   page's own inks at the strength of a watermark: the paper now has a
-   sheen that moves, which is what silk actually is, and no more.
-
-   The canvas is drawn transparent — ink at a per-pixel alpha, nothing
-   else — so the paper gradient above stays the only thing setting the
-   colour of this page. Turn --silk-opacity to 0 and the page is exactly
-   what it was before.
-   ========================================================================== */
-
-/* Page-anchored, unlike the canvas inside it, which travels. Two jobs:
-   hold the sheen inside the paper, and start it below the hand-off — the
-   paper's own fill is still transparent for the first several rem so the
-   painting can show through, and anything drawn up there lands on the
-   dissolve rather than on paper. The mask feathers the top of that band
-   so the sheen arrives instead of starting on a cut. */
-.paper-silk {
-  position: absolute;
-  inset: 12rem 0 0;
-  z-index: 0;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14rem);
-          mask-image: linear-gradient(to bottom, transparent 0, #000 14rem);
-}
-
-/* One viewport of pixels for the whole of the paper, on the same sticky
-   idiom as the hero and the mosaic. The canvas backing store is a
-   fraction of this size and scaled up by the browser — the pattern is
-   smooth and low-frequency, so the interpolation is free resolution, and
-   at this opacity nothing about it is resolvable anyway. See the buffer
-   note in save-the-date.js. */
-.paper-silk-weave {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: 100svh;
-  opacity: var(--silk-opacity);
-}
-@supports not (height: 100svh) { .paper-silk-weave { height: 100vh; } }
 
 .sheet { position: relative; z-index: 2; padding: 0 var(--gutter); }
 .sheet-inner { max-width: 33rem; margin: 0 auto; }
