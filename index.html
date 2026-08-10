@@ -59,14 +59,14 @@
 
      BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
      The date is only a convention — any value the browser has not seen works. -->
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260808j">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260810a">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
 <script>document.documentElement.className += ' js';</script>
 
-<script defer src="assets/js/config.js?v=20260808j"></script>
-<script defer src="assets/js/save-the-date.js?v=20260808j"></script>
+<script defer src="assets/js/config.js?v=20260810a"></script>
+<script defer src="assets/js/save-the-date.js?v=20260810a"></script>
 </head>
 
 <body>
@@ -386,10 +386,16 @@
             </div>
           </div>
 
-          <!-- Simple bot trap. Real guests never see or fill this. -->
+          <!-- Simple bot trap. Real guests never see or fill either of
+               these. `company` is ours and is checked before we send;
+               `_gotcha` is the field name Formspree filters on, so a bot
+               that fills everything is dropped on our side and on theirs.
+               Neither is ever included in the payload. -->
           <div class="hp" aria-hidden="true">
             <label for="g-company">Company</label>
             <input id="g-company" name="company" type="text" tabindex="-1" autocomplete="off">
+            <label for="g-gotcha">Leave this empty</label>
+            <input id="g-gotcha" name="_gotcha" type="text" tabindex="-1" autocomplete="off">
           </div>
 
           <div class="form-actions">

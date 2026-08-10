@@ -25,6 +25,67 @@
 
 
   /* ------------------------------------------------------------------
+     Storage
+
+     Three things about browser storage bite in practice, and all three
+     bite on this page:
+
+       · Safari in private mode *throws* on access rather than returning
+         null, so every call has to be wrapped or the script dies on a
+         line that was only trying to remember a preference;
+       · a flag with no expiry outlives its meaning — "you have seen the
+         envelope" is true for a week, not for three years;
+       · a value written by an older version of this file may be a bare
+         string rather than a record, and must not crash the read.
+
+     So every value is stored as {v, t} and read back through a max age
+     in days. A missing, expired, unparseable or inaccessible value all
+     resolve to the same thing: null.
+     ------------------------------------------------------------------ */
+  var store = (function () {
+    var ls = (function () {
+      try {
+        var area = window.localStorage;
+        area.setItem('std:probe', '1');
+        area.removeItem('std:probe');
+        return area;
+      } catch (e) { return null; }
+    }());
+
+    function clear(key) {
+      if (!ls) return;
+      try { ls.removeItem(key); } catch (e) {}
+    }
+
+    return {
+      clear: clear,
+
+      get: function (key, maxAgeDays) {
+        if (!ls) return null;
+        var raw;
+        try { raw = ls.getItem(key); } catch (e) { return null; }
+        if (!raw) return null;
+
+        var rec;
+        try { rec = JSON.parse(raw); } catch (e) { clear(key); return null; }
+        if (!rec || typeof rec.t !== 'number') { clear(key); return null; }
+
+        if (maxAgeDays && Date.now() - rec.t > maxAgeDays * 864e5) {
+          clear(key);
+          return null;
+        }
+        return rec.v;
+      },
+
+      set: function (key, value) {
+        if (!ls) return;
+        try { ls.setItem(key, JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
+      }
+    };
+  }());
+
+
+  /* ------------------------------------------------------------------
      Elements — every lookup shared across the sections below happens
      here, at the top, and nowhere else.
 
@@ -707,6 +768,51 @@
     var submit = $('#guest-submit');
     var done = $('#form-done');
 
+
+    /* ---- "you already sent this" ------------------------------------
+       A guest who sends their address in August and comes back in March
+       to look up the hotel currently gets a blank four-step form, which
+       reads as "that never went through" and produces a duplicate row.
+       On success we remember it, and a later visit lands on the done
+       screen with a quiet way back to the form for anyone who has moved.
+
+       Deliberately not a lock: the key is one click from being cleared,
+       and clearing it is the whole affordance. A guest who has genuinely
+       moved house must be able to tell us.                              */
+    var SENT_KEY = 'std:sent';
+    var rememberDays = (CFG.form || {}).rememberSentDays;
+
+    function showDone(remembered) {
+      if (!done) return;
+      form.hidden = true;
+      done.hidden = false;
+
+      var lede = $('.sheet-lede', form.parentNode);
+      if (lede) lede.hidden = true;
+
+      if (!remembered || $('.done-again', done)) return;
+
+      var again = document.createElement('p');
+      again.className = 'done-again';
+      again.textContent = 'Sent something already? ';
+
+      var link = document.createElement('button');
+      link.type = 'button';
+      link.className = 'done-again-link';
+      link.textContent = 'Update it';
+      link.addEventListener('click', function () {
+        store.clear(SENT_KEY);
+        again.remove();
+        done.hidden = true;
+        form.hidden = false;
+        if (lede) lede.hidden = false;
+        if (stepped) go(0, true);
+      });
+
+      again.appendChild(link);
+      done.appendChild(again);
+    }
+
     var rules = {
       name: {
         test: function (v) { return v.trim().length >= 2; },
@@ -857,10 +963,29 @@
       });
     });
 
-    function setStatus(text, isError) {
+    /* A status message is usually a sentence, but the failure case has to
+       offer a way out, and a tappable mailto: is worth far more on a phone
+       than an address a guest has to select by hand. `link` is optional and
+       built as a real node, so nothing here ever interpolates into HTML. */
+    function setStatus(text, isError, link) {
       if (!status) return;
       status.textContent = text || '';
       status.classList.toggle('is-error', !!isError);
+      if (link && link.href && link.label) {
+        status.appendChild(document.createTextNode(' '));
+        var a = document.createElement('a');
+        a.className = 'form-status-link';
+        a.href = link.href;
+        a.textContent = link.label;
+        status.appendChild(a);
+      }
+    }
+
+    /* The only address a guest can fall back on. Empty in config means the
+       sentence is dropped rather than a dead mailto: being shipped. */
+    function contactLink() {
+      var email = (CFG.contact || {}).email;
+      return email ? { href: 'mailto:' + email, label: email } : null;
     }
 
     if (stepped) {
@@ -871,6 +996,10 @@
       }
     }
 
+    // Ran after the stepper is built, so the form underneath the done
+    // screen is in a sane state if the guest asks to update it.
+    if (rememberDays && store.get(SENT_KEY, rememberDays)) showDone(true);
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
@@ -878,8 +1007,11 @@
       // does, so the guard against a double send is explicit.
       if (sending) return;
 
-      // Honeypot: a real guest never sees this field.
+      // Honeypot: a real guest never sees either of these. `company` is
+      // ours; `_gotcha` is the name Formspree filters on, so a bot that
+      // fills every field is caught on our side and on theirs.
       if (form.elements.company && form.elements.company.value) return;
+      if (form.elements._gotcha && form.elements._gotcha.value) return;
 
       // Mid-flow, "submit" means "next": check this one answer and move on.
       // Enter in the field does the same thing, because the button never
@@ -911,14 +1043,25 @@
         return;
       }
 
+      var email = form.elements.email.value.trim();
+
       var payload = {
         name: form.elements.name.value.trim(),
-        email: form.elements.email.value.trim(),
+        email: email,
         phone: form.elements.phone.value.trim(),
         address: form.elements.address.value.trim(),
         submittedAt: new Date().toISOString(),
-        source: 'save-the-date'
+        source: 'save-the-date',
+        // So a reply to the notification email reaches the guest rather
+        // than the form service. Formspree reads this name; anything else
+        // records it as one more column.
+        _replyto: email
       };
+
+      var opts = CFG.form || {};
+      Object.keys(opts.extraFields || {}).forEach(function (k) {
+        if (!(k in payload)) payload[k] = opts.extraFields[k];
+      });
 
       var endpoint = CFG.FORM_ENDPOINT;
 
@@ -943,7 +1086,6 @@
       if (sendLabel) sendLabel.textContent = 'Sending…';
       setStatus('', false);
 
-      var opts = CFG.form || {};
       var init = { method: opts.method || 'POST', headers: { Accept: 'application/json' } };
 
       if (opts.encoding === 'formdata') {
@@ -959,10 +1101,8 @@
         .then(function (res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           form.removeAttribute('aria-busy');
-          form.hidden = true;
-          done.hidden = false;
-          var lede = $('.sheet-lede', form.parentNode);
-          if (lede) lede.hidden = true;
+          store.set(SENT_KEY, payload.name || true);
+          showDone(false);
           done.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
           // The form the guest was standing in has just been removed from
           // the page. Without this, focus falls back to <body> and a screen
@@ -975,7 +1115,15 @@
           submit.classList.remove('is-sending');
           form.removeAttribute('aria-busy');
           if (sendLabel) sendLabel.textContent = 'Send our details';
-          setStatus('Something went wrong sending that. Please try again, or text it to us directly.', true);
+          // An error tells you what happened and what to do about it. The
+          // old copy did neither, and read the same as the not-connected
+          // state above — which is a different problem with a different fix.
+          setStatus(
+            'That didn\'t send — it\'s on our end, not yours.' +
+            (contactLink() ? ' Try again, or email us at' : ' Try again in a moment.'),
+            true,
+            contactLink()
+          );
         });
     });
   }());

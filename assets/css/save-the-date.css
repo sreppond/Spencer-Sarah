@@ -1671,6 +1671,16 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-wrap: pretty;
 }
 .form-status.is-error { color: var(--err); font-weight: 500; }
+/* The way out of a failed send. It sits inside an error sentence, so it
+   inherits the error ink and is distinguished by the underline alone —
+   a second colour here would be one accent too many. */
+.form-status-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+}
 
 /* Screen-reader-only, for the live region that narrates step changes. */
 .sr-only {
@@ -1767,6 +1777,32 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-wrap: pretty;
 }
 .done-next-btn { margin-top: 1.5rem; width: 100%; }
+
+/* --- "sent something already?" ---
+   Only ever rendered on a return visit, where the done screen is shown
+   from a remembered submission rather than one that just happened. It is
+   the escape hatch for a guest who has moved house since August, so it
+   has to be findable — and quiet enough that it never competes with the
+   lodging hand-off above it. */
+.done-again {
+  margin-top: clamp(1.8rem, 6vw, 2.4rem);
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--stone-text);
+}
+.done-again-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: var(--gold-text);
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+  transition: color .3s var(--ease-soft);
+}
+.done-again-link:hover, .done-again-link:focus-visible { color: var(--ink); }
 
 
 /* §5 (the photo strip) is gone — the mosaic in §3.6 replaced it. */

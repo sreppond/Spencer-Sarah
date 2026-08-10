@@ -49,6 +49,29 @@ window.SAVE_THE_DATE = {
   /* ---- Canonical URL (used for Open Graph + the .ics UID) --- */
   siteUrl: 'https://sreppond.github.io/Spencer-Sarah/',
 
+  /* ---- Feature flags -----------------------------------------
+     A flag that is false never renders a broken or empty state —
+     it renders the honest, designed alternative instead. Flip one
+     only when the fact behind it is actually confirmed. */
+  flags: {
+    /* The ceremony window in `date` above is a placeholder-shaped
+       guess. While this is false the "add to calendar" action makes
+       an ALL-DAY event for June 12, which is honest and still does
+       the only job that matters — getting the day into the calendar.
+       Set the real startLocal/endLocal above, THEN set this true. */
+    CEREMONY_TIME_CONFIRMED: false
+  },
+
+  /* ---- How a guest reaches us -------------------------------
+     Used by the form's failure message and, later, the FAQ. Leave
+     it empty and the copy simply drops the sentence rather than
+     shipping a dead mailto: — see the failure copy in
+     save-the-date.js. TODO: Spencer to decide whether this is a
+     personal address or a dedicated wedding one. */
+  contact: {
+    email: ''
+  },
+
   /* ---- Media ------------------------------------------------
      The hero still ships today. Drop the Higgsfield loop in at
      the video paths below and it takes over automatically —
@@ -121,15 +144,47 @@ window.SAVE_THE_DATE = {
   ],
 
   /* ---- Guest information form -------------------------------
+     🔴 THIS IS THE ONE THING THE SITE CANNOT DO WITHOUT.
+
      Leave FORM_ENDPOINT empty and the form validates fully but
      refuses to claim success — it shows an honest "not connected
-     yet" state instead. Paste a Formspree / Apps Script / Basin
-     URL here and it starts posting JSON. Nothing else changes. */
+     yet" state instead, and every address a guest types goes
+     nowhere. Everything else below is already wired; pasting one
+     URL here is the entire remaining step.
+
+     To get one (about five minutes):
+       1. formspree.io → new form → copy the endpoint. It looks
+          like https://formspree.io/f/abcdwxyz
+       2. Paste it below.
+       3. Submit a real test entry from the live site and confirm
+          it lands in the Formspree inbox and in email. Then
+          delete the test row.
+
+     A Google Apps Script web app writing to a Sheet works exactly
+     the same way — paste its /exec URL instead. Both are happier
+     with 'formdata' than with JSON, which is why that is the
+     default now. */
   FORM_ENDPOINT: '',
   form: {
     method: 'POST',
     // 'json' posts application/json; 'formdata' posts multipart —
     // Formspree and Google Apps Script are happiest with 'formdata'.
-    encoding: 'json'
+    encoding: 'formdata',
+
+    /* Extra fields sent with every submission. Formspree reads
+       _subject (the notification email's subject line) and
+       _replyto (so hitting reply answers the guest). Anything in
+       here is posted verbatim, so an endpoint that does not know
+       these names simply records them as extra columns. */
+    extraFields: {
+      _subject: 'Save the date — a guest sent their details'
+    },
+
+    /* Once someone has sent their details, showing them an empty
+       form again on the next visit reads as "that did not work".
+       On success we remember it for this many days and show the
+       done screen instead, with a quiet way back to the form.
+       Set to 0 to turn the behaviour off. */
+    rememberSentDays: 400
   }
 };
