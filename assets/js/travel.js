@@ -159,4 +159,183 @@
     tick();
     var timer = setInterval(tick, 60000);
   }());
+
+
+  /* ------------------------------------------------------------------
+     Getting Here — the flight finder.
+
+     Progressive enhancement over a plain, always-correct static list:
+     the three-column fallback in the markup is what a guest with no
+     JavaScript sees and what the print stylesheet shows, and it is
+     the truth until this function actually runs.
+     ------------------------------------------------------------------ */
+  (function flightFinder() {
+    var finder = $('#flight-finder');
+    var fallback = $('#flight-fallback');
+    if (!finder) return;
+
+    var origins = ((TRAVEL.flights || {}).origins || []).slice();
+    if (!origins.length) return;   // nothing to search — leave the static list as the whole answer
+
+    finder.hidden = false;
+    if (fallback) fallback.classList.add('is-superseded');
+
+    var input = $('#flight-search');
+    var listbox = $('#flight-listbox');
+    var result = $('#flight-result');
+    var carNote = $('#flight-car-note');
+
+    // Currently always false in travel-data.js — this only ever fires
+    // once Spencer has an actual shuttle arranged, and the schema has no
+    // shuttle-detail fields yet, so the replacement text stays generic
+    // and points at where the real details will land.
+    if (carNote && (TRAVEL.flags || {}).SHUTTLE_CONFIRMED) {
+      carNote.textContent = 'A shuttle is arranged for the wedding day — see "The Weekend" below for pickup times. Renting a car is optional.';
+    }
+
+    var matches = [];
+    var activeIndex = -1;
+
+    function norm(s) { return (s || '').toLowerCase(); }
+
+    function joinAnd(list) {
+      list = list || [];
+      if (list.length <= 1) return list[0] || '';
+      return list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
+    }
+
+    function copyFor(o) {
+      if (o.status === 'nonstop-year-round') {
+        return { cls: 'nonstop-year-round', line: 'Nonstop on ' + joinAnd(o.airlines) + ', year-round.' };
+      }
+      if (o.status === 'nonstop-seasonal') {
+        return {
+          cls: 'nonstop-seasonal',
+          line: 'Nonstop on ' + joinAnd(o.airlines) + ' — seasonal, so confirm the June 2027 schedule when you book.'
+        };
+      }
+      var via = (o.via && o.via.length) ? o.via.join(', ') : 'Seattle, Denver, or Minneapolis';
+      return { cls: 'connect', line: 'One stop, usually through ' + via + '.' };
+    }
+
+    function closeList() {
+      listbox.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      activeIndex = -1;
+    }
+
+    function setActive(i) {
+      var opts = $$('.flight-option', listbox);
+      opts.forEach(function (o, n) { o.classList.toggle('is-active', n === i); });
+      activeIndex = i;
+      if (i > -1 && opts[i]) input.setAttribute('aria-activedescendant', opts[i].id);
+      else input.removeAttribute('aria-activedescendant');
+    }
+
+    function select(o) {
+      input.value = o.city;
+      closeList();
+
+      var c = copyFor(o);
+      result.className = 'flight-result flight-result--' + c.cls;
+      result.innerHTML = '';
+
+      var cityEl = document.createElement('p');
+      cityEl.className = 'flight-result-city';
+      cityEl.textContent = o.city;
+      var lineEl = document.createElement('p');
+      lineEl.className = 'flight-result-line';
+      lineEl.textContent = c.line;
+      result.appendChild(cityEl);
+      result.appendChild(lineEl);
+
+      if (o.note) {
+        var noteEl = document.createElement('p');
+        noteEl.className = 'flight-result-note';
+        noteEl.textContent = o.note;
+        result.appendChild(noteEl);
+      }
+      result.hidden = false;
+    }
+
+    function render(query) {
+      var q = norm(query.trim());
+      listbox.innerHTML = '';
+      activeIndex = -1;
+
+      if (!q) { closeList(); return; }
+
+      matches = origins.filter(function (o) { return norm(o.city).indexOf(q) > -1; }).slice(0, 8);
+
+      if (!matches.length) {
+        var empty = document.createElement('li');
+        empty.className = 'flight-listbox-empty';
+        empty.textContent = 'No matching city — try the nearest major airport.';
+        listbox.appendChild(empty);
+        listbox.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+        return;
+      }
+
+      matches.forEach(function (o, i) {
+        var li = document.createElement('li');
+        li.className = 'flight-option';
+        li.id = 'flight-opt-' + i;
+        li.setAttribute('role', 'option');
+        li.textContent = o.city;
+        var code = document.createElement('span');
+        code.className = 'flight-option-code';
+        code.textContent = o.code;
+        li.appendChild(code);
+        li.addEventListener('click', function () { select(o); });
+        listbox.appendChild(li);
+      });
+      listbox.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    }
+
+    input.addEventListener('input', function () { render(input.value); });
+
+    input.addEventListener('keydown', function (e) {
+      var opts = $$('.flight-option', listbox);
+      if (e.key === 'ArrowDown' && !listbox.hidden) {
+        e.preventDefault();
+        setActive(Math.min(activeIndex + 1, opts.length - 1));
+      } else if (e.key === 'ArrowUp' && !listbox.hidden) {
+        e.preventDefault();
+        setActive(Math.max(activeIndex - 1, 0));
+      } else if (e.key === 'Enter') {
+        if (activeIndex > -1 && matches[activeIndex]) { e.preventDefault(); select(matches[activeIndex]); }
+      } else if (e.key === 'Escape') {
+        closeList();
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!finder.contains(e.target)) closeList();
+    });
+
+    // Same "warn on localhost, never in front of a guest" pattern
+    // config.js's baked-artwork check uses: the static fallback's city
+    // count per column should match travel-data.js exactly, since that
+    // list is what a guest with no JavaScript, and the print stylesheet,
+    // actually sees.
+    if (fallback && /localhost|127\.0\.0\.1/.test(location.hostname)) {
+      ['nonstop-year-round', 'nonstop-seasonal', 'connect'].forEach(function (status) {
+        var ul = fallback.querySelector('[data-flight-group="' + status + '"]');
+        if (!ul) return;
+        var staticCount = $$('li', ul).filter(function (li) {
+          return !li.classList.contains('flight-fallback-note');
+        }).length;
+        var dataCount = origins.filter(function (o) { return o.status === status; }).length;
+        if (staticCount !== dataCount) {
+          console.warn(
+            '[travel] the static flight-fallback list for "' + status + '" has ' + staticCount +
+            ' cities but travel-data.js has ' + dataCount + '. Update the static <ul> in travel/index.html to match.'
+          );
+        }
+      });
+    }
+  }());
 }());

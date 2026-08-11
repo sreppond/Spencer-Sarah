@@ -205,7 +205,8 @@ window.TRAVEL = {
       { code: 'ORD', city: 'Chicago', status: 'nonstop-seasonal', airlines: ['United', 'American'] },
       { code: 'DFW', city: 'Dallas-Fort Worth', status: 'nonstop-seasonal', airlines: ['American'] },
       { code: 'ATL', city: 'Atlanta', status: 'nonstop-seasonal', airlines: ['Delta'] },
-      { code: 'LGA', city: 'New York (LaGuardia)', status: 'nonstop-seasonal', airlines: ['American'] },
+      { code: 'LGA', city: 'New York (LaGuardia)', status: 'nonstop-seasonal', airlines: ['American'],
+        note: 'The longest nonstop route into FCA — about 4h45m, 2,029 miles.' },
       { code: 'LAX', city: 'Los Angeles', status: 'nonstop-seasonal', airlines: ['Delta', 'American', 'Allegiant'] },
       { code: 'SFO', city: 'San Francisco', status: 'nonstop-seasonal', airlines: ['United'] },
       { code: 'IAH', city: 'Houston', status: 'nonstop-seasonal', airlines: ['United'] },
@@ -214,9 +215,25 @@ window.TRAVEL = {
       { code: 'SAN', city: 'San Diego', status: 'nonstop-seasonal', airlines: ['Alaska'] },
       { code: 'CLT', city: 'Charlotte', status: 'nonstop-seasonal', airlines: ['American'] },
 
-      // A representative rather than exhaustive connect list — the combobox
-      // falls back to this generic result for any US metro not named above.
-      { code: 'BOS', city: 'Boston', status: 'connect', via: ['MSP', 'SEA', 'DEN'] }
+      // Beyond FCA's own ~22 destinations, any other US metro is a one-stop
+      // connection — true by construction, not a guessed route, since these
+      // simply are not on FCA's carrier list. No `via` claimed for the ones
+      // below (unverified which hub); BOS keeps its representative one
+      // since it is genuinely the common Boston routing.
+      { code: 'BOS', city: 'Boston', status: 'connect', via: ['MSP', 'SEA', 'DEN'] },
+      { code: 'MIA', city: 'Miami', status: 'connect' },
+      { code: 'DCA', city: 'Washington, D.C.', status: 'connect' },
+      { code: 'PHL', city: 'Philadelphia', status: 'connect' },
+      { code: 'DTW', city: 'Detroit', status: 'connect' },
+      { code: 'BNA', city: 'Nashville', status: 'connect' },
+      { code: 'AUS', city: 'Austin', status: 'connect' },
+      { code: 'SAT', city: 'San Antonio', status: 'connect' },
+      { code: 'CMH', city: 'Columbus', status: 'connect' },
+      { code: 'IND', city: 'Indianapolis', status: 'connect' },
+      { code: 'MCI', city: 'Kansas City', status: 'connect' },
+      { code: 'STL', city: 'St. Louis', status: 'connect' },
+      { code: 'SMF', city: 'Sacramento', status: 'connect' },
+      { code: 'MKE', city: 'Milwaukee', status: 'connect' }
     ]
   },
 

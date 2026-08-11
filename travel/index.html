@@ -48,13 +48,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810d">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810e">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260810d"></script>
-<script defer src="../assets/js/travel-data.js?v=20260810d"></script>
-<script defer src="../assets/js/calendar.js?v=20260810d"></script>
-<script defer src="../assets/js/travel.js?v=20260810d"></script>
+<script defer src="../assets/js/config.js?v=20260810e"></script>
+<script defer src="../assets/js/travel-data.js?v=20260810e"></script>
+<script defer src="../assets/js/calendar.js?v=20260810e"></script>
+<script defer src="../assets/js/travel.js?v=20260810e"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -120,11 +120,97 @@
     </div>
   </header>
 
-  <!-- Content sections land here in the commits that follow: Getting
-       Here, Where to Stay, the drive-time strip, the map, The Weekend,
-       While You're Here, and Questions. Each arrives with its own nav
-       link already in place above, so nothing here is ever a dead
-       link — see BUILDGUIDE Appendix, "ship after step 7." -->
+  <!-- ---------- GETTING HERE ----------
+       The single most useful thing on this page — most guests want one
+       answer: can I get there without a connection? The combobox is
+       progressive enhancement over a plain, always-correct static list;
+       travel.js hides the list and shows the combobox only once it can
+       actually run, and the same static list is what prints. -->
+  <section class="sheet travel-section" id="getting-here" aria-labelledby="getting-here-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">Getting Here</p>
+      <h2 class="sheet-title" id="getting-here-heading">Flights to Whitefish</h2>
+      <p class="sheet-lede">Most people flying in want one answer: can I get there without a connection?</p>
+
+      <div class="flight-finder" id="flight-finder" hidden>
+        <label class="flight-finder-label" for="flight-search">Flying from</label>
+        <div class="flight-combobox">
+          <input type="text" id="flight-search" class="flight-search"
+                 role="combobox" aria-expanded="false" aria-controls="flight-listbox"
+                 aria-autocomplete="list" autocomplete="off" spellcheck="false"
+                 placeholder="Type a city…">
+          <ul class="flight-listbox" id="flight-listbox" role="listbox" aria-label="Matching cities" hidden></ul>
+        </div>
+        <div class="flight-result" id="flight-result" hidden></div>
+      </div>
+
+      <p class="flight-always">
+        <strong>Glacier Park International (FCA) to Whitefish</strong> — 11–12 miles, about 20–25 minutes.
+        <span id="flight-car-note">
+          There's no wedding-day shuttle arranged yet, so plan on renting a car or arranging your own ride.
+        </span>
+      </p>
+
+      <!-- Static, always-accurate fallback — this is what prints and what
+           a guest with no JavaScript sees. travel.js checks its count
+           against travel-data.js on localhost and warns if they've
+           drifted, the same guard config.js's baked artwork gets. -->
+      <div class="flight-fallback" id="flight-fallback">
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">Nonstop, year-round</h3>
+          <ul data-flight-group="nonstop-year-round">
+            <li>Seattle — Alaska</li>
+            <li>Denver — United</li>
+            <li>Salt Lake City — Delta</li>
+            <li>Minneapolis-St. Paul — Delta, Sun Country</li>
+            <li>Las Vegas — Allegiant</li>
+            <li>Phoenix-Mesa — Allegiant</li>
+          </ul>
+        </div>
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">Nonstop, summer seasonal <span class="flight-fallback-caveat">— confirm the June 2027 schedule when you book</span></h3>
+          <ul data-flight-group="nonstop-seasonal">
+            <li>Chicago — United, American</li>
+            <li>Dallas-Fort Worth — American</li>
+            <li>Atlanta — Delta</li>
+            <li>New York (LaGuardia) — American</li>
+            <li>Los Angeles — Delta, American, Allegiant</li>
+            <li>San Francisco — United</li>
+            <li>Houston — United</li>
+            <li>Portland — Alaska</li>
+            <li>Oakland — Allegiant</li>
+            <li>San Diego — Alaska</li>
+            <li>Charlotte — American</li>
+          </ul>
+        </div>
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">One connection</h3>
+          <ul data-flight-group="connect">
+            <li>Boston</li>
+            <li>Miami</li>
+            <li>Washington, D.C.</li>
+            <li>Philadelphia</li>
+            <li>Detroit</li>
+            <li>Nashville</li>
+            <li>Austin</li>
+            <li>San Antonio</li>
+            <li>Columbus</li>
+            <li>Indianapolis</li>
+            <li>Kansas City</li>
+            <li>St. Louis</li>
+            <li>Sacramento</li>
+            <li>Milwaukee</li>
+            <li class="flight-fallback-note">Any other US city — usually through Seattle, Denver, or Minneapolis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content sections land here in the commits that follow: Where to
+       Stay, the drive-time strip, the map, The Weekend, While You're
+       Here, and Questions. Each arrives with its own nav link already in
+       place above, so nothing here is ever a dead link. -->
 
   <footer class="sheet end-sheet">
     <img class="end-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
