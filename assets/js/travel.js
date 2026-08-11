@@ -501,11 +501,13 @@
         toast.className = 'lodge-detail-toast';
         toast.setAttribute('role', 'status');
         toast.textContent = 'Copied.';
+        var hideTimer = null;
         codeBtn.addEventListener('click', function () {
           var code = TRAVEL.roomBlock.code;
           var done = function () {
             toast.classList.add('is-shown');
-            setTimeout(function () { toast.classList.remove('is-shown'); }, 1800);
+            if (hideTimer) clearTimeout(hideTimer);
+            hideTimer = setTimeout(function () { toast.classList.remove('is-shown'); }, 1800);
           };
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(code).then(done).catch(done);
