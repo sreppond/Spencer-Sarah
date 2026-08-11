@@ -835,6 +835,32 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   color: var(--gold-text);
 }
 
+/* --- the stepper's Continue/Send button: a faster engage ---
+   Every other flow-btn on the site is something a guest pauses on before
+   acting — Book, Add to calendar. This one is tapped in rapid succession,
+   once per question, and a real tap (or a quick click) releases well
+   inside the base component's 600–800ms hover-tuned choreography. The
+   flood-in starts, gets interrupted mid-transition by :active ending, and
+   snaps back — which reads as a flash or a stutter, not a deliberate
+   motion. Scoped to .btn-send only: the flood-fill itself stays, it just
+   moves fast enough for a tap-and-release to actually see it land. */
+.flow-btn.btn-send {
+  transition:
+    color         .2s var(--ease-out),
+    border-color  .2s var(--ease-out),
+    border-radius .2s var(--ease-out),
+    box-shadow    .3s var(--ease-soft),
+    transform     .18s var(--ease-soft);
+}
+.btn-send .flow-btn__label,
+.btn-send .flow-btn__icon { transition: transform .2s var(--ease-out); }
+.btn-send .flow-btn__arrow {
+  transition: left .2s var(--ease-out), right .2s var(--ease-out), stroke .16s var(--ease-out);
+}
+.btn-send .flow-btn__ink {
+  transition: transform .2s var(--ease-out), opacity .16s var(--ease-out);
+}
+
 
 /* --- scroll cue: a tracked line and a growing botanical stem ---
    The stem draws itself over ~4.4s, which is slower than any chevron
@@ -1345,7 +1371,12 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
    4 · FORM
    ========================================================================== */
 
-.form-sheet { padding-top: clamp(4rem, 13vh, 7rem); padding-bottom: clamp(2.5rem, 6vh, 3.5rem); }
+/* The form is now the last thing on the page — the footer that used to
+   follow it, and cushion the bottom of the screen, is gone. The extra
+   bottom padding (and the safe-area inset a device's home indicator
+   needs) replaces that cushion so the page doesn't end abruptly against
+   the edge of the viewport. */
+.form-sheet { padding-top: clamp(4rem, 13vh, 7rem); padding-bottom: calc(clamp(3.5rem, 11vh, 5.5rem) + var(--safe-b)); }
 
 .gform { margin-top: clamp(2.2rem, 7vw, 3rem); }
 
@@ -1830,37 +1861,6 @@ html.js .gform.is-stepped .step-q .word {
   color: var(--ink-soft);
 }
 
-/* --- the lodging hand-off ---
-   The one thing left to do, delivered at the one moment it is welcome:
-   immediately after someone has told us they are coming. */
-.done-next { margin-top: clamp(1.8rem, 6vw, 2.4rem); }
-.done-rule {
-  display: block;
-  width: 4rem;
-  height: 1px;
-  margin: 0 auto clamp(1.5rem, 5vw, 2rem);
-  background: var(--rule);
-}
-.done-next-head {
-  font-family: var(--font-display);
-  font-size: clamp(1.35rem, 5.4vw, 1.65rem);
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--ink);
-}
-.done-next-sub {
-  margin: .7rem auto 0;
-  max-width: 26rem;
-  font-size: var(--t-small);
-  line-height: 1.55;
-  color: var(--ink-soft);
-  text-wrap: pretty;
-}
-.done-next-btn { margin-top: 1.5rem; width: 100%; }
-/* Second action on the done screen: quiet, so the lodging button above it
-   stays the primary one, but full width so it is unmistakably a button. */
-.done-next-cal { margin-top: .8rem; width: 100%; }
-
 /* --- "sent something already?" ---
    Only ever rendered on a return visit, where the done screen is shown
    from a remembered submission rather than one that just happened. It is
@@ -2074,7 +2074,7 @@ html.js .gform.is-stepped .step-q .word {
 
 @media (min-width: 1024px) {
   .sheet-inner { max-width: 36rem; }
-  .form-sheet { padding-top: clamp(6rem, 16vh, 9rem); padding-bottom: 4rem; }
+  .form-sheet { padding-top: clamp(6rem, 16vh, 9rem); padding-bottom: calc(5rem + var(--safe-b)); }
   .end-sheet { padding-top: 4rem; }
 }
 

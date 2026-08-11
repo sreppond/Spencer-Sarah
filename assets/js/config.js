@@ -106,26 +106,9 @@ window.SAVE_THE_DATE = {
     socialPreview: 'assets/img/social-preview.jpg'
   },
 
-  /* ---- Lodging ----------------------------------------------
-     This is the last screen of the form, not a hero button: it only
-     appears once someone has told us who they are, which is the first
-     moment the ask makes sense.
-
-     `href` points at the Where to Stay section of Travel & Stay — there
-     is no separate lodging page. Point it straight at a booking URL
-     instead if you would rather skip the section. Set `href` to '' and
-     the button is removed rather than shipped as a dead link — the
-     deadline line stays. */
-  lodging: {
-    label: 'Lodging details',
-    deadline: 'Book lodging by October',
-    blurb: 'Rooms in Whitefish go early in June. Here\'s where to stay and how to book.',
-    href: 'travel/#where-to-stay'
-  },
-
   /* ---- Ambient audio --------------------------------------- */
   audio: {
-    targetVolume: 0.16,   // deliberately quiet
+    targetVolume: 0.08,   // half of the already-quiet 0.16 it shipped at
     fadeInMs: 4000
   },
 
