@@ -135,7 +135,7 @@
 
     var metaArt = $('[data-hero-meta-alt]');
     if (metaArt && CFG.date && CFG.location) {
-      metaArt.alt = CFG.date.display + ' — ' + CFG.location.display;
+      metaArt.alt = CFG.date.display + ' – ' + CFG.location.display;
     }
 
     warnIfArtworkIsStale();
@@ -950,11 +950,11 @@
       // typed, so a filled-in field still has to look like the real thing.
       phone: {
         test: function (v) { return !v.trim() || v.replace(/\D/g, '').length >= 7; },
-        message: 'That doesn’t look like a full number — or leave it blank.'
+        message: 'That doesn’t look like a full number – or leave it blank.'
       },
       address: {
         test: function (v) { return !v.trim() || v.trim().length >= 8; },
-        message: 'That looks a little short for a full address — or leave it blank.'
+        message: 'That looks a little short for a full address – or leave it blank.'
       }
     };
 
@@ -1264,7 +1264,7 @@
           // old copy did neither, and read the same as the not-connected
           // state above — which is a different problem with a different fix.
           setStatus(
-            'That didn\'t send — it\'s on our end, not yours.' +
+            'That didn\'t send – it\'s on our end, not yours.' +
             (contactLink() ? ' Try again, or email us at' : ' Try again in a moment.'),
             true,
             contactLink()
