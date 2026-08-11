@@ -111,15 +111,16 @@ window.SAVE_THE_DATE = {
      appears once someone has told us who they are, which is the first
      moment the ask makes sense.
 
-     `href` points at lodging.html, the details page on this site. Point
-     it straight at a booking URL instead if you would rather skip the
-     page. Set `href` to '' and the button is removed rather than
-     shipped as a dead link — the deadline line stays. */
+     `href` points at the Where to Stay section of Travel & Stay — there
+     is no separate lodging page. Point it straight at a booking URL
+     instead if you would rather skip the section. Set `href` to '' and
+     the button is removed rather than shipped as a dead link — the
+     deadline line stays. */
   lodging: {
     label: 'Lodging details',
     deadline: 'Book lodging by October',
     blurb: 'Rooms in Whitefish go early in June. Here\'s where to stay and how to book.',
-    href: 'lodging.html'
+    href: 'travel/#where-to-stay'
   },
 
   /* ---- Ambient audio --------------------------------------- */
@@ -201,7 +202,7 @@ window.SAVE_THE_DATE = {
        here is posted verbatim, so an endpoint that does not know
        these names simply records them as extra columns. */
     extraFields: {
-      _subject: 'Save the date — a guest sent their details'
+      _subject: 'Save the date – a guest sent their details'
     },
 
     /* Once someone has sent their details, showing them an empty
