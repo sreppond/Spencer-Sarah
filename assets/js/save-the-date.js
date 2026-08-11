@@ -499,8 +499,38 @@
       if (at < sources.length) { retryDelays = [600, 1800]; attempt(); return; }
       video.removeEventListener('error', onError);
       video.removeAttribute('src');
+      armReconnectRetry();
     }
     video.addEventListener('error', onError);
+
+    // Six retries in under three seconds still loses to a genuinely bad
+    // stretch of cellular signal — exactly the first moment a guest opens
+    // this link, before the connection has settled. Rather than staying
+    // parked on the poster for the rest of the visit, take one more swing
+    // the moment there is an actual signal that conditions changed: the
+    // browser reports the connection back, or the tab was backgrounded
+    // during the failed fetch (a hidden tab throttles/suspends loads the
+    // same way a dropped connection does) and has now come back to the
+    // front. Armed once, however many sources were tried the first time.
+    var reconnectArmed = false;
+    function armReconnectRetry() {
+      if (reconnectArmed) return;
+      reconnectArmed = true;
+
+      function tryAgain() {
+        window.removeEventListener('online', tryAgain);
+        document.removeEventListener('visibilitychange', onVisible);
+        at = 0;
+        retryDelays = [600, 1800];
+        video.addEventListener('error', onError);
+        attempt();
+      }
+      function onVisible() {
+        if (document.visibilityState === 'visible') tryAgain();
+      }
+      window.addEventListener('online', tryAgain);
+      document.addEventListener('visibilitychange', onVisible);
+    }
 
     function retry() {
       video.src = sources[at - 1];
