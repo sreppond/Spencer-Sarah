@@ -107,6 +107,7 @@
   --ico-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12.5l5 5 10-11'/%3E%3C/svg%3E");
 
   --gutter: clamp(1.25rem, 6vw, 2.5rem);
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
@@ -447,6 +448,107 @@ html:not(.js) .env-scene { display: none; }
   transform: translateZ(60px) translateY(-40%) scale(2.9);
   opacity: 0;
   transition: transform .95s var(--ease-inout), opacity .8s ease .1s;
+}
+
+
+/* ==========================================================================
+   1.5 · SITE NAV
+   One component, pasted as a markup partial into every page (index.html,
+   lodging.html, travel/index.html), gated by site-nav.js.
+
+   🔒 On the save-the-date this must never appear over the hero — not at
+   low opacity, not as a scrim, not on scroll-up. It ships hidden and
+   site-nav.js only reveals it once .hero-viewport has fully cleared the
+   viewport. Pages with no hero (lodging, travel) reveal it immediately.
+   z-index sits below the envelope's 90: by the time the nav could ever
+   show, the envelope is long gone, but the ordering stays honest anyway.
+   ========================================================================== */
+
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  padding-top: var(--safe-t);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .5s var(--ease-out), visibility 0s linear .5s;
+}
+.site-nav.is-shown {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .5s var(--ease-out), visibility 0s linear;
+}
+
+.site-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: .75rem var(--gutter);
+}
+
+.site-nav-word {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.site-nav-word:hover, .site-nav-word:focus-visible { color: var(--gold-text); }
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  list-style: none;
+}
+.site-nav-links a {
+  font-family: var(--font-text);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+  text-decoration: none;
+  padding: .4rem 0;                /* height toward the 44px tap floor */
+}
+.site-nav-links a:hover, .site-nav-links a:focus-visible { color: var(--gold-text); }
+.site-nav-links a[aria-current="page"] { color: var(--gold-text); }
+
+/* Under 480px the hairline bar collapses into a floating pill, closer to
+   an app's tab bar than a website header — full-width chrome felt heavy
+   at that size, and the pill keeps the same four destinations reachable
+   in far less vertical space. */
+@media (max-width: 480px) {
+  .site-nav { background: transparent; border-bottom: none; }
+  .site-nav-inner {
+    max-width: max-content;
+    margin: calc(.5rem + var(--safe-t)) auto 0;
+    padding: .6rem 1.1rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: rgba(251, 247, 240, .92);
+    -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px -16px rgba(93, 74, 44, .35);
+  }
+  .site-nav-word { display: none; }   /* the pill is a nav, not a masthead */
+  .site-nav-links { gap: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav { transition: opacity .2s linear !important; }
 }
 
 
@@ -1851,7 +1953,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
    this section is only what those pages need on top.
    ========================================================================== */
 
-.page-sub .paper { margin-top: 0; }
+/* Clearance for the fixed site nav (CSS §1.5), which occupies no layout
+   space of its own. On mobile the nav is a floating pill rather than a
+   full-width bar, but the clearance is kept anyway — the eyebrow above
+   the page title is exactly what the pill would otherwise sit over. */
+.page-sub .paper { margin-top: 0; padding-top: calc(3.4rem + var(--safe-t)); }
 .page-sub .paper::before { inset: 0; }
 
 .lodging-sheet {
@@ -1943,6 +2049,23 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
 }
 .end-link:hover, .end-link:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+.end-nav {
+  margin-top: .9rem;
+  font-size: var(--t-small);
+}
+.end-nav a {
+  padding: .4rem;
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.end-nav a:hover, .end-nav a:focus-visible {
   color: var(--ink);
   text-decoration-color: var(--gold-text);
 }
