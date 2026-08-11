@@ -288,12 +288,13 @@
     envelope.setAttribute('aria-disabled', 'true');
     scene.classList.add('is-opening');
 
-    // Audio defaults off (see A6 below) and only autoplays here for a
-    // guest who has explicitly turned it on before — this tap is the one
-    // gesture available to satisfy the browser's autoplay policy, so it
-    // is now or never for that returning preference. The toggle itself
-    // still appears for everyone at the hand-off below.
-    if (audioPreference() === 'on') startAmbient();
+    // Audio defaults on (see A6 below): this tap is the one gesture
+    // available to satisfy the browser's autoplay policy, so it is now or
+    // never for starting the ambient bed. A guest who has explicitly
+    // turned it off before — on this visit or a remembered one — is the
+    // one case that stays silent; everyone else gets it, with the toggle
+    // at the hand-off below as the way to turn it back off.
+    if (audioPreference() !== 'off') startAmbient();
 
     playEnvelopeVideo();
   }
@@ -540,11 +541,12 @@
   /* ------------------------------------------------------------------
      Ambient audio
 
-     Default off. The bed is genuinely quiet — mastered to -18 LUFS,
-     played at 0.16 gain, around -34 LUFS in the room — but it is still
-     sound a guest did not ask for on a link they may open at a desk, so
-     it now starts only on an explicit tap of the toggle, and that choice
-     is remembered for a returning visit.
+     Default on. The bed is genuinely quiet — mastered to -18 LUFS, played
+     at 0.16 gain, around -34 LUFS in the room — and it starts the moment
+     the envelope tap gives the page a gesture to start it with, same as
+     the video itself. The toggle at the hand-off is how a guest turns it
+     back off, and that choice — off only, never on, since on is already
+     the default — is what gets remembered for a returning visit.
      ------------------------------------------------------------------ */
   var audioFailed = false;
   var fadeTimer = null;
