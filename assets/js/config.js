@@ -86,6 +86,14 @@ window.SAVE_THE_DATE = {
        is ever replaced. images/hero-lake.jpg remains the social-card source. */
     heroPoster: 'assets/video/whitefish-hero-poster.jpg',
     heroVideo: 'assets/video/whitefish-hero-loop.mp4',
+    /* The gate itself: a real envelope, filmed and cut to end on a held
+       white frame so the scene's own opacity fade (see CSS §1) carries
+       straight through into the hero with nothing to cross-fade by hand.
+       Poster is the clip's own frame 0, so the tap hands off to playback
+       on the same pixels — see assets/video/README.md before replacing
+       either file. */
+    envelopePoster: 'assets/video/envelope-open-poster.jpg',
+    envelopeVideo: 'assets/video/envelope-open.mp4',
     /* Optional portrait crop, served below 768px. Not cut yet, so it is
        left empty rather than pointed at a file that is not there: the
        hero falls straight through to heroVideo above. Fill this in when
