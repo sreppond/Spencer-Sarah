@@ -14,6 +14,11 @@
 
 <title>Sarah &amp; Spencer | Save the Date</title>
 <meta name="description" content="Sarah &amp; Spencer are getting married. June 12, 2027 · Whitefish, Montana. Formal invitation and weekend details to follow.">
+<!-- Guests receive this link directly, so there is no traffic to gain from
+     search, and it keeps the date, venue and both names out of results.
+     Link-preview crawlers (iMessage/WhatsApp/social) ignore robots meta,
+     so the Open Graph/Twitter cards below still work regardless. -->
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#f7f2e9">
 <meta name="color-scheme" content="light">
 <link rel="canonical" href="https://sreppond.github.io/Spencer-Sarah/">
@@ -59,20 +64,20 @@
 
      BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
      The date is only a convention — any value the browser has not seen works. -->
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260810b">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260810c">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
 <script>document.documentElement.className += ' js';</script>
 
-<script defer src="assets/js/config.js?v=20260810b"></script>
+<script defer src="assets/js/config.js?v=20260810c"></script>
 <!-- Standalone and self-wiring: it reads config.js, upgrades every
      [data-calendar] href, and is the one ICS generator on this site.
      Must load after config.js and can load before or after the page
      script — it depends on neither. -->
-<script defer src="assets/js/calendar.js?v=20260810b"></script>
-<script defer src="assets/js/site-nav.js?v=20260810b"></script>
-<script defer src="assets/js/save-the-date.js?v=20260810b"></script>
+<script defer src="assets/js/calendar.js?v=20260810c"></script>
+<script defer src="assets/js/site-nav.js?v=20260810c"></script>
+<script defer src="assets/js/save-the-date.js?v=20260810c"></script>
 </head>
 
 <body>
@@ -262,6 +267,15 @@
                  alt="June 12, 2027 — Whitefish, Montana" data-hero-meta-alt
                  width="240" height="59" decoding="async">
           </p>
+          <!-- The hero lettering is artwork and cannot be selected or found
+               by an in-page search. Zero visual change: this exists only so
+               the date is real, selectable, searchable text somewhere in
+               the hero's DOM. Each span uses the same [data-config]
+               mechanism as the rest of the page, so it can never drift from
+               config.js without the localhost warning firing. -->
+          <p class="sr-only">
+            <span data-config="date.display">June 12, 2027</span> · <span data-config="location.display">Whitefish, Montana</span>
+          </p>
         </div>
 
         <!-- The hero carries the names, the date and one instruction. The
@@ -411,11 +425,11 @@
           <div class="step" data-step="2">
             <div class="field">
               <div class="step-head">
-                <label class="step-q" for="g-phone">A number we can text</label>
+                <label class="step-q" for="g-phone">A number we can text <em class="step-optional">(optional)</em></label>
                 <span class="step-count" aria-hidden="true"></span>
               </div>
               <input id="g-phone" name="phone" type="tel" autocomplete="tel"
-                     inputmode="tel" required aria-describedby="g-phone-err" enterkeyhint="next">
+                     inputmode="tel" aria-describedby="g-phone-err" enterkeyhint="next">
               <p class="field-err" id="g-phone-err" role="alert" hidden></p>
             </div>
           </div>
@@ -427,10 +441,16 @@
                 <span class="step-count" aria-hidden="true"></span>
               </div>
               <textarea id="g-address" name="address" rows="3" autocomplete="street-address"
-                        required aria-describedby="g-address-hint g-address-err"
+                        aria-describedby="g-address-hint g-address-err"
                         enterkeyhint="done"></textarea>
               <p class="field-hint" id="g-address-hint">Street, city, state, ZIP — however you'd write it on a letter.</p>
               <p class="field-err" id="g-address-err" role="alert" hidden></p>
+              <!-- Some guests are mid-move and genuinely do not have this yet.
+                   Submitting through here sends the rest of the form with an
+                   empty address rather than blocking on a field they cannot
+                   fill in today. save-the-date.js flags the row so it reads
+                   as "no address yet," not as a guest who gave up. -->
+              <button type="button" class="field-skip" id="g-address-skip">Don't have it handy? Send the rest and we'll follow up.</button>
             </div>
           </div>
 

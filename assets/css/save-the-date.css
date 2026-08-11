@@ -432,6 +432,19 @@ html:not(.js) .env-scene { display: none; }
 
 .env.is-pressed .env-seal { transform: translate(-50%, -50%) translateZ(4px) scale(.93); }
 
+/* A tappable-looking seal on a screen with exactly one accepted
+   interaction and no other visible affordance. Starts after the hint has
+   had its first breath (1.2s) so the two don't read as one busy object,
+   and it is slow enough (3s) to read as an invitation, not an alert.
+   `.is-pressed` above already overrides the transform on tap, so the two
+   never fight. Class-gated (added by save-the-date.js) rather than an
+   unconditional animation so it can be withheld under reduced motion. */
+.env.is-inviting .env-seal { animation: seal-breathe 3s var(--ease-soft) 1.2s infinite; }
+@keyframes seal-breathe {
+  0%, 100% { transform: translate(-50%, -50%) translateZ(4px) scale(1); }
+  50%      { transform: translate(-50%, -50%) translateZ(4px) scale(1.03); }
+}
+
 .env.is-open { cursor: default; }
 .env-scene.is-opening .env-hint { opacity: 0; animation: none; transition: opacity .3s ease; }
 
@@ -1377,6 +1390,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   object-fit: cover;
   display: block;
 }
+/* When config supplies a WebP source, mosaic() wraps the <img> in a
+   <picture> — display:contents drops the wrapper out of the box tree so
+   the <img> above still sizes exactly as if it were .m-card's direct
+   child, same as every card without a WebP source. */
+.m-card picture { display: contents; }
 .m-frame {
   position: absolute;
   inset: 0;
@@ -1561,6 +1579,31 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   line-height: 1.5;
   color: var(--stone-text);
 }
+/* The way out for a guest who is mid-move and genuinely does not have an
+   address yet. Text, not a button shape — it is an escape hatch, not a
+   second call to action competing with "Send our details" below it. */
+.field-skip {
+  display: block;
+  margin-top: .8rem;
+  border: 0;
+  padding: .4rem 0;
+  background: none;
+  font: inherit;
+  font-size: var(--t-small);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  color: var(--stone-text);
+  cursor: pointer;
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.field-skip:hover, .field-skip:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+
 /* Errors led with italic text of the same weight and nearly the same
    colour as the hint sitting three pixels away. This one gets a mark, a
    solid weight and a colour that is only ever used for errors. */
@@ -1750,6 +1793,15 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-indent: 0;
   text-transform: none;
   color: var(--ink);
+}
+/* A required-looking question that turns out to be optional reads as a
+   small betrayal three fields in. Said plainly, in the question itself,
+   rather than left for the guest to discover by trying to skip it. */
+.step-optional {
+  font-style: normal;
+  font-size: .62em;
+  font-weight: 400;
+  color: var(--stone-text);
 }
 /* "2 of 4". Without it, a form that reveals itself one field at a time is
    a form with no visible end — which is the classic way multistep goes
@@ -2215,6 +2267,10 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
 
   /* the envelope becomes a short cross-fade instead of a 3D sequence */
   .env { transition: opacity .45s linear !important; }
+  /* Belt and braces: save-the-date.js never adds .is-inviting under
+     reduced motion, and the gate is bypassed outright before the seal
+     could ever pulse — but pinning it here costs nothing. */
+  .env.is-inviting .env-seal { animation: none; }
   .env.is-open { opacity: 0; }
   .env.is-open .env-flap { transform: translateZ(3px) rotateX(0deg); }
   .env.is-open .env-card { transform: translateZ(1px); }
@@ -2279,4 +2335,59 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .m-card { will-change: auto; }
   .cue-arrow { animation: none; opacity: .9; }
 
+}
+
+
+/* ==========================================================================
+   10 · PRINT
+   Someone's grandmother will print this. Chrome (the envelope, the nav,
+   the audio toggle, the scroll cue, the mosaic's flying satellites) has no
+   job on paper — the content underneath it does. Background images are
+   dropped outright: they cost ink for no information and most home
+   printers render them badly or not at all.
+   ========================================================================== */
+
+@media print {
+  .env-scene,
+  .site-nav,
+  .audio-toggle,
+  .hero-cue,
+  .skip-link { display: none !important; }
+
+  /* The painting is the one background image worth the ink — everything
+     else (the paper's grain texture, the envelope's gradients, card
+     shadows) is decoration that print strips for free by dropping
+     background-image and box-shadow globally below. */
+  .hero-media { position: static; }
+  .hero-video { display: none; }
+
+  * , *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .paper::before { display: none; }   /* the paper-grain noise texture */
+
+  body { background: #fff; color: #000; }
+
+  /* The mosaic's scroll choreography has no meaning on a static page —
+     lay every card out in normal flow, at its natural size, so all six
+     print rather than five of them being cropped satellites mid-flight. */
+  .mosaic-viewport, .mosaic-stage { position: static; height: auto; }
+  .m-card {
+    position: static;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 1rem;
+    page-break-inside: avoid;
+  }
+
+  a { color: inherit; text-decoration: underline; }
+  /* A printed page cannot follow a link, so a URL worth having is worth
+     printing next to the words that carry it. Scoped to the content
+     links most likely to matter on paper (booking, mailto, tel); nav
+     chrome above is already display:none. */
+  .form-status a[href]::after,
+  .end-link[href]::after,
+  .lodging-back[href^="http"]::after { content: " (" attr(href) ")"; font-size: .85em; }
 }

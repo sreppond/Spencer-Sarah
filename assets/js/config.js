@@ -133,14 +133,30 @@ window.SAVE_THE_DATE = {
      frame instead of a broken image, so this is safe to ship before the
      photos exist — drop files with these names into assets/photos/ and
      they appear on their own. Put the strongest, widest photograph at
-     index 0: it is the only one seen at full width. */
+     index 0: it is the only one seen at full width.
+
+     Optional `webp`: when set, the mosaic serves it first with `src` as
+     the <picture> fallback for a browser or codec that cannot decode it —
+     export each photo at 2x its largest rendered size, WebP first, JPEG
+     fallback, and aim for ≤180KB apiece. Six full-resolution phone JPEGs
+     would blow the page's JS-adjacent asset budget on their own.
+
+     `alt`: five of six are '' on purpose — pure decoration, correctly
+     silent to a screen reader. Index 0 is not: it is the one photograph
+     seen at full width and it depicts the couple, so its alt text should
+     say who and roughly what ("Sarah and Spencer on the dock at
+     Whitefish Lake"), not stay generic. Write it once there is a real
+     photo in the file — inventing a description of a picture that
+     doesn't exist yet would be exactly the fabricated content §3
+     warns against. Index 1, the next-most-prominent satellite, is worth
+     the same treatment once it exists. */
   mosaic: [
-    { src: 'assets/photos/mosaic-centre.jpg', alt: 'Sarah and Spencer' },
-    { src: 'assets/photos/mosaic-1.jpg', alt: '' },
-    { src: 'assets/photos/mosaic-2.jpg', alt: '' },
-    { src: 'assets/photos/mosaic-3.jpg', alt: '' },
-    { src: 'assets/photos/mosaic-4.jpg', alt: '' },
-    { src: 'assets/photos/mosaic-5.jpg', alt: '' }
+    { src: 'assets/photos/mosaic-centre.jpg', webp: '', alt: 'Sarah and Spencer' },
+    { src: 'assets/photos/mosaic-1.jpg', webp: '', alt: '' },
+    { src: 'assets/photos/mosaic-2.jpg', webp: '', alt: '' },
+    { src: 'assets/photos/mosaic-3.jpg', webp: '', alt: '' },
+    { src: 'assets/photos/mosaic-4.jpg', webp: '', alt: '' },
+    { src: 'assets/photos/mosaic-5.jpg', webp: '', alt: '' }
   ],
 
   /* ---- Guest information form -------------------------------
