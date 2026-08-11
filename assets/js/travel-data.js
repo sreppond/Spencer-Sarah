@@ -65,9 +65,12 @@ window.TRAVEL = {
       driveMinutes: 0,
       priceTier: '$$$$',
       bestFor: 'Staying where the wedding is',
-      amenities: ['On-site', 'Lakefront'],
-      blurb: 'TODO — Spencer to write 2-3 sentences in his own voice.',
-      bookingUrl: '',
+      amenities: ['On-site', 'Lakefront', 'Spa', 'Pools', 'Marina'],
+      blurb: 'Montana’s only AAA Four Diamond resort, and the easiest option ' +
+        'there is — you don’t have to leave the property. On-site spa, ' +
+        'indoor and outdoor pools, a marina, and the Boat Club Restaurant, ' +
+        'all right where the wedding is happening.',
+      bookingUrl: 'https://www.lodgeatwhitefishlake.com',
       phone: '',
       coords: [48.4231, -114.3536],
       tags: ['walk-to-ceremony', 'downtown'],
@@ -76,35 +79,41 @@ window.TRAVEL = {
     },
     {
       id: 'viking-creek-homes',
-      name: 'Viking Creek Homes',
-      tagline: '',
+      name: 'Luxury Homes by the Lodge (Viking Creek)',
+      tagline: 'Same property as the venue, a short walk away',
       address: '',
-      driveMinutes: null,
+      driveMinutes: 0,
       priceTier: '$$$',
-      bestFor: 'Groups wanting a house to themselves',
-      amenities: [],
-      blurb: 'TODO',
-      bookingUrl: '',
+      bestFor: 'A group wanting a house to themselves without giving up the walk',
+      amenities: ['Full kitchen', 'Multiple bedrooms', 'Lodge amenities included'],
+      blurb: 'Full houses with full kitchens and multiple bedrooms, on the ' +
+        'same property as the venue next to the Viking Creek Wetland ' +
+        'Preserve — plus access to everything at the Main Lodge. The best ' +
+        'option for a group wanting a house to themselves without giving ' +
+        'up walkability to the wedding.',
+      bookingUrl: 'https://www.luxuryhomesbythelodge.com',
       phone: '',
       coords: null,
-      tags: ['best-for-groups'],
+      tags: ['best-for-groups', 'walk-to-ceremony'],
       photo: 'assets/photos/lodging/viking-creek.jpg',
       isRoomBlock: false
     },
     {
       id: 'hidden-moose-lodge',
       name: 'Hidden Moose Lodge',
-      tagline: '',
-      address: '',
+      tagline: 'A quiet 15-room B&B about 2 miles from downtown',
+      address: '1735 E Lakeshore Dr, Whitefish, MT 59937',
       driveMinutes: null,
       priceTier: '$$$',
       bestFor: 'A quiet, small-inn stay',
-      amenities: [],
-      blurb: 'TODO',
-      bookingUrl: '',
-      phone: '',
+      amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
+      blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
+        'outdoor hot tub, and a full breakfast included — quieter and more ' +
+        'personal than a hotel.',
+      bookingUrl: 'https://www.hiddenmooselodge.com',
+      phone: '(406) 862-6516',
       coords: null,
-      tags: ['downtown'],
+      tags: [],
       photo: 'assets/photos/lodging/hidden-moose.jpg',
       isRoomBlock: false
     },
@@ -121,16 +130,19 @@ window.TRAVEL = {
       tagline: 'Rebranding to Hotel Whitefish — call before booking',
       address: '2 Fairway Dr, Whitefish, MT 59937',
       driveMinutes: null,
-      priceTier: '$$$',
+      priceTier: '$$',
       bestFor: 'Our room block — once confirmed',
       amenities: ['Pool', 'On-site dining (renovation-dependent)'],
-      blurb: 'Grouse Mountain Lodge is mid-renovation and relaunching as ' +
-        '"Hotel Whitefish" in phases through summer 2027 — which overlaps ' +
-        'our wedding weekend. We are confirming with the property whether ' +
-        'the room block, the restaurant and the lobby will be fully open ' +
-        'June 11-13. Details here the moment we know.',
+      blurb: 'Grouse Mountain Lodge is mid-renovation and relaunching in ' +
+        'phases as "Hotel Whitefish" — 144 rooms total, 72 already ' +
+        'renovated and open (including a new bridal suite), with a new ' +
+        '8,250 sq ft event pavilion opening fall 2026. The full relaunch ' +
+        'is targeted for summer 2027, essentially our wedding weekend. We ' +
+        'are confirming with the property whether the room block, the ' +
+        'restaurant and the lobby will be fully open June 11-13. Details ' +
+        'here the moment we know.',
       bookingUrl: '',
-      phone: '',
+      phone: '(406) 862-3000',
       coords: null,
       tags: ['our-room-block'],
       photo: 'assets/photos/lodging/grouse-mountain.jpg',
@@ -139,15 +151,17 @@ window.TRAVEL = {
     {
       id: 'the-firebrand',
       name: 'The Firebrand',
-      tagline: '',
-      address: '',
+      tagline: 'Downtown, walkable to dinner and the bars after',
+      address: '650 E 3rd St, Whitefish, MT 59937',
       driveMinutes: null,
       priceTier: '$$$',
       bestFor: 'Downtown, walkable to dinner',
-      amenities: [],
-      blurb: 'TODO',
-      bookingUrl: '',
-      phone: '',
+      amenities: ['Rooftop hot tub', 'Restaurant + bar downstairs'],
+      blurb: 'The pick if you want to walk to dinner and the bars afterward ' +
+        '— 20+ restaurants within five minutes on foot. Boutique rooms, a ' +
+        'rooftop hot tub, and a restaurant and bar downstairs.',
+      bookingUrl: 'https://www.firebrandhotel.com',
+      phone: '(406) 863-1900',
       coords: null,
       tags: ['downtown'],
       photo: 'assets/photos/lodging/firebrand.jpg',
@@ -156,14 +170,17 @@ window.TRAVEL = {
     {
       id: 'vacation-rentals',
       name: 'Vacation rentals',
-      tagline: '',
+      tagline: 'A deep bench of cabins and condos on VRBO/Airbnb',
       address: '',
+      noFixedAddress: true,
       driveMinutes: null,
       priceTier: '$$',
       bestFor: 'Easier on the budget, or a longer stay',
       amenities: [],
-      blurb: 'TODO — a short note on where to look (Airbnb/Vrbo search area) ' +
-        'rather than a single link, since this is a category, not one property.',
+      blurb: 'Whitefish has a deep bench of cabins and condos on VRBO and ' +
+        'Airbnb, from downtown walk-ups to lakefront houses — search ' +
+        '"Whitefish, MT." Best option for larger groups or anyone staying ' +
+        'longer than the wedding weekend.',
       bookingUrl: '',
       phone: '',
       coords: null,
@@ -171,6 +188,36 @@ window.TRAVEL = {
       photo: 'assets/photos/lodging/rentals.jpg',
       isRoomBlock: false
     }
+  ],
+
+
+  /* ---- Extra map points -------------------------------------------
+     Places worth a pin that aren't lodging: the airport (built from
+     `flights` above) and anything else guests will want to find. Rendered
+     into the same address list the lodging entries populate — see
+     mapFallback() in travel.js. */
+  extraMapPoints: [
+    { name: 'Whitefish Amtrak Depot', address: '500 Depot St, Whitefish, MT 59937' },
+    { name: 'Downtown Whitefish / City Beach', address: 'Central Ave & 2nd St, Whitefish, MT 59937' }
+  ],
+
+
+  /* ---- Drive times -------------------------------------------------
+     Key route pairs, checked against current mapping and airport/venue
+     data — distinct from `lodging[].driveMinutes` above, which is each
+     property's own drive to the venue and mostly still unverified. This
+     entry has a real driveMinutes, at which point the scaled strip in
+     driveStrip() (travel.js) takes over and this list stops rendering;
+     until then, driveStrip() prints this instead of the bare placeholder. */
+  driveTimesVerified: '2026-08-11',
+  driveTimes: [
+    { from: 'Glacier Park International (FCA)', to: 'the venue', distance: '~12 miles', minutes: '20-25 min' },
+    { from: 'Glacier Park International (FCA)', to: 'downtown Whitefish', distance: '~12 miles', minutes: '20-25 min' },
+    { from: 'Whitefish Amtrak Depot', to: 'the venue', distance: '~2 miles', minutes: '5-8 min' },
+    { from: 'Downtown Whitefish', to: 'West Glacier entrance, Glacier National Park', distance: '~25-30 miles', minutes: '35-45 min',
+      note: 'budget extra time in July/August peak traffic' },
+    { from: 'Whitefish', to: 'Kalispell', distance: '~15 miles', minutes: '15-20 min' },
+    { from: 'Whitefish', to: 'Bigfork / Flathead Lake', distance: '~33 miles', minutes: '45 min' }
   ],
 
   roomBlock: {
@@ -190,7 +237,7 @@ window.TRAVEL = {
      Re-verify: summer 2026 flight loads publish ~330 days out, so check
      again in January 2027 for anything that's shifted. */
   flights: {
-    lastVerified: '2026-08-09',
+    lastVerified: '2026-08-11',
     airportCode: 'FCA',
     airportName: 'Glacier Park International',
     airportToVenue: '11-12 miles, about 20-25 minutes',
@@ -198,22 +245,21 @@ window.TRAVEL = {
       { code: 'SEA', city: 'Seattle', status: 'nonstop-year-round', airlines: ['Alaska'] },
       { code: 'DEN', city: 'Denver', status: 'nonstop-year-round', airlines: ['United'] },
       { code: 'SLC', city: 'Salt Lake City', status: 'nonstop-year-round', airlines: ['Delta'] },
-      { code: 'MSP', city: 'Minneapolis-St. Paul', status: 'nonstop-year-round', airlines: ['Delta', 'Sun Country'] },
+      { code: 'MSP', city: 'Minneapolis-St. Paul', status: 'nonstop-year-round', airlines: ['Delta'],
+        note: 'Sun Country also flies this route, as a seasonal add-on to Delta’s year-round service.' },
       { code: 'LAS', city: 'Las Vegas', status: 'nonstop-year-round', airlines: ['Allegiant'] },
       { code: 'AZA', city: 'Phoenix-Mesa', status: 'nonstop-year-round', airlines: ['Allegiant'] },
 
       { code: 'ORD', city: 'Chicago', status: 'nonstop-seasonal', airlines: ['United', 'American'] },
       { code: 'DFW', city: 'Dallas-Fort Worth', status: 'nonstop-seasonal', airlines: ['American'] },
-      { code: 'ATL', city: 'Atlanta', status: 'nonstop-seasonal', airlines: ['Delta'] },
       { code: 'LGA', city: 'New York (LaGuardia)', status: 'nonstop-seasonal', airlines: ['American'],
         note: 'The longest nonstop route into FCA — about 4h45m, 2,029 miles.' },
-      { code: 'LAX', city: 'Los Angeles', status: 'nonstop-seasonal', airlines: ['Delta', 'American', 'Allegiant'] },
+      { code: 'LAX', city: 'Los Angeles', status: 'nonstop-seasonal', airlines: ['Alaska', 'United'] },
       { code: 'SFO', city: 'San Francisco', status: 'nonstop-seasonal', airlines: ['United'] },
       { code: 'IAH', city: 'Houston', status: 'nonstop-seasonal', airlines: ['United'] },
       { code: 'PDX', city: 'Portland', status: 'nonstop-seasonal', airlines: ['Alaska'] },
       { code: 'OAK', city: 'Oakland', status: 'nonstop-seasonal', airlines: ['Allegiant'] },
       { code: 'SAN', city: 'San Diego', status: 'nonstop-seasonal', airlines: ['Alaska'] },
-      { code: 'CLT', city: 'Charlotte', status: 'nonstop-seasonal', airlines: ['American'] },
 
       // Beyond FCA's own ~22 destinations, any other US metro is a one-stop
       // connection — true by construction, not a guessed route, since these
@@ -294,14 +340,21 @@ window.TRAVEL = {
       id: 'whitefish-lake',
       name: 'Whitefish Lake',
       size: 'medium',
-      blurb: 'TODO',
+      blurb: 'Right at the venue’s doorstep. City Beach downtown is open ' +
+        'to everyone and an easy walk from Central Avenue; the lake is ' +
+        'also popular for swimming, paddleboarding, kayaking, and boat ' +
+        'rentals through the marina.',
       photo: 'assets/photos/whitefish-lake.jpg'
     },
     {
       id: 'downtown',
       name: 'Downtown Whitefish',
       size: 'medium',
-      blurb: 'TODO',
+      blurb: 'A few walkable blocks of Central Avenue — local shops, ' +
+        'galleries, and good restaurants. If you’re around on a Tuesday ' +
+        'evening in summer, the Whitefish Farmers Market takes over the ' +
+        'north end of Central Avenue from 5-7:30pm with local produce, ' +
+        'food, and live music.',
       photo: ''
     },
     {
@@ -313,17 +366,20 @@ window.TRAVEL = {
          the recent pattern the lifts/alpine slide/zip line are likely
          running that weekend specifically. Re-verify: WMR publishes
          summer dates in April — check April 2027. */
-      blurb: 'Open weekends in early June — scenic lift rides, the ' +
-        'alpine slide and the zip line should be running Saturday and ' +
-        'Sunday. Check skiwhitefish.com for the 2027 dates before you ' +
-        'count on a weekday.',
+      blurb: 'Ten minutes from the venue. Open weekends in early June, ' +
+        'with a scenic gondola or chairlift up Big Mountain to 6,817 ' +
+        'feet, an alpine slide, and a zip line — should be running ' +
+        'Saturday and Sunday. The Summit House at the top has some of the ' +
+        'best views in the valley and a solid lunch menu. Check ' +
+        'skiwhitefish.com for the 2027 dates before you count on a weekday.',
       photo: ''
     },
     {
       id: 'flathead-lake',
       name: 'Flathead Lake',
       size: 'small',
-      blurb: 'TODO',
+      blurb: 'Bigfork and Flathead Lake are about 45 minutes south — a ' +
+        'nice half-day for lake views, galleries, and lunch on the water.',
       photo: ''
     }
   ],

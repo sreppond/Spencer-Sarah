@@ -7,16 +7,13 @@
 <!-- ================================================================
      Sarah & Spencer — Lodging
 
-     PLACEHOLDER. This page exists so the button on the last screen of
-     the save-the-date form has somewhere real to land — a link to a 404
-     is worse than no link. The content below is deliberately honest
-     about being incomplete rather than inventing hotels, rates or block
-     codes that do not exist yet.
-
-     To fill it in: the page already loads the same stylesheet and the
-     same type system as the save the date, so new sections can use
-     .sheet / .sheet-inner / .sheet-title / .sheet-lede / .flow-btn
-     straight away. Nothing here needs new CSS.
+     Property details (address, character, price tier) are public-facing
+     research and safe to publish. Room block codes, negotiated rates and
+     booking deadlines are NOT — those don't exist yet, so each property
+     keeps an honest .is-todo placeholder rather than an invented rate.
+     See travel-data.js's lodging[] array for the same six properties in
+     the filterable card format used on /travel/ — this page is the
+     plain-text version linked from the save-the-date form.
      ================================================================ -->
 
 <title>Lodging | Sarah &amp; Spencer</title>
@@ -31,12 +28,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260810h">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260811c">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="assets/js/config.js?v=20260810h"></script>
-<script defer src="assets/js/calendar.js?v=20260810h"></script>
-<script defer src="assets/js/site-nav.js?v=20260810h"></script>
+<script defer src="assets/js/config.js?v=20260811c"></script>
+<script defer src="assets/js/calendar.js?v=20260811c"></script>
+<script defer src="assets/js/site-nav.js?v=20260811c"></script>
 </head>
 
 <body class="page-sub">
@@ -63,14 +60,52 @@
       <p class="sheet-lede">June is peak season in the Flathead, and rooms go
         early. Book by October and you will have your pick.</p>
 
-      <div class="lodging-pending">
-        <img class="done-divider" src="assets/typography/botanical-divider-exact.svg"
-             alt="" aria-hidden="true" width="322" height="30">
-        <p class="lodging-pending-line">Details are on their way.</p>
-        <p class="lodging-pending-sub">We are still sorting the room block and
-          the nearby options. This page will have the hotels, the rates and the
-          booking codes well before October — we will email you the moment it does.</p>
-      </div>
+      <ul class="map-address-list" id="lodging-list">
+        <li>
+          <strong>The Lodge at Whitefish Lake</strong> — 1380 Wisconsin Ave, Whitefish,
+          MT 59937 · <a href="https://www.lodgeatwhitefishlake.com" target="_blank" rel="noopener">lodgeatwhitefishlake.com</a><br>
+          Staying where the wedding is. Montana's only AAA Four Diamond resort, with a
+          spa, indoor and outdoor pools, a marina, and the Boat Club Restaurant on
+          site. $$$$<br>
+          <span class="is-todo">Room block / rate / booking code: confirming with the venue.</span>
+        </li>
+        <li>
+          <strong>Luxury Homes by the Lodge (Viking Creek)</strong> — booked through
+          the Lodge · <a href="https://www.luxuryhomesbythelodge.com" target="_blank" rel="noopener">luxuryhomesbythelodge.com</a><br>
+          Full houses on the same property, a short walk from the Main Lodge, with
+          access to all the Lodge's amenities. $$$<br>
+          <span class="is-todo">Availability / booking process: confirming.</span>
+        </li>
+        <li>
+          <strong>Hidden Moose Lodge</strong> — 1735 E Lakeshore Dr, Whitefish, MT
+          59937 · (406) 862-6516 · <a href="https://www.hiddenmooselodge.com" target="_blank" rel="noopener">hiddenmooselodge.com</a><br>
+          A 15-room B&amp;B about 2 miles from downtown. Full breakfast included, plus
+          a hot tub and a river-rock fireplace lounge. $$$<br>
+          <span class="is-todo">Room block / rate: confirming.</span>
+        </li>
+        <li>
+          <strong>Hotel Whitefish</strong> (currently Grouse Mountain Lodge) — 2
+          Fairway Dr, Whitefish, MT 59937 · (406) 862-3000<br>
+          Mid-renovation now — 72 of 144 rooms already reopened, including a new
+          bridal suite, with a new event pavilion opening fall 2026. The full
+          "Hotel Whitefish" relaunch is targeted for summer 2027, essentially our
+          wedding weekend. $$<br>
+          <span class="is-todo">Room block: confirming before we publish rates — the
+            renovation timeline makes this one worth double-checking close to the
+            date.</span>
+        </li>
+        <li>
+          <strong>The Firebrand</strong> — 650 E 3rd St, Whitefish, MT 59937 · (406)
+          863-1900 · <a href="https://www.firebrandhotel.com" target="_blank" rel="noopener">firebrandhotel.com</a><br>
+          Boutique hotel in the middle of downtown — walk to dinner and the bars
+          after. $$$<br>
+          <span class="is-todo">Room block / rate: confirming.</span>
+        </li>
+        <li>
+          <strong>Vacation rentals</strong> — VRBO / Airbnb, search "Whitefish, MT."<br>
+          Best for larger groups or anyone staying longer than the wedding weekend. $$
+        </li>
+      </ul>
 
       <a class="flow-btn flow-btn--gold lodging-back" href="./">
         <span class="flow-btn__ink" aria-hidden="true"></span>
