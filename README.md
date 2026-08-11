@@ -4,10 +4,10 @@ Two things live in this repository.
 
 ## `/` — the save the date (live)
 
-A concise, mobile-first save-the-date: a tactile envelope opens into the
-Whitefish Lake painting, a short guest-information form, a few photographs,
-and an end card. It is deliberately **not** the wedding website — no
-itinerary, travel, registry, FAQ or RSVP yet.
+A concise, mobile-first save-the-date: a filmed envelope opens on tap into
+the Whitefish Lake painting, a short guest-information form, a few
+photographs, and an end card. It is deliberately **not** the wedding
+website — no itinerary, travel, registry, FAQ or RSVP yet.
 
 ```
 index.html                     the whole public experience
@@ -15,14 +15,17 @@ assets/js/config.js            ← names, date, place, asset paths, form endpoin
 assets/js/save-the-date.js     envelope, hero, audio, mosaic, form
 assets/css/save-the-date.css
 assets/typography/             the hero lettering (see its README)
-assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card
+assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card — a still
+                               of the closed envelope, see assets/video/README.md
 assets/photos/                 the photo journey (see its README)
-assets/video/                  Higgsfield hero loop goes here (see its README)
+assets/video/                  hero loop + envelope-open clip (see its README)
 assets/audio/                  the ambient loop (see its README)
-images/hero-lake.jpg           the source painting; hero poster + OG source
+images/hero-lake.jpg           the source painting; hero poster source
+images/envelope-closed.jpg     the OG card's source still (see assets/video/README.md)
 images/IMG_3091.png            the comp the hero typography was lifted from
-tools/                         regenerate the OG card, the lettering,
-                               the hero poster, the ambient loop
+tools/                         regenerate the lettering, the hero poster,
+                               the ambient loop (make-social-preview.py is
+                               unused now — see assets/video/README.md)
 ```
 
 **One exception to config-driven content:** the hero title, divider and

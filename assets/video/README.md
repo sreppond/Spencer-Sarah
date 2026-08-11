@@ -31,7 +31,7 @@ tools/make-hero-poster.sh
 
 `images/hero-lake.jpg` stays as the original artwork. The Open Graph card
 no longer comes from it, or from `tools/make-social-preview.py` — see
-"The social card comes from the envelope clip now" under the envelope
+"The social card is a still of the closed envelope" under the envelope
 section below.
 
 ## Keep it 4:3
@@ -209,39 +209,47 @@ after the crop above, not a separate re-export from the master. A guest
 sees the poster before they tap and the video's first frame the instant
 they do — if the two ever diverge, even slightly, that hand-off shows.
 
-### The social card comes from the envelope clip now
+### The social card is a still of the closed envelope
 
 `assets/img/social-preview.jpg` — the 1200×630 image iMessage, SMS and
 every other link-preview surface show when a guest texts the site's URL —
-is a frame of `envelope-open.mp4`, not a `tools/make-social-preview.py`
-render of `images/hero-lake.jpg` any more. The envelope is the first thing
-a guest sees on the page itself, so it is what they should recognise in
-the preview before they even open the link, and the frame with the card
-fully out already carries the couple's names and the date as real
-footage — nothing needs to be drawn on top of it.
+is no longer a `tools/make-social-preview.py` render of `images/hero-lake.jpg`,
+and (v2) no longer a frame pulled from `envelope-open.mp4` either. It is a
+separately supplied still of the closed envelope, `images/envelope-closed.jpg`
+(1842×1208), fit to the Open Graph 1200×630 spec.
+
+The envelope is the first thing a guest sees on the page itself and the
+first frame the video plays from, so a *closed* envelope is what a text
+preview should show — it reads as "here is an invitation to open," which
+is exactly the page's own first move, rather than giving away the card
+inside before the guest has tapped anything.
+
+`images/envelope-closed.jpg` is 1.525:1, noticeably taller than Open
+Graph's 1.905:1, and — unlike the mid-reveal frame this card used in
+v1 — its margins around the envelope are tight (≈6% top, ≈7% bottom).
+A straight center-crop to 1.905:1 needs to remove 20% of the height,
+which clips into the envelope's own corners; there is no crop of this
+source that hits the target aspect without cutting the subject. So this
+one is fit, not cropped: scaled to fill the full 630px height with
+nothing lost, then centered over a softly blurred, slightly darkened
+copy of the same image stretched to fill the remaining width — the
+common "blurred letterbox" treatment, chosen over a flat-color pad
+because the source's background is a soft gradient, not a flat tone, and
+a solid fill would show a seam a blur does not.
 
 ```
-ffmpeg -i envelope-open.mp4 -ss 4.6 -frames:v 1 -update 1 \
-  -vf "crop=iw:round(iw/1.9047/2)*2,scale=1200:630:flags=lanczos" \
-  -q:v 2 ../img/social-preview.jpg
+ffmpeg -i images/envelope-closed.jpg -filter_complex "
+  [0:v]scale=1200:630:force_original_aspect_ratio=increase,crop=1200:630,gblur=sigma=45,eq=brightness=-0.03[bg];
+  [0:v]scale=-2:630[fg];
+  [bg][fg]overlay=(W-w)/2:(H-h)/2[out]" \
+  -map "[out]" -frames:v 1 -update 1 -q:v 3 assets/img/social-preview.jpg
 ```
 
-`-ss 4.6` is a real compromise, not a clean "before the fade" moment: the
-card does not finish rising with all four lines — names, "Save the Date,"
-the rule, "Whitefish, MT," the date — in frame until right around when the
-fade-to-white (`st=4.4`) has already started. `ffprobe`'s `signalstats`
-confirms it: mean luma is a flat ~150–152 through 3.5–4.0s, then climbs to
-178 by 4.4s and 208 by 4.6s (235 is the fully-faded plateau). Picking an
-earlier frame avoids that lift but crops off the date line, which is worse
-for a card meant to be read at a glance in a text thread — the mild extra
-brightness at 4.6s reads as "well lit," not as a visible fade, so it is
-the better trade. If the clip's own timing ever changes, re-check both
-things — full text in frame, and luma still well under the ~235 plateau —
-rather than reusing this timestamp blind. The crop trims a sliver off the
-top and bottom to move the clip's own 1.822:1 frame to the Open Graph
-spec's 1.905:1 without padding or stretching. `tools/make-social-preview.py`
-and `images/hero-lake.jpg` are unused for this file now but left in place;
-the script still works if a painting-based card is ever wanted again.
+`tools/make-social-preview.py`, `images/hero-lake.jpg` and the v1 approach
+of pulling a frame from `envelope-open.mp4` (crop-to-fill, no padding) are
+all unused for this file now but left in place — the crop-to-fill approach
+is still the right one for any future source image whose margins are
+generous enough to survive it uncut; check that before reusing it blind.
 
 ### `save-the-date.js` has to assume playback can fail silently
 
