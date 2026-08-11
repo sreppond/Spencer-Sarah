@@ -660,47 +660,70 @@
 
 
   /* ------------------------------------------------------------------
-     The invitation line rises as it arrives, one word after another.
+     The invitation line assembles from a scatter, one letter converging
+     after another, rather than rising into place.
 
-     The words are wrapped here rather than written into index.html so the
-     markup stays a sentence a human can edit. Two things this must not
-     break, both of them CSS §3.5:
+     The letters are wrapped here rather than written into index.html so
+     the markup stays a sentence a human can edit. Two things this must
+     not break, both of them CSS §3.5:
 
-       · the <em> is display:block and carries the second line, so we walk
-         the child nodes and wrap in place rather than flattening
-         textContent, which would throw the element away;
-       · the words are rejoined with ordinary spaces, never non-breaking
-         ones — .celebrate is a 20ch measure that has to wrap to three
-         lines on a phone, and nbsp would make it one unbreakable run.
+       · the <em> is display:block and carries the second line, so it is
+         walked and wrapped separately from the text before it — each
+         visual line gets its own centre to converge toward, rather than
+         one axis shared across the line break;
+       · whitespace is left as plain text, never wrapped or replaced with
+         a non-breaking space — .celebrate is a 20ch measure that has to
+         wrap to three lines on a phone, and this is what lets it.
 
-     Each span carries --word-i, its place in the line; the stagger is the
-     stylesheet's business, not ours.
+     Each span carries --char-dx, its position relative to its own line's
+     centre character, normalised to roughly -1..1; the CSS turns that into
+     how far the letter starts from home and how much it tips in 3D.
      ------------------------------------------------------------------ */
   (function celebrate() {
     var el = $('.celebrate');
     if (!el) return;
+    var em = el.querySelector('em');
 
-    var count = 0;
-    (function wrapWords(node) {
+    // Wraps every visible character of `node`'s own text in its own span;
+    // whitespace stays untouched so the line still wraps normally. Returns
+    // how many characters it wrapped.
+    function wrapChars(node) {
+      var i = 0;
       Array.prototype.slice.call(node.childNodes).forEach(function (child) {
-        if (child.nodeType === 1) { wrapWords(child); return; }   /* the em */
-        if (child.nodeType !== 3 || !child.nodeValue.trim()) return;
-
+        if (child.nodeType !== 3 || !child.nodeValue) return;
         var frag = document.createDocumentFragment();
-        child.nodeValue.split(/(\s+)/).forEach(function (part) {
-          if (!part) return;
-          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+        child.nodeValue.split('').forEach(function (ch) {
+          if (/\s/.test(ch)) { frag.appendChild(document.createTextNode(ch)); return; }
           var span = document.createElement('span');
-          span.className = 'word';
-          span.style.setProperty('--word-i', String(count++));
-          span.textContent = part;
+          span.className = 'char';
+          span.style.setProperty('--char-i', String(i++));
+          span.textContent = ch;
           frag.appendChild(span);
         });
         node.replaceChild(frag, child);
       });
-    }(el));
+      return i;
+    }
 
-    el.style.setProperty('--word-n', String(count));
+    // `el`'s own child text nodes are the first line; `wrapChars` never
+    // recurses into element children, so the <em> (the second line) is
+    // untouched by this call and wrapped on its own right after.
+    var n1 = wrapChars(el);
+    var n2 = em ? wrapChars(em) : 0;
+
+    // Turns each line's raw character index into --char-dx: roughly -1 at
+    // the line's first letter, 0 at its centre, +1 at its last — so the
+    // spread reads the same whether the line is short or long.
+    function centerLine(root, n) {
+      var half = n / 2 || 1;
+      Array.prototype.forEach.call(root.children, function (span) {
+        if (span.className !== 'char') return;
+        var dx = (Number(span.style.getPropertyValue('--char-i')) - half) / half;
+        span.style.setProperty('--char-dx', String(Math.round(dx * 1000) / 1000));
+      });
+    }
+    centerLine(el, n1);
+    if (em) centerLine(em, n2);
 
     // Reduced motion: the line is set, not assembling. CSS pins the
     // progress at 1 as well, so there is nothing to drive.
@@ -708,11 +731,11 @@
 
     /* The line is tied to the scroll rather than fired once on arrival,
        which is the whole point: run the scroll backwards and the sentence
-       comes apart again, last word first, at the rate you scroll.
+       scatters again, last letter home first, at the rate you scroll.
 
        Progress is measured from the section's own position, not from a
        runway, so nothing has to be pinned for it to work — the section
-       scrolls like any other and only the words read the number.
+       scrolls like any other and only the letters read the number.
 
          p = 0   the top edge is at the bottom of the viewport
          p = 1   the top edge has risen to 38% of the viewport
@@ -729,8 +752,8 @@
       var p = (vh - top) / span;
       p = p < 0 ? 0 : p > 1 ? 1 : p;
 
-      // Two decimals is finer than the eye can follow on a 22px rise and
-      // keeps us off the property setter on every sub-pixel of scroll.
+      // Two decimals is finer than the eye can follow on this much travel
+      // and keeps us off the property setter on every sub-pixel of scroll.
       p = Math.round(p * 100) / 100;
       if (p === last) return;
       last = p;
