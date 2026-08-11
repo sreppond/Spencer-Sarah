@@ -202,7 +202,7 @@ window.SAVE_THE_DATE = {
        here is posted verbatim, so an endpoint that does not know
        these names simply records them as extra columns. */
     extraFields: {
-      _subject: 'Save the date — a guest sent their details'
+      _subject: 'Save the date – a guest sent their details'
     },
 
     /* Once someone has sent their details, showing them an empty

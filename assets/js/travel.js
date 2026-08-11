@@ -190,7 +190,7 @@
     // shuttle-detail fields yet, so the replacement text stays generic
     // and points at where the real details will land.
     if (carNote && (TRAVEL.flags || {}).SHUTTLE_CONFIRMED) {
-      carNote.textContent = 'A shuttle is arranged for the wedding day — see "The Weekend" below for pickup times. Renting a car is optional.';
+      carNote.textContent = 'A shuttle is arranged for the wedding day – see "The Weekend" below for pickup times. Renting a car is optional.';
     }
 
     var matches = [];
@@ -211,7 +211,7 @@
       if (o.status === 'nonstop-seasonal') {
         return {
           cls: 'nonstop-seasonal',
-          line: 'Nonstop on ' + joinAnd(o.airlines) + ' — seasonal, so confirm the June 2027 schedule when you book.'
+          line: 'Nonstop on ' + joinAnd(o.airlines) + ' – seasonal, so confirm the June 2027 schedule when you book.'
         };
       }
       var via = (o.via && o.via.length) ? o.via.join(', ') : 'Seattle, Denver, or Minneapolis';
@@ -271,7 +271,7 @@
       if (!matches.length) {
         var empty = document.createElement('li');
         empty.className = 'flight-listbox-empty';
-        empty.textContent = 'No matching city — try the nearest major airport.';
+        empty.textContent = 'No matching city – try the nearest major airport.';
         listbox.appendChild(empty);
         listbox.hidden = false;
         input.setAttribute('aria-expanded', 'true');
@@ -397,7 +397,7 @@
 
     function todoOrText(value, label) {
       if (value) return { text: value, todo: false };
-      return { text: label + ' — details coming.', todo: true };
+      return { text: label + ' – details coming.', todo: true };
     }
 
     function buildCard(entry) {
@@ -638,7 +638,7 @@
         var line = placeholder.querySelector('.drive-placeholder-line');
         var sub = placeholder.querySelector('.drive-placeholder-sub');
         if (line) line.textContent = 'The key routes, checked';
-        if (sub) sub.textContent = 'Property-to-venue times are still being checked — here are the routes that are.';
+        if (sub) sub.textContent = 'Property-to-venue times are still being checked – here are the routes that are.';
 
         var routeList = document.createElement('ul');
         routeList.className = 'map-address-list';
@@ -647,7 +647,7 @@
           var strong = document.createElement('strong');
           strong.textContent = r.from + ' → ' + r.to;
           li.appendChild(strong);
-          li.appendChild(document.createTextNode(' — ' + r.distance + ', ' + r.minutes + (r.note ? ' (' + r.note + ')' : '')));
+          li.appendChild(document.createTextNode(' – ' + r.distance + ', ' + r.minutes + (r.note ? ' (' + r.note + ')' : '')));
           routeList.appendChild(li);
         });
         placeholder.appendChild(routeList);
@@ -732,10 +732,10 @@
       var detail = document.createElement('p');
       detail.className = 'weekend-detail';
       if (known && (item.time || item.venue || item.blurb)) {
-        detail.textContent = [item.time, item.venue, item.blurb].filter(Boolean).join(' — ');
+        detail.textContent = [item.time, item.venue, item.blurb].filter(Boolean).join(' – ');
       } else {
         detail.classList.add('is-todo');
-        detail.textContent = item.day + ' — details coming, but plan to be here.';
+        detail.textContent = item.day + ' – details coming, but plan to be here.';
       }
       li.appendChild(detail);
 
@@ -848,7 +848,7 @@
       var nameEl = document.createElement('strong');
       nameEl.textContent = name;
       li.appendChild(nameEl);
-      li.appendChild(document.createTextNode(' — '));
+      li.appendChild(document.createTextNode(' – '));
       if (address) {
         li.appendChild(document.createTextNode(address + ' · '));
         li.appendChild(mapsLink(address));
@@ -960,7 +960,7 @@
         blurb.textContent = entry.blurb;
       } else {
         blurb.classList.add('is-todo');
-        blurb.textContent = 'More about ' + entry.name + ' — details coming.';
+        blurb.textContent = 'More about ' + entry.name + ' – details coming.';
       }
       inner.appendChild(blurb);
       detail.appendChild(inner);
