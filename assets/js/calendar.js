@@ -7,9 +7,8 @@
 
    It is deliberately standalone. It reads window.SAVE_THE_DATE, wires every
    [data-calendar] element it can find, and depends on nothing else — so the
-   lodging page, and the travel page after it, get the same button by adding
-   one <script> tag and pasting the markup. There is one ICS generator on
-   this site and this is it.
+   travel page gets the same button by adding one <script> tag and pasting
+   the markup. There is one ICS generator on this site and this is it.
 
    No library. A VEVENT is fifteen lines, and the only genuinely fiddly
    parts — escaping, 75-octet line folding, and the local-time-to-UTC

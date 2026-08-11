@@ -9,8 +9,9 @@
    once .hero-viewport has fully left the viewport — not when it starts
    leaving, which would still show the nav crossing the painting.
 
-   Pages with no hero (lodging.html, travel/index.html) have nothing to
-   gate against, so the nav is simply on from the first frame.
+   Any page with no hero has nothing to gate against, so the nav is simply
+   on from the first frame. (travel/index.html has its own hero and its own
+   copy of this logic in travel.js, so it doesn't load this file at all.)
    ========================================================================== */
 
 (function () {
