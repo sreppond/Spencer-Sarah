@@ -1627,6 +1627,18 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   font-weight: 500;
   line-height: 1.5;
   color: var(--err);
+  /* Everything else in the form eases in (border-color, background,
+     box-shadow all transition); the error message itself was popping in
+     via the bare hidden→flex toggle below with no motion at all. A
+     transition can't animate that toggle (display can't tween), so this
+     is an animation, same as .gform.is-stepped .step's step-in — it
+     restarts for free every time [hidden] flips off and display goes
+     from none to flex. */
+  animation: field-err-in .2s var(--ease-out) both;
+}
+@keyframes field-err-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
 }
 /* `display: flex` above outranks the UA's `[hidden] { display: none }`,
    which would leave an empty error marker sitting under every field. */
@@ -2781,9 +2793,8 @@ html.js .flight-fallback.is-superseded { display: none; }
 .lodge-detail-meta { margin-top: .9rem; font-size: var(--t-small); line-height: 1.7; color: var(--ink-soft); }
 .lodge-detail-meta .is-todo { font-style: italic; color: var(--stone-text); }
 .lodge-detail-code {
-  display: inline-flex;
-  align-items: center;
-  gap: .5em;
+  display: inline-grid;
+  place-items: center;
   margin-top: .9rem;
   padding: .5em 1em;
   border: 1px dashed var(--gold-text);
@@ -2794,6 +2805,19 @@ html.js .flight-fallback.is-superseded { display: none; }
   background: none;
   cursor: pointer;
 }
+/* Both labels share one grid cell — the box sizes to the taller of the
+   two, so swapping which one is visible never shifts the layout. The
+   toast (role="status", below) still carries the accessible "Copied."
+   announcement; these are aria-hidden, purely the eye-level feedback
+   right where the guest already clicked, faster to notice than a toast
+   half a line away. */
+.lodge-detail-code-label {
+  grid-area: 1 / 1;
+  transition: opacity .25s var(--ease-soft);
+}
+.lodge-detail-code-label--done { opacity: 0; color: var(--olive); }
+.lodge-detail-code.is-copied .lodge-detail-code-label--done { opacity: 1; }
+.lodge-detail-code.is-copied .lodge-detail-code-label:not(.lodge-detail-code-label--done) { opacity: 0; }
 .lodge-detail-book { margin-top: 1.1rem; width: 100%; }
 .lodge-detail-toast {
   margin-top: .5rem;
