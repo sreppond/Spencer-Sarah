@@ -72,20 +72,20 @@
 
      BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
      The date is only a convention — any value the browser has not seen works. -->
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260811c">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260811d">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
 <script>document.documentElement.className += ' js';</script>
 
-<script defer src="assets/js/config.js?v=20260811c"></script>
+<script defer src="assets/js/config.js?v=20260811d"></script>
 <!-- Standalone and self-wiring: it reads config.js, upgrades every
      [data-calendar] href, and is the one ICS generator on this site.
      Must load after config.js and can load before or after the page
      script — it depends on neither. -->
-<script defer src="assets/js/calendar.js?v=20260811c"></script>
-<script defer src="assets/js/site-nav.js?v=20260811c"></script>
-<script defer src="assets/js/save-the-date.js?v=20260811c"></script>
+<script defer src="assets/js/calendar.js?v=20260811d"></script>
+<script defer src="assets/js/site-nav.js?v=20260811d"></script>
+<script defer src="assets/js/save-the-date.js?v=20260811d"></script>
 </head>
 
 <body>
@@ -99,7 +99,6 @@
     <a class="site-nav-word" href="./">Sarah &amp; Spencer</a>
     <ul class="site-nav-links">
       <li><a href="travel/">Travel &amp; Stay</a></li>
-      <li><a href="lodging.html">Lodging</a></li>
       <li><a href="./" aria-current="page">Save the Date</a></li>
     </ul>
   </div>
@@ -415,7 +414,8 @@
              they were coming; here it lands on someone who just did, and it
              is the single obvious next step. href, deadline and label all
              come from config.lodging — an empty href drops the button
-             rather than shipping a dead link. -->
+             rather than shipping a dead link. Points at the Where to Stay
+             section of Travel & Stay — there is no separate lodging page. -->
         <div class="form-done" id="form-done" tabindex="-1" hidden>
           <span class="done-mark" aria-hidden="true"></span>
           <p class="done-line">Thank you — you're all set.</p>
@@ -426,7 +426,7 @@
             <p class="done-next-head" data-lodging-deadline>Book lodging by October</p>
             <p class="done-next-sub" data-lodging-blurb>Rooms in Whitefish go early in June. Here's where to stay and how to book.</p>
 
-            <a class="flow-btn flow-btn--gold done-next-btn" id="lodging-link" href="lodging.html">
+            <a class="flow-btn flow-btn--gold done-next-btn" id="lodging-link" href="travel/#where-to-stay">
               <span class="flow-btn__ink" aria-hidden="true"></span>
               <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                 <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -480,11 +480,9 @@
 
       <!-- The nav above ships hidden until JavaScript reveals it, so
            without JavaScript it never appears at all — this is the only
-           way to the travel and lodging pages in that case. -->
+           way to the travel page in that case. -->
       <nav class="end-nav" aria-label="More">
         <a href="travel/">Travel &amp; Stay</a>
-        <span class="end-dot" aria-hidden="true">·</span>
-        <a href="lodging.html">Lodging</a>
       </nav>
     </footer>
 

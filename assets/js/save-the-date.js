@@ -517,7 +517,8 @@
     if (label && cfg.label) label.textContent = cfg.label;
 
     // An off-site href leaves the site, and nothing about the button says
-    // so. A same-site page (lodging.html) does not need the warning.
+    // so. A same-site link (e.g. travel/#where-to-stay) does not need the
+    // warning.
     if (/^https?:/i.test(cfg.href)) {
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
