@@ -775,4 +775,147 @@
       }
     }
   }());
+
+
+  /* ------------------------------------------------------------------
+     The map — B.8's stated fallback while every coordinate in
+     travel-data.js is null or unverified: a plain address list, built
+     from the same lodging array Where to Stay uses. See the note on
+     this section in travel/index.html for why the interactive Leaflet
+     map isn't here yet.
+     ------------------------------------------------------------------ */
+  (function mapFallback() {
+    var ul = $('#map-address-list');
+    if (!ul) return;
+
+    var list = TRAVEL.lodging || [];
+    var flights = TRAVEL.flights || {};
+
+    list.forEach(function (l) {
+      var li = document.createElement('li');
+      var name = document.createElement('strong');
+      name.textContent = l.name;
+      li.appendChild(name);
+      li.appendChild(document.createTextNode(' — '));
+      if (l.address) {
+        li.appendChild(document.createTextNode(l.address));
+      } else {
+        var todo = document.createElement('span');
+        todo.className = 'is-todo';
+        todo.textContent = 'address coming';
+        li.appendChild(todo);
+      }
+      ul.appendChild(li);
+    });
+
+    if (flights.airportName) {
+      var li = document.createElement('li');
+      var name = document.createElement('strong');
+      name.textContent = flights.airportName + ' (' + flights.airportCode + ')';
+      li.appendChild(name);
+      li.appendChild(document.createTextNode(' — ' + (flights.airportToVenue || '')));
+      ul.appendChild(li);
+    }
+  }());
+
+
+  /* ------------------------------------------------------------------
+     While You're Here — bento tiles built from travel-data.js. Same
+     disclosure pattern as the lodging cards (grid-template-rows 0fr→1fr),
+     reused rather than reinvented.
+     ------------------------------------------------------------------ */
+  (function whileHere() {
+    var grid = $('#bento-grid');
+    if (!grid) return;
+
+    var list = TRAVEL.whileHere || [];
+    var tileId = 0;
+
+    var EMPTY_MARK =
+      '<span class="m-empty-mark" aria-hidden="true">' +
+      '<svg viewBox="0 0 40 40" focusable="false"><g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">' +
+      '<path d="M20 34V12"/>' +
+      '<path d="M20 20c0-4.2 3.4-7.6 7.6-7.6C27.6 16.6 24.2 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6 2.9-6.5 6.5-6.5C26.5 24.1 23.6 27 20 27Z"/>' +
+      '<path d="M20 20c0-4.2-3.4-7.6-7.6-7.6C12.4 16.6 15.8 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6-2.9-6.5-6.5-6.5C13.5 24.1 16.4 27 20 27Z"/>' +
+      '</g></svg></span>';
+
+    function photoNode(entry) {
+      var wrap = document.createElement('div');
+      wrap.className = 'bento-tile-photo';
+      if (!entry.photo) {
+        wrap.classList.add('is-empty');
+        wrap.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+        return wrap;
+      }
+      var img = document.createElement('img');
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.alt = entry.name;
+      img.addEventListener('error', function () {
+        wrap.classList.add('is-empty');
+        wrap.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+      }, { once: true });
+      img.src = entry.photo;
+      wrap.appendChild(img);
+      return wrap;
+    }
+
+    list.forEach(function (entry) {
+      var id = 'bento-detail-' + (tileId++);
+
+      var li = document.createElement('li');
+      li.className = 'bento-tile bento-tile--' + (entry.size || 'medium');
+      li.appendChild(photoNode(entry));
+
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'bento-tile-toggle';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-controls', id);
+
+      var name = document.createElement('p');
+      name.className = 'bento-tile-name';
+      name.textContent = entry.name;
+      toggle.appendChild(name);
+
+      var chevron = document.createElement('span');
+      chevron.className = 'bento-tile-chevron';
+      chevron.textContent = 'Read more';
+      toggle.appendChild(chevron);
+
+      li.appendChild(toggle);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'bento-detail-wrap';
+      var detail = document.createElement('div');
+      detail.className = 'bento-detail';
+      detail.id = id;
+      detail.setAttribute('role', 'region');
+      detail.setAttribute('aria-label', entry.name + ' details');
+
+      var inner = document.createElement('div');
+      inner.className = 'bento-detail-inner';
+      var blurb = document.createElement('p');
+      blurb.className = 'bento-detail-blurb';
+      if (entry.blurb && entry.blurb !== 'TODO') {
+        blurb.textContent = entry.blurb;
+      } else {
+        blurb.classList.add('is-todo');
+        blurb.textContent = 'More about ' + entry.name + ' — details coming.';
+      }
+      inner.appendChild(blurb);
+      detail.appendChild(inner);
+      wrap.appendChild(detail);
+      li.appendChild(wrap);
+
+      toggle.addEventListener('click', function () {
+        var open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+      });
+
+      grid.appendChild(li);
+    });
+  }());
 }());

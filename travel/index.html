@@ -48,13 +48,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810g">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810h">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260810g"></script>
-<script defer src="../assets/js/travel-data.js?v=20260810g"></script>
-<script defer src="../assets/js/calendar.js?v=20260810g"></script>
-<script defer src="../assets/js/travel.js?v=20260810g"></script>
+<script defer src="../assets/js/config.js?v=20260810h"></script>
+<script defer src="../assets/js/travel-data.js?v=20260810h"></script>
+<script defer src="../assets/js/calendar.js?v=20260810h"></script>
+<script defer src="../assets/js/travel.js?v=20260810h"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -302,9 +302,35 @@
     </div>
   </section>
 
+  <!-- ---------- THE MAP ----------
+       B.8 is explicitly optional per the build guide's own appendix
+       ("ship without it if the budget is tight"), and every coordinate in
+       travel-data.js is either null or marked VERIFY — an interactive
+       Leaflet map built on unconfirmed pins would just be a fancier way
+       to show wrong dots. This ships the guide's own stated fallback
+       (a plain address list) rather than the full map, until locations
+       are confirmed. -->
+  <section class="sheet travel-section" id="the-map" aria-labelledby="the-map-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">Find Everything</p>
+      <h2 class="sheet-title" id="the-map-heading">On the map</h2>
+      <p class="sheet-lede">An interactive map lands here once every location is confirmed. For now, the addresses:</p>
+      <ul class="map-address-list" id="map-address-list"></ul>
+    </div>
+  </section>
+
   <!-- ---------- WHILE YOU'RE HERE ----------
-       Bento grid — lands with B.8/B.10 in the next commit. The nav link
-       above (#while-here) will point here once this section exists. -->
+       Bento grid: five tiles, sized by travel-data.js's `size` field.
+       Glacier's copy is verbatim from the build guide §D.1 — do not
+       soften it back toward the alpine crossing. -->
+  <section class="sheet travel-section" id="while-here" aria-labelledby="while-here-heading">
+    <div class="sheet-inner sheet-inner--wide">
+      <p class="eyebrow">Whitefish, Montana</p>
+      <h2 class="sheet-title" id="while-here-heading">While you're here</h2>
+      <p class="sheet-lede">Worth turning the weekend into a few extra days.</p>
+      <ul class="bento-grid" id="bento-grid"></ul>
+    </div>
+  </section>
 
   <!-- ---------- QUESTIONS ----------
        The section people land on when something has gone wrong, so it
