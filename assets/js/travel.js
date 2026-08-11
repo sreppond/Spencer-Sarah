@@ -590,4 +590,189 @@
       }
     }
   }());
+
+
+  /* ------------------------------------------------------------------
+     Drive-time strip — renders the real, scaled version only once every
+     property in travel-data.js has a checked driveMinutes. Today only
+     the venue's own (0, trivially true) is set, so the honest §E
+     placeholder in the markup stays showing and this function is a
+     no-op beyond that check — nothing here needs to change by hand the
+     day the numbers land; it activates on its own.
+     ------------------------------------------------------------------ */
+  (function driveStrip() {
+    var strip = $('#drive-strip');
+    var placeholder = $('#drive-placeholder');
+    if (!strip) return;
+
+    var list = TRAVEL.lodging || [];
+    var flights = TRAVEL.flights || {};
+    var points = list.map(function (l) { return { label: l.name, mins: l.driveMinutes }; });
+    if (flights.airportName) points.push({ label: flights.airportName, mins: null, isAirport: true });
+
+    var allVerified = points.every(function (p) { return typeof p.mins === 'number'; });
+    if (!allVerified) return;   // placeholder stays, nothing to build yet
+
+    var max = Math.max.apply(null, points.map(function (p) { return p.mins; }));
+    strip.innerHTML = '';
+
+    var track = document.createElement('div');
+    track.className = 'drive-strip-track';
+
+    points
+      .slice()
+      .sort(function (a, b) { return a.mins - b.mins; })
+      .forEach(function (p) {
+        var pt = document.createElement('div');
+        pt.className = 'drive-point';
+        pt.style.left = (max ? (p.mins / max) * 100 : 0) + '%';
+
+        var dot = document.createElement('div');
+        dot.className = 'drive-point-dot';
+        var label = document.createElement('div');
+        label.className = 'drive-point-label';
+        label.textContent = p.label;
+        var mins = document.createElement('div');
+        mins.className = 'drive-point-mins';
+        mins.textContent = p.mins === 0 ? 'At the venue' : p.mins + ' min';
+
+        pt.appendChild(dot);
+        pt.appendChild(label);
+        pt.appendChild(mins);
+        track.appendChild(pt);
+      });
+
+    strip.appendChild(track);
+    strip.hidden = false;
+    if (placeholder) placeholder.hidden = true;
+  }());
+
+
+  /* ------------------------------------------------------------------
+     The Weekend — three cards, revealed one at a time on scroll. Most
+     fields are TODO by design (§E items 4, 7); a card that says "details
+     coming, but plan to be here" is far more useful than empty space.
+     ------------------------------------------------------------------ */
+  (function weekend() {
+    var list = $('#weekend-list');
+    if (!list) return;
+
+    var schedule = TRAVEL.schedule || [];
+    var flags = TRAVEL.flags || {};
+
+    function fmtDate(iso) {
+      var d = new Date(iso + 'T12:00:00Z');   // noon UTC sidesteps any TZ date-rollback
+      return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' });
+    }
+
+    schedule.forEach(function (item) {
+      var known = item.flag ? !!flags[item.flag] : !!(item.time || item.venue || item.blurb);
+
+      var li = document.createElement('li');
+      li.className = 'weekend-card';
+
+      var head = document.createElement('p');
+      var day = document.createElement('span');
+      day.className = 'weekend-day';
+      day.textContent = item.day;
+      var date = document.createElement('span');
+      date.className = 'weekend-date';
+      date.textContent = fmtDate(item.date);
+      head.appendChild(day);
+      head.appendChild(date);
+      li.appendChild(head);
+
+      var title = document.createElement('p');
+      title.className = 'weekend-title';
+      title.textContent = item.title;
+      li.appendChild(title);
+
+      var detail = document.createElement('p');
+      detail.className = 'weekend-detail';
+      if (known && (item.time || item.venue || item.blurb)) {
+        detail.textContent = [item.time, item.venue, item.blurb].filter(Boolean).join(' — ');
+      } else {
+        detail.classList.add('is-todo');
+        detail.textContent = item.day + ' — details coming, but plan to be here.';
+      }
+      li.appendChild(detail);
+
+      list.appendChild(li);
+    });
+
+    if (reduced || !('IntersectionObserver' in window)) {
+      $$('.weekend-card', list).forEach(function (c) { c.classList.add('is-revealed'); });
+      return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .3 });
+
+    $$('.weekend-card', list).forEach(function (c) { io.observe(c); });
+  }());
+
+
+  /* ------------------------------------------------------------------
+     Questions — FAQ accordion (native <details>, no JS required for the
+     interaction itself) plus the local-contact and couple-contact cards.
+     ------------------------------------------------------------------ */
+  (function questions() {
+    var faq = $('#faq');
+    if (faq) {
+      var flags = TRAVEL.flags || {};
+      (TRAVEL.faq || []).forEach(function (item) {
+        var known = item.flag ? !!flags[item.flag] : !!item.a;
+
+        var details = document.createElement('details');
+        details.className = 'faq-item';
+        var summary = document.createElement('summary');
+        summary.textContent = item.q;
+        details.appendChild(summary);
+
+        var answer = document.createElement('div');
+        answer.className = 'faq-answer';
+        if (known && item.a) {
+          answer.textContent = item.a;
+        } else {
+          answer.classList.add('is-todo');
+          answer.textContent = 'Answer coming.';
+        }
+        details.appendChild(answer);
+        faq.appendChild(details);
+      });
+    }
+
+    var contacts = TRAVEL.contacts || {};
+
+    var localMeta = $('#local-contact-meta');
+    if (localMeta) {
+      var local = contacts.local || {};
+      var bits = [];
+      if (local.phone) bits.push(local.phone); else bits.push('<span class="is-todo">phone coming</span>');
+      if (local.email) bits.push(local.email); else bits.push('<span class="is-todo">email coming</span>');
+      localMeta.innerHTML = bits.join(' &middot; ');
+
+      var line = $('#local-contact-line');
+      if (line && local.name) {
+        line.textContent = 'Questions before then? ' + local.name + ' (' +
+          (local.relation || "Spencer's family") + ') has scouted Whitefish lodging in person and is glad to help.';
+      }
+    }
+
+    var coupleEl = $('#couple-contact');
+    if (coupleEl) {
+      var email = (contacts.couple || {}).email || (window.SAVE_THE_DATE || {}).contact && window.SAVE_THE_DATE.contact.email;
+      if (email) {
+        coupleEl.innerHTML = 'Or email us directly at <a href="mailto:' + email + '">' + email + '</a>.';
+      } else {
+        coupleEl.innerHTML = '<span class="is-todo">Couple\'s contact email coming.</span>';
+      }
+    }
+  }());
 }());

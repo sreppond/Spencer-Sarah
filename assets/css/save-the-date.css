@@ -2809,3 +2809,114 @@ html.js .lodge-fallback.is-superseded { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .lodge-card-chevron::after { transition: none; }
 }
+
+/* --- 11.5 · Drive-time strip --- */
+/* The §E placeholder pattern, reused: divider, a stated fact about what's
+   missing and why, nothing invented in its place. */
+.drive-placeholder { margin-top: clamp(1.8rem, 6vw, 2.4rem); text-align: center; }
+.drive-placeholder-divider { width: 9rem; max-width: 50%; height: auto; margin: 0 auto 1.2rem; opacity: .8; }
+.drive-placeholder-line { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; font-style: italic; color: var(--stone-text); }
+.drive-placeholder-sub { margin-top: .5rem; font-size: var(--t-small); color: var(--ink-soft); }
+
+/* The real strip, built by travel.js the moment every property in
+   travel-data.js has a verified driveMinutes — not in use today, but
+   ready the moment it can be, with nothing here to change by hand. */
+.drive-strip {
+  position: relative;
+  margin-top: clamp(2rem, 6vw, 2.6rem);
+  padding: 2.5rem 0 1.5rem;
+  overflow-x: auto;
+}
+.drive-strip-track { position: relative; height: 2px; background: var(--rule); min-width: 32rem; }
+.drive-point { position: absolute; top: 50%; transform: translate(-50%, -50%); text-align: center; }
+.drive-point-dot {
+  width: .8rem; height: .8rem; margin: 0 auto;
+  border-radius: 50%; background: var(--gold-text); border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--gold-text);
+  transition: transform .25s var(--ease-out);
+}
+.drive-point.is-highlighted .drive-point-dot { transform: scale(1.4); }
+.drive-point-label { position: absolute; top: 1.4rem; left: 50%; transform: translateX(-50%); width: 6.5rem; font-size: var(--t-micro); color: var(--ink-soft); }
+.drive-point-mins { position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%); font-size: var(--t-micro); font-weight: 600; color: var(--gold-text); white-space: nowrap; }
+
+/* --- 11.6 · The Weekend --- */
+.weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
+.weekend-card {
+  position: relative;
+  padding: 1.4rem 1.5rem 1.5rem;
+  margin-bottom: 1.2rem;
+  border-left: 3px solid var(--rule);
+  border-radius: 0 .8rem .8rem 0;
+  background: var(--card);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+.weekend-card.is-revealed { opacity: 1; transform: none; }
+.weekend-day {
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.weekend-date { margin-left: .5em; color: var(--stone-text); font-weight: 400; letter-spacing: normal; text-transform: none; }
+.weekend-title {
+  margin-top: .35rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.weekend-detail { margin-top: .5rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
+.weekend-detail.is-todo { font-style: italic; color: var(--stone-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .weekend-card { opacity: 1; transform: none; }
+}
+
+/* --- 11.7 · Questions (FAQ + local contact) --- */
+.faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
+.faq-item {
+  border-bottom: 1px solid var(--rule);
+}
+.faq-item summary {
+  padding: 1rem 1.6rem 1rem 0;
+  position: relative;
+  font-family: var(--font-text);
+  font-size: var(--t-body);
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 0;
+  top: 1rem;
+  font-size: 1.3rem;
+  color: var(--gold-text);
+  transition: transform .25s var(--ease-out);
+}
+.faq-item[open] summary::after { transform: rotate(45deg); }
+.faq-answer { padding: 0 1.6rem 1.2rem 0; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.faq-answer.is-todo { font-style: italic; color: var(--stone-text); }
+
+.local-contact {
+  margin-top: clamp(2.4rem, 7vw, 3rem);
+  padding: 1.6rem 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  background: linear-gradient(168deg, #fdfaf4 0%, var(--card) 60%, #f4ecdd 100%);
+  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 18px 40px -28px rgba(93,74,44,.5);
+}
+.local-contact-mark { display: inline-block; width: 2.2rem; color: var(--gold-deep); opacity: .8; }
+.local-contact-mark svg { width: 100%; height: auto; }
+.local-contact-line { margin-top: .6rem; font-size: var(--t-body); line-height: 1.6; color: var(--ink-body); }
+.local-contact-meta { margin-top: .7rem; font-size: var(--t-small); color: var(--ink-soft); }
+.local-contact-meta .is-todo { font-style: italic; color: var(--stone-text); }
+
+.couple-contact { margin-top: 1.6rem; text-align: center; font-size: var(--t-small); color: var(--ink-soft); }
+.couple-contact a { color: var(--gold-text); }
