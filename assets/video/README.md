@@ -29,8 +29,10 @@ changes:
 tools/make-hero-poster.sh
 ```
 
-`images/hero-lake.jpg` stays as the source for the Open Graph card
-(`tools/make-social-preview.py`) and as the original artwork.
+`images/hero-lake.jpg` stays as the original artwork. The Open Graph card
+no longer comes from it, or from `tools/make-social-preview.py` — see
+"The social card comes from the envelope clip now" under the envelope
+section below.
 
 ## Keep it 4:3
 
@@ -111,7 +113,7 @@ nothing.
 
 | File | Status | Notes |
 | --- | --- | --- |
-| `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 24fps, H.264 High, no audio track, `+faststart`. ~900 KB. Cut from a 10s, 1280×720 source. |
+| `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 48fps, H.264 High, no audio track, `+faststart`. ~910 KB. Cut from a 10s, 24fps, 1280×720 source. |
 | `envelope-open-poster.jpg` | **shipped** | The clip's own frame 0 — see below. |
 
 This is what plays when a guest taps the envelope, in place of the old
@@ -136,15 +138,47 @@ as brisk rather than slow:
 
 ```
 ffmpeg -i master.mp4 \
-  -vf "trim=0:8.6,setpts=(PTS-STARTPTS)/1.75,crop=iw*0.88:ih*0.86,fade=t=out:st=4.4:d=0.5:color=white" \
+  -vf "trim=0:8.6,setpts=(PTS-STARTPTS)/1.75,fps=48,crop=iw*0.88:ih*0.86,fade=t=out:st=4.4:d=0.5:color=white" \
   -an -c:v libx264 -crf 19 -preset slow -profile:v high -level 4.0 \
-  -pix_fmt yuv420p -g 48 -movflags +faststart envelope-open.mp4
+  -pix_fmt yuv420p -g 96 -movflags +faststart envelope-open.mp4
 ```
 
 The crop factors (0.88 × 0.86) were checked frame-by-frame against the
 widest moment in the shot (the closed envelope, before the camera pushes
 in at all) so nothing is ever clipped at any point in the clip — see the
 frame checks that produced these numbers if the source is ever re-cut.
+
+### `setpts` alone judders — it needs `fps` right after it
+
+The first cut of this file left `fps` out and let the encoder's default
+24fps CFR output stand. That is a silent trap with any `setpts` speed-up:
+retiming to 1.75× packs the source's 24fps frames to an effective ~42fps
+of motion, and an encoder asked for 24fps CFR does not slow the clip back
+down to compensate — it keeps the new (shorter) duration and *drops*
+roughly four in every ten frames to hit the frame count that duration
+allows at 24fps. The clip still played, at the right length, and still
+looked right frame-by-frame — it just moved unevenly, because the frames
+being kept were not evenly spaced in the original motion. `ffprobe -show_entries
+frame=pts_time` on that first export showed it directly: a perfectly
+regular 1/24s grid, which is only possible if frames were discarded to
+fit it.
+
+`fps=48` placed after `setpts` fixes this because 48fps is comfortably
+above the ~42fps the retime actually produced — the filter still lands on
+a clean, standard, CFR-compatible number, but now every original frame's
+motion survives (some get shown for two output frames instead of one,
+which duplicates, not drops), so the card's rise reads as smooth. It cost
+almost nothing: near-duplicate frames are nearly free for H.264 to encode
+as skip blocks, so the shipped file is about the same size as the
+juddery one. `-g 96` doubles the keyframe interval to match the doubled
+frame rate, keeping roughly one keyframe per second either way.
+
+If this clip is ever re-cut at a different speed factor, check the result
+the same way rather than trusting it by eye — a moderate judder is easy
+to miss watching a 5-second clip once, and very easy to feel wrong on a
+guest's phone: `ffprobe -select_streams v:0 -show_entries frame=pts_time
+-of csv=p=0 envelope-open.mp4` should print one single, repeating gap
+value end to end.
 
 ### It ends on a held white frame, on purpose
 
@@ -174,6 +208,40 @@ envelope-open.mp4 -frames:v 1 -update 1 -q:v 3 envelope-open-poster.jpg`
 after the crop above, not a separate re-export from the master. A guest
 sees the poster before they tap and the video's first frame the instant
 they do — if the two ever diverge, even slightly, that hand-off shows.
+
+### The social card comes from the envelope clip now
+
+`assets/img/social-preview.jpg` — the 1200×630 image iMessage, SMS and
+every other link-preview surface show when a guest texts the site's URL —
+is a frame of `envelope-open.mp4`, not a `tools/make-social-preview.py`
+render of `images/hero-lake.jpg` any more. The envelope is the first thing
+a guest sees on the page itself, so it is what they should recognise in
+the preview before they even open the link, and the frame with the card
+fully out already carries the couple's names and the date as real
+footage — nothing needs to be drawn on top of it.
+
+```
+ffmpeg -i envelope-open.mp4 -ss 4.6 -frames:v 1 -update 1 \
+  -vf "crop=iw:round(iw/1.9047/2)*2,scale=1200:630:flags=lanczos" \
+  -q:v 2 ../img/social-preview.jpg
+```
+
+`-ss 4.6` is a real compromise, not a clean "before the fade" moment: the
+card does not finish rising with all four lines — names, "Save the Date,"
+the rule, "Whitefish, MT," the date — in frame until right around when the
+fade-to-white (`st=4.4`) has already started. `ffprobe`'s `signalstats`
+confirms it: mean luma is a flat ~150–152 through 3.5–4.0s, then climbs to
+178 by 4.4s and 208 by 4.6s (235 is the fully-faded plateau). Picking an
+earlier frame avoids that lift but crops off the date line, which is worse
+for a card meant to be read at a glance in a text thread — the mild extra
+brightness at 4.6s reads as "well lit," not as a visible fade, so it is
+the better trade. If the clip's own timing ever changes, re-check both
+things — full text in frame, and luma still well under the ~235 plateau —
+rather than reusing this timestamp blind. The crop trims a sliver off the
+top and bottom to move the clip's own 1.822:1 frame to the Open Graph
+spec's 1.905:1 without padding or stretching. `tools/make-social-preview.py`
+and `images/hero-lake.jpg` are unused for this file now but left in place;
+the script still works if a painting-based card is ever wanted again.
 
 ### `save-the-date.js` has to assume playback can fail silently
 
