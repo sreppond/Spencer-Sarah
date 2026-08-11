@@ -28,10 +28,10 @@ window.TRAVEL = {
        rebrand, and it does not get the gold room-block treatment. */
     ROOM_BLOCK_CONFIRMED: false,
 
-    /* No wedding-day shuttle plan exists yet. While false, "Getting Here"
-       recommends renting a car without qualification. If a shuttle is
-       arranged, that recommendation needs to change (and gets a callout
-       of its own) before this flips. */
+    /* No wedding-day shuttle plan exists yet. While false, the FAQ answers
+       "Is there a shuttle from the hotels?" with "details coming" instead
+       of a guess. If a shuttle is arranged, that answer needs real content
+       before this flips. */
     SHUTTLE_CONFIRMED: false,
 
     /* Friday welcome party time and venue are not set. While false, the
@@ -51,15 +51,24 @@ window.TRAVEL = {
 
 
   /* ---- Lodging -------------------------------------------------
-     Six options. `driveMinutes` and `coords` are UNVERIFIED placeholders
-     — see lastVerified below — do not treat them as real until checked
-     against Maps and that date is updated. Order here is the order cards
-     render in; reordering this array (e.g. if the room block turns out
-     to be a bad recommendation) is the entire fix — no template change. */
+     Six options, rendered as a photo gallery — see lodgeGallery() in
+     travel.js. `driveMinutes` and `coords` are UNVERIFIED placeholders
+     except the two properties on the venue's own grounds (0, trivially
+     true) — do not treat the rest as real until checked against Maps.
+     Order here is the order cards render in; reordering this array (e.g.
+     if the room block turns out to be a bad recommendation) is the
+     entire fix — no template change.
+
+     `photos` is empty for every entry below on purpose: no real
+     photography exists yet for any of the six properties. Drop one or
+     more image paths in and the gallery card + lightbox pick them up
+     automatically — nothing else to change. A single photo renders as a
+     plain image in the lightbox; more than one turns it into a carousel. */
   lodging: [
     {
       id: 'lodge-at-whitefish-lake',
       name: 'The Lodge at Whitefish Lake',
+      badge: 'Wedding Venue',
       tagline: 'Staying where the wedding is',
       address: '1380 Wisconsin Ave, Whitefish, MT 59937',
       driveMinutes: 0,
@@ -73,8 +82,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.lodgeatwhitefishlake.com',
       phone: '',
       coords: [48.4231, -114.3536],
-      tags: ['walk-to-ceremony', 'downtown'],
-      photo: 'assets/photos/lodging/lodge.jpg',
+      photos: [],
       isRoomBlock: false
     },
     {
@@ -94,8 +102,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.luxuryhomesbythelodge.com',
       phone: '',
       coords: null,
-      tags: ['best-for-groups', 'walk-to-ceremony'],
-      photo: 'assets/photos/lodging/viking-creek.jpg',
+      photos: [],
       isRoomBlock: false
     },
     {
@@ -113,16 +120,15 @@ window.TRAVEL = {
       bookingUrl: 'https://www.hiddenmooselodge.com',
       phone: '(406) 862-6516',
       coords: null,
-      tags: [],
-      photo: 'assets/photos/lodging/hidden-moose.jpg',
+      photos: [],
       isRoomBlock: false
     },
     {
-      /* See flags.ROOM_BLOCK_CONFIRMED above and §C.3: Pursuit is rebranding
-         this property to "Hotel Whitefish" through a phased renovation
-         that runs directly through the wedding weekend. Name the rebrand
-         in the copy regardless of outcome — a guest who books here will
-         see "Hotel Whitefish" on their confirmation for a property the
+      /* See flags.ROOM_BLOCK_CONFIRMED above: Pursuit is rebranding this
+         property to "Hotel Whitefish" through a phased renovation that
+         runs directly through the wedding weekend. Name the rebrand in
+         the copy regardless of outcome — a guest who books here will see
+         "Hotel Whitefish" on their confirmation for a property the
          invitation called "Grouse Mountain Lodge," and that confusion is
          guaranteed unless this page names it once. */
       id: 'grouse-mountain-lodge',
@@ -144,8 +150,7 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '(406) 862-3000',
       coords: null,
-      tags: ['our-room-block'],
-      photo: 'assets/photos/lodging/grouse-mountain.jpg',
+      photos: [],
       isRoomBlock: true
     },
     {
@@ -163,8 +168,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.firebrandhotel.com',
       phone: '(406) 863-1900',
       coords: null,
-      tags: ['downtown'],
-      photo: 'assets/photos/lodging/firebrand.jpg',
+      photos: [],
       isRoomBlock: false
     },
     {
@@ -184,41 +188,24 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '',
       coords: null,
-      tags: ['easier-on-the-budget'],
-      photo: 'assets/photos/lodging/rentals.jpg',
+      photos: [],
       isRoomBlock: false
     }
   ],
 
-
-  /* ---- Extra map points -------------------------------------------
-     Places worth a pin that aren't lodging: the airport (built from
-     `flights` above) and anything else guests will want to find. Rendered
-     into the same address list the lodging entries populate — see
-     mapFallback() in travel.js. */
-  extraMapPoints: [
-    { name: 'Whitefish Amtrak Depot', address: '500 Depot St, Whitefish, MT 59937' },
-    { name: 'Downtown Whitefish / City Beach', address: 'Central Ave & 2nd St, Whitefish, MT 59937' }
-  ],
-
-
-  /* ---- Drive times -------------------------------------------------
-     Key route pairs, checked against current mapping and airport/venue
-     data — distinct from `lodging[].driveMinutes` above, which is each
-     property's own drive to the venue and mostly still unverified. This
-     entry has a real driveMinutes, at which point the scaled strip in
-     driveStrip() (travel.js) takes over and this list stops rendering;
-     until then, driveStrip() prints this instead of the bare placeholder. */
-  driveTimesVerified: '2026-08-11',
-  driveTimes: [
-    { from: 'Glacier Park International (FCA)', to: 'the venue', distance: '~12 miles', minutes: '20-25 min' },
-    { from: 'Glacier Park International (FCA)', to: 'downtown Whitefish', distance: '~12 miles', minutes: '20-25 min' },
-    { from: 'Whitefish Amtrak Depot', to: 'the venue', distance: '~2 miles', minutes: '5-8 min' },
-    { from: 'Downtown Whitefish', to: 'West Glacier entrance, Glacier National Park', distance: '~25-30 miles', minutes: '35-45 min',
-      note: 'budget extra time in July/August peak traffic' },
-    { from: 'Whitefish', to: 'Kalispell', distance: '~15 miles', minutes: '15-20 min' },
-    { from: 'Whitefish', to: 'Bigfork / Flathead Lake', distance: '~33 miles', minutes: '45 min' }
-  ],
+  /* ---- Book-by urgency line -------------------------------------------
+     No confirmed deadline exists for this page yet — see the open
+     question flagged to Spencer. index.html's own post-RSVP note already
+     tells guests "we'd suggest booking your stay before the end of
+     October" (2026); that line is real, published guidance, so Where to
+     Stay repeats it rather than showing a bare "TODO" that would
+     contradict what the home page already tells guests. Confirm this is
+     still the right date — and give it an explicit year — before June
+     2027. */
+  lodgingBookBy: {
+    confirmed: false,
+    text: 'We’d suggest booking your stay by the end of October 2026, while Whitefish still has rooms for the weekend.'
+  },
 
   roomBlock: {
     property: 'grouse-mountain-lodge',
@@ -226,61 +213,6 @@ window.TRAVEL = {
     bookingUrl: '',     // TODO
     cutoff: '',         // TODO — ISO date
     note: 'Gated behind flags.ROOM_BLOCK_CONFIRMED — see the comment on that flag above.'
-  },
-
-
-  /* ---- Flights ---------------------------------------------------
-     Verified August 2026 against Glacier Park International (FCA)'s
-     published carrier list. Every SEASONAL route carries a caveat in the
-     UI automatically — travel.js reads `status`, not this comment — so
-     the caveat can never be forgotten on one row and not another.
-     Re-verify: summer 2026 flight loads publish ~330 days out, so check
-     again in January 2027 for anything that's shifted. */
-  flights: {
-    lastVerified: '2026-08-11',
-    airportCode: 'FCA',
-    airportName: 'Glacier Park International',
-    airportToVenue: '11-12 miles, about 20-25 minutes',
-    origins: [
-      { code: 'SEA', city: 'Seattle', status: 'nonstop-year-round', airlines: ['Alaska'] },
-      { code: 'DEN', city: 'Denver', status: 'nonstop-year-round', airlines: ['United'] },
-      { code: 'SLC', city: 'Salt Lake City', status: 'nonstop-year-round', airlines: ['Delta'] },
-      { code: 'MSP', city: 'Minneapolis-St. Paul', status: 'nonstop-year-round', airlines: ['Delta'],
-        note: 'Sun Country also flies this route, as a seasonal add-on to Delta’s year-round service.' },
-      { code: 'LAS', city: 'Las Vegas', status: 'nonstop-year-round', airlines: ['Allegiant'] },
-      { code: 'AZA', city: 'Phoenix-Mesa', status: 'nonstop-year-round', airlines: ['Allegiant'] },
-
-      { code: 'ORD', city: 'Chicago', status: 'nonstop-seasonal', airlines: ['United', 'American'] },
-      { code: 'DFW', city: 'Dallas-Fort Worth', status: 'nonstop-seasonal', airlines: ['American'] },
-      { code: 'LGA', city: 'New York (LaGuardia)', status: 'nonstop-seasonal', airlines: ['American'],
-        note: 'The longest nonstop route into FCA – about 4h45m, 2,029 miles.' },
-      { code: 'LAX', city: 'Los Angeles', status: 'nonstop-seasonal', airlines: ['Alaska', 'United'] },
-      { code: 'SFO', city: 'San Francisco', status: 'nonstop-seasonal', airlines: ['United'] },
-      { code: 'IAH', city: 'Houston', status: 'nonstop-seasonal', airlines: ['United'] },
-      { code: 'PDX', city: 'Portland', status: 'nonstop-seasonal', airlines: ['Alaska'] },
-      { code: 'OAK', city: 'Oakland', status: 'nonstop-seasonal', airlines: ['Allegiant'] },
-      { code: 'SAN', city: 'San Diego', status: 'nonstop-seasonal', airlines: ['Alaska'] },
-
-      // Beyond FCA's own ~22 destinations, any other US metro is a one-stop
-      // connection — true by construction, not a guessed route, since these
-      // simply are not on FCA's carrier list. No `via` claimed for the ones
-      // below (unverified which hub); BOS keeps its representative one
-      // since it is genuinely the common Boston routing.
-      { code: 'BOS', city: 'Boston', status: 'connect', via: ['MSP', 'SEA', 'DEN'] },
-      { code: 'MIA', city: 'Miami', status: 'connect' },
-      { code: 'DCA', city: 'Washington, D.C.', status: 'connect' },
-      { code: 'PHL', city: 'Philadelphia', status: 'connect' },
-      { code: 'DTW', city: 'Detroit', status: 'connect' },
-      { code: 'BNA', city: 'Nashville', status: 'connect' },
-      { code: 'AUS', city: 'Austin', status: 'connect' },
-      { code: 'SAT', city: 'San Antonio', status: 'connect' },
-      { code: 'CMH', city: 'Columbus', status: 'connect' },
-      { code: 'IND', city: 'Indianapolis', status: 'connect' },
-      { code: 'MCI', city: 'Kansas City', status: 'connect' },
-      { code: 'STL', city: 'St. Louis', status: 'connect' },
-      { code: 'SMF', city: 'Sacramento', status: 'connect' },
-      { code: 'MKE', city: 'Milwaukee', status: 'connect' }
-    ]
   },
 
 
@@ -312,8 +244,14 @@ window.TRAVEL = {
 
 
   /* ---- While You're Here -------------------------------------------
-     Copy here follows Part D of the build guide exactly — the Glacier
-     entry in particular is approved language, not a draft; see the note
+     Not rendered on the current page — the August 2026 redesign narrowed
+     /travel/ to one job (get guests to book lodging) and cut every
+     section that wasn't that, this one included. The copy below is real
+     and verified, not a draft, so it stays rather than getting deleted:
+     the moment there's room for a "things to do" section again, it can
+     reuse the same card/module pattern lodging does, and this array is
+     ready to go. Copy here follows Part D of the build guide exactly —
+     the Glacier entry in particular is approved language; see the note
      on it below before editing. */
   whileHere: [
     {
