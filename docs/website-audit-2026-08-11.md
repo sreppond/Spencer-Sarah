@@ -83,3 +83,33 @@ Every finding from the initial pass was run to ground. Final tally:
 **Confirmed already correct (1):** the countdown's digit-flip only re-animates cells that actually changed.
 
 Nothing was changed that the site's own README, code comments, or established visual language argued against.
+
+---
+
+## 4. Follow-up: hover/interaction polish pass
+
+Prompted by a specific report — the "Add to your calendar" button "doesn't look quite right when you hover over it" — plus a request to check both live pages more broadly for anything that undercuts a premium feel. This pass was interaction-focused: default states across the site already looked considered (per §2 above), so the question was what happens when a mouse actually touches something.
+
+### Confirmed bug (matches the report)
+
+**`.flow-btn` ink-flood hover, `assets/css/save-the-date.css:727-745,772,795`.** The flood is a small circle scaled up via `transform: scale(18)` on hover/focus/active — chosen over animating `width`/`height` for performance (own comment: "scale stays on the compositor"). The multiplier was a fixed constant tuned against whichever button was widest when it was written; it no longer is. Measured in a headless render: the "Add to your calendar" button is 352×52px (356px diagonal), but `scale(18)` on a 16px base circle only reaches a 288px diameter — 68px short. Hovering left pale, unfilled slivers of the pill visible at both rounded ends instead of a clean fill, on every `.flow-btn` on the site (calendar button, "Send our details," "Lodging details" — all share the same rule).
+
+**Fix:** bumped to `scale(32)` (512px diameter), verified against the same measurement with comfortable headroom (512px vs. the 356px worst case), and reworded the comment to stop tying the constant to "today's longest label" — that framing is exactly what broke it last time.
+
+### Additional gaps found while checking every interactive element's hover state (not just defaults)
+
+The site has one real hover convention already (`.bento-tile:hover { transform: translateY(-3px); box-shadow: ...}`, a card lift used on the weekend cards) — but two visually similar components elsewhere on the travel page never received it, and a third had a hover rule so faint it was indistinguishable from doing nothing:
+
+| Element | Before | Fix |
+|---|---|---|
+| `.lodge-card` (lodging option cards, "DETAILS ↓" toggle) | **No `:hover` rule at all.** The whole clickable card — same border/radius/background as `.bento-tile` — gave zero feedback on mouse-over, only reacting the instant you clicked. | Added the identical lift + shadow `.bento-tile:hover` already uses (`translateY(-3px)`, matching box-shadow), plus the reduced-motion override alongside `.bento-tile`'s existing one. |
+| `.lodge-chip` (the "Downtown" / "Best for groups" filter pills) | Had a hover rule, but it only shifted `border-color` by one step on a 1.5px border — a pixel-diff confirmed the change exists, but it's imperceptible at a glance. | Hover now also tints the background (`--paper-warm`) and darkens the text (`--ink-soft` → `--ink`), staying short of `.is-active`'s solid gold fill so the two states stay visually distinct. |
+| `.faq-item summary` (FAQ question rows) | No hover at all — only the `+` marker had any transition, and only for the open/close rotation, not hover. | Added `color: var(--gold-text)` on hover, the same shift `.site-nav-links a:hover` and other links on the site already use — makes the row read as clickable before you commit to clicking. |
+
+All three were verified in a headless browser (before/after screenshots, pixel-diffed where the change was subtle) and checked against `prefers-reduced-motion`.
+
+### Explicitly checked and left alone
+
+- **Nav link hover** (`.site-nav-links a:hover { color: var(--gold-text) }`) — also a small, text-color-only shift, but this exact pattern is the site's established, consistent link-hover idiom used in a dozen+ places (nav, FAQ now, date-alt, footer links). It's a deliberate minimal convention, not an oversight like the three above — left unchanged.
+- **`.weekend-card`** — flagged in §1 for its `border-left` (a false-positive "side-tab" match, see above); confirmed it's a static `<li>`, not a link or button, so it correctly has no hover state at all.
+- **Full-page automated screenshots initially showed large blank gaps** on the save-the-date page (in the mosaic and its runway). Investigated before assuming a bug: the mosaic is deliberately scroll-position-driven (`--mosaic-p`, published by a `requestAnimationFrame`-throttled scroll listener) with a tall sticky "runway," and Playwright's full-page screenshot stitching doesn't reproduce real scroll timing. Manually scrolling through in steps and re-capturing showed every frame rendering correctly — this was a screenshot-methodology artifact, not a site defect. No change made.

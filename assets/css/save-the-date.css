@@ -726,7 +726,10 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 
 /* The flood. A small circle scaled rather than a resized one: scale stays
    on the compositor, width/height would relayout on every frame of an
-   800ms transition. 18× covers the diagonal of the widest button here. */
+   800ms transition. 32× (512px) is deliberately oversized rather than
+   tuned to today's longest label ("Add to your calendar", 356px
+   diagonal) — a tight fit here breaks the moment any button's copy
+   grows, leaving pale unfilled slivers at both ends on hover. */
 .flow-btn__ink {
   position: absolute;
   z-index: 1;
@@ -769,7 +772,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 .flow-btn:focus-visible .flow-btn__ink,
 .flow-btn:active .flow-btn__ink {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(18);
+  transform: translate(-50%, -50%) scale(32);
 }
 .flow-btn:focus-visible .flow-btn__label,
 .flow-btn:active .flow-btn__label,
@@ -792,7 +795,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   }
   .flow-btn:hover .flow-btn__ink {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(18);
+    transform: translate(-50%, -50%) scale(32);
   }
   .flow-btn:hover .flow-btn__label,
   .flow-btn:hover .flow-btn__icon { transform: translateX(.55em); }
@@ -2461,7 +2464,11 @@ html.js .flight-fallback.is-superseded { display: none; }
   cursor: pointer;
   transition: background .25s var(--ease-soft), border-color .25s var(--ease-soft), color .25s var(--ease-soft);
 }
-.lodge-chip:hover { border-color: var(--stone); }
+/* Border-color alone was a ~1.5px, low-contrast shift — technically a
+   hover state, practically invisible. Background + text darken together
+   so it reads at a glance, while staying short of .is-active's solid
+   gold fill so the two states can't be mistaken for each other. */
+.lodge-chip:hover { border-color: var(--stone); background: var(--paper-warm); color: var(--ink); }
 .lodge-chip.is-active {
   background: var(--gold-text);
   border-color: var(--gold-text);
@@ -2490,8 +2497,12 @@ html.js .flight-fallback.is-superseded { display: none; }
   border-radius: 1rem;
   background: var(--card);
   overflow: hidden;
-  transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft);
+  transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
 }
+/* Same lift-and-shadow as .bento-tile below — two cards that look alike
+   should feel alike; this one was missing the hover entirely, so the
+   whole toggle read as inert until you actually clicked it. */
+.lodge-card:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -22px rgba(93,74,44,.4); }
 /* The one property this page can recommend without a caveat once the
    block is actually confirmed — see travel-data.js flags.ROOM_BLOCK_CONFIRMED.
    Never applied while that flag is false. */
@@ -2716,7 +2727,12 @@ html.js .lodge-fallback.is-superseded { display: none; }
   color: var(--ink);
   cursor: pointer;
   list-style: none;
+  transition: color .25s var(--ease-soft);
 }
+/* The chevron rotates open already; the row itself gave no sign it was
+   clickable until then. Same gold the nav links and links elsewhere use
+   on hover, so this reads as "interactive" rather than "static text". */
+.faq-item summary:hover { color: var(--gold-text); }
 .faq-item summary::-webkit-details-marker { display: none; }
 .faq-item summary::after {
   content: '+';
@@ -2830,6 +2846,6 @@ html.js .lodge-fallback.is-superseded { display: none; }
 .bento-detail-blurb.is-todo { font-style: italic; color: var(--stone-text); }
 
 @media (prefers-reduced-motion: reduce) {
-  .bento-tile:hover { transform: none; }
+  .bento-tile:hover, .lodge-card:hover { transform: none; }
   .bento-tile-chevron::after { transition: none; }
 }
