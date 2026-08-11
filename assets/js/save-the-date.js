@@ -99,6 +99,7 @@
      ------------------------------------------------------------------ */
   var scene = $('#envelope-scene');
   var envelope = $('#envelope');
+  var envVideo = $('#envelope-video');
   var page = $('#page');
   var heroEl = $('#hero');
   var video = $('#hero-video');
@@ -213,12 +214,76 @@
     else page.setAttribute('aria-hidden', 'true');
   }
 
+  /* The hand-off used to run on a fixed clock tuned to a CSS transform
+     sequence. Now the sequence is baked into the footage — the clip is
+     cut to end on a held white frame — so the hand-off waits for the
+     video's own `ended` event instead of guessing its length. That is
+     also what keeps it seamless: nothing here can drift out of sync
+     with what is actually on screen. */
+  var envelopeFinished = false;
+
+  function finishEnvelope() {
+    if (envelopeFinished) return;
+    envelopeFinished = true;
+
+    root.classList.remove('is-sealed');
+    if ('inert' in HTMLElement.prototype) page.inert = false;
+    else page.removeAttribute('aria-hidden');
+    scene.classList.add('is-gone');
+    scene.setAttribute('aria-hidden', 'true');
+    startHeroVideo();
+    revealHero();
+    revealAudioToggle();
+
+    // Matches .env-scene's own .85s opacity fade (CSS §1) — by the time
+    // this fires the scene is already fully transparent, so pulling it
+    // out of the flow is invisible rather than an event of its own.
+    setTimeout(function () {
+      scene.style.display = 'none';
+      page.setAttribute('tabindex', '-1');
+      page.focus({ preventScroll: true });
+      page.removeAttribute('tabindex');
+    }, 900);
+  }
+
+  function playEnvelopeVideo() {
+    // No video element, or nothing for it to play: there is nothing left
+    // to show, so hand off immediately rather than strand the guest on a
+    // frame that never moves.
+    if (!envVideo || !envVideo.querySelector('source[src]')) { finishEnvelope(); return; }
+
+    envVideo.addEventListener('ended', finishEnvelope, { once: true });
+    // A codec this browser cannot decode, a failed fetch — same outcome
+    // as no video at all.
+    envVideo.addEventListener('error', finishEnvelope, { once: true });
+
+    // Belt and braces: a codec this browser cannot decode sometimes fails
+    // silently rather than telling us — no `error` event, no rejected
+    // play(), `readyState` stuck at HAVE_NOTHING forever (confirmed against
+    // Playwright's own decoder-less Chromium — see assets/video/README.md).
+    // This flat deadline, comfortably past the clip's own ~5s runtime, is
+    // what stops a guest on a browser like that from being stranded on a
+    // frame that will never move. finishEnvelope() is idempotent, so this
+    // is a silent no-op on every run where `ended` already fired first.
+    setTimeout(finishEnvelope, 6500);
+
+    // muted must be true as a property, not just an attribute, for iOS to
+    // treat play() as allowed. The source track was stripped of audio at
+    // export anyway (see assets/video/README.md), so nothing is lost.
+    envVideo.muted = true;
+    envVideo.defaultMuted = true;
+    envVideo.currentTime = 0;
+    var p = envVideo.play();
+    // A refused play() (a policy this tap should already satisfy, but
+    // belt and braces) is the same dead end as a missing file.
+    if (p && p.catch) p.catch(finishEnvelope);
+  }
+
   function openEnvelope() {
     if (opened || !envelope) return;
     opened = true;
     rememberOpened();
 
-    envelope.classList.remove('is-inviting');
     envelope.classList.add('is-open');
     envelope.setAttribute('aria-disabled', 'true');
     scene.classList.add('is-opening');
@@ -230,29 +295,19 @@
     // still appears for everyone at the hand-off below.
     if (audioPreference() === 'on') startAmbient();
 
-    var lift = reduced ? 120 : 1900;   // card begins opening into the hero
-    var hand = reduced ? 420 : 2500;   // scene starts dissolving
-    var done = reduced ? 900 : 3350;   // scene removed from the flow
+    playEnvelopeVideo();
+  }
 
-    setTimeout(function () { envelope.classList.add('is-lifting'); }, lift);
-
-    setTimeout(function () {
-      root.classList.remove('is-sealed');
-      if ('inert' in HTMLElement.prototype) page.inert = false;
-      else page.removeAttribute('aria-hidden');
-      scene.classList.add('is-gone');
-      scene.setAttribute('aria-hidden', 'true');
-      startHeroVideo();
-      revealHero();
-      revealAudioToggle();
-    }, hand);
-
-    setTimeout(function () {
-      scene.style.display = 'none';
-      page.setAttribute('tabindex', '-1');
-      page.focus({ preventScroll: true });
-      page.removeAttribute('tabindex');
-    }, done);
+  // config.js is authoritative for every asset path on the page; the HTML
+  // carries the same two strings only as a static mirror (see the note at
+  // the top of index.html). Applied unconditionally, before the reduced
+  // motion and repeat-visit branches below, because it costs nothing even
+  // on a run where the video never plays.
+  if (envVideo) {
+    var envMedia = CFG.media || {};
+    if (envMedia.envelopePoster) envVideo.poster = envMedia.envelopePoster;
+    var envSource = envVideo.querySelector('source');
+    if (envSource && envMedia.envelopeVideo) envSource.src = envMedia.envelopeVideo;
   }
 
   if (scene && envelope) {
@@ -284,12 +339,6 @@
       // has already acted (tap, Enter/Space, Escape, skip) has flipped
       // `opened` to true by then, at which point this is a no-op.
       setTimeout(openEnvelope, 2800);
-
-      // A slow pulse on the seal, starting once the hint has had its
-      // first breath, so the one tappable-looking thing on the screen
-      // actually reads as tappable. CSS carries the timing and the
-      // reduced-motion override; this only ever runs when !reduced.
-      envelope.classList.add('is-inviting');
 
       var skip = $('#env-skip');
       if (skip) {

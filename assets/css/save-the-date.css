@@ -36,12 +36,6 @@
   --gold-text:    #7a5c33;   /* 5.5:1 — eyebrows, accents, the send button */
   --err:          #8c4f39;   /* 5.6:1 — validation messages */
 
-  /* --- envelope --- */
-  --env-paper:    #24241f;
-  --env-paper-hi: #33332c;
-  --env-emboss:   rgba(214, 199, 168, .16);
-  --env-lining:   #efe0c6;
-
   /* --- type -----------------------------------------------------------
      Two faces, one family tree. Cormorant Garamond is a *display* cut:
      its x-height is roughly 0.36em against EB Garamond's 0.48em, so at
@@ -188,11 +182,10 @@ img, svg, video { display: block; max-width: 100%; }
   position: fixed;
   inset: 0;
   z-index: 90;
-  display: grid;
-  place-items: center;
-  padding: calc(1.5rem + env(safe-area-inset-top, 0px)) var(--gutter)
-           calc(1.5rem + var(--safe-b));
-  background: #16160f;
+  overflow: hidden;
+  /* The footage's own studio backdrop, not black — so there is nothing
+     for the eye to catch between this and the video's first frame. */
+  background: var(--paper-deep);
   opacity: 1;
   transition: opacity .85s var(--ease-soft);
 }
@@ -200,203 +193,67 @@ img, svg, video { display: block; max-width: 100%; }
 html:not(.js) .env-scene { display: none; }
 .env-scene.is-gone { opacity: 0; pointer-events: none; }
 
-.env-vignette {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 66% 52% at 50% 46%, rgba(196,159,108,.16), rgba(196,159,108,0) 68%),
-    radial-gradient(ellipse 92% 78% at 50% 50%, #23231b 0%, #131310 74%, #0d0d0a 100%);
-}
-
-.env-stage {
-  position: relative;
-  perspective: 1500px;
-  perspective-origin: 50% 34%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(1.6rem, 6vw, 2.6rem);
-}
+.env-stage { position: absolute; inset: 0; }
 
 .env {
-  position: relative;
-  width: min(84vw, 520px);
-  aspect-ratio: 520 / 366;
-  transform-style: preserve-3d;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   border: 0;
   padding: 0;
   background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  filter: drop-shadow(0 34px 54px rgba(0,0,0,.55));
-  transition: transform .7s var(--ease-soft), opacity .8s var(--ease-soft);
+  transition: transform .3s var(--ease-soft);
 }
-.env:focus-visible { outline-offset: 14px; }
+/* The button fills the screen, so a default outline would draw off-canvas
+   and never be seen — pull it back onto the visible edge instead. */
+.env:focus-visible { outline-offset: -6px; }
+.env.is-open { cursor: default; }
+/* The footage is the affordance; this only confirms a tap registered. */
+.env.is-pressed { transform: scale(.985); }
 
-/* -- interior / lining -- */
-.env-lining {
+.env-video {
   position: absolute;
   inset: 0;
-  border-radius: 3px;
-  transform: translateZ(0);
-  background:
-    linear-gradient(165deg, #f6ead4 0%, var(--env-lining) 46%, #e2cfae 100%);
-}
-/* warm light that grows in the mouth of the envelope as it opens */
-.env-lining::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 3px;
-  opacity: 0;
-  background: radial-gradient(ellipse 74% 58% at 50% 22%,
-              rgba(255,236,199,.95), rgba(255,225,178,.28) 58%, rgba(255,215,160,0) 82%);
-  transition: opacity .8s var(--ease-out);
-}
-
-/* -- the card -- */
-.env-card {
-  position: absolute;
-  left: 4.4%;
-  right: 4.4%;
-  bottom: 3.4%;
-  height: 88%;
-  transform: translateZ(1px);
-  transform-origin: 50% 30%;
-  border-radius: 2px;
-  background:
-    linear-gradient(168deg, #fdfaf4 0%, var(--card) 52%, #f2ebdd 100%);
-  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 10px 22px rgba(0,0,0,.16);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: clamp(.5rem, 1.6vw, .9rem);
-  /* content sits high on the card so it is already legible the moment
-     the flap swings back, before the card starts to rise */
-  padding: 15.5% 12% 8%;
-  transition:
-    transform 1s var(--ease-out) 1.05s,
-    opacity .7s linear 1.05s;
-}
-.env-card-rule {
-  width: 42%;
-  height: 1px;
-  background: var(--rule);
-  opacity: .82;
-}
-.env-card-mark { color: var(--leaf); width: clamp(22px, 5.4vw, 34px); }
-.env-card-mark svg { width: 100%; height: auto; }
-.env-card-names {
-  font-size: clamp(.82rem, 3vw, 1.2rem);
-  letter-spacing: .3em;
-  text-indent: .3em;
-  text-transform: uppercase;
-  color: var(--ink);
-  white-space: nowrap;
-}
-.env-card-names i { font-style: italic; color: var(--gold); letter-spacing: 0; }
-
-/* -- front panel: the face of the envelope.
-   Its top edge is notched so that once the flap swings back you are looking
-   into the envelope. The notch apex (46%) sits above the flap apex (58%), so
-   the closed flap covers the opening completely at every height. -- */
-.env-front {
-  position: absolute;
-  inset: 0;
-  transform: translateZ(2px);
-  border-radius: 3px;
-  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0, 50% 46%);
-  background:
-    linear-gradient(178deg, #1c1c17 0%, var(--env-paper) 34%, #2b2b24 100%);
-  color: var(--env-emboss);
-}
-/* the folded edge of the two side flaps, catching a little light */
-.env-front::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to bottom right, transparent calc(50% - .6px), rgba(226,210,179,.10) 50%, transparent calc(50% + .6px)),
-    linear-gradient(to bottom left,  transparent calc(50% - .6px), rgba(226,210,179,.10) 50%, transparent calc(50% + .6px));
-  background-size: 50% 46%, 50% 46%;
-  background-position: left top, right top;
-  background-repeat: no-repeat;
-}
-
-/* -- upper flap -- */
-.env-flap {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 58%;
-  transform-style: preserve-3d;
-  transform-origin: 50% 0;
-  transform: translateZ(3px) rotateX(0deg);
-  transition: transform .98s var(--ease-inout) .42s;
-}
-.env-flap-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-}
-.env-flap-outer {
-  background: linear-gradient(182deg, #34342c 0%, #2a2a23 46%, #171712 100%);
-  color: var(--env-emboss);
-}
-.env-flap-outer::after {
-  /* fold crease along the top edge */
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 2px;
-  background: linear-gradient(to bottom, rgba(255,255,255,.09), transparent);
-}
-.env-flap-inner {
-  transform: rotateY(180deg);
-  /* tilted away from the light once it swings back */
-  background: linear-gradient(178deg, #cbb694 0%, #e3d2b2 44%, #f2e6cf 100%);
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  background: var(--paper-deep);
 }
 
-.env-emboss { position: absolute; inset: 0; width: 100%; height: 100%; }
-
-/* -- wax seal -- */
-.env-seal {
+/* A quiet floor of shadow for the hint and skip link to sit on. The old
+   charcoal envelope gave pale type a dark ground for free; this footage is
+   ivory top to bottom, so the ground has to be built — a gradient low
+   enough that it never reaches the card or its text in the upper frame. */
+.env-scrim {
   position: absolute;
-  left: 50%;
-  top: 58%;
-  width: 18.5%;
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%) translateZ(4px);
-  transition: transform .22s var(--ease-out);
-  filter: drop-shadow(0 4px 7px rgba(0,0,0,.5));
+  inset: auto 0 0 0;
+  height: 20%;
+  background: linear-gradient(to top, rgba(28, 25, 19, .34), rgba(28, 25, 19, 0));
+  pointer-events: none;
 }
-.env-seal-half {
-  position: absolute;
-  inset: 0;
-  transition: transform .62s var(--ease-out) .16s, opacity .62s ease .16s;
-}
-.env-seal-half svg { width: 100%; height: 100%; }
-/* the halves overlap by a hair so no seam shows before it breaks */
-.env-seal-l { clip-path: inset(0 49.4% 0 0); }
-.env-seal-r { clip-path: inset(0 0 0 49.4%); }
 
 /* -- hint --
    This is the only instruction on a full-screen blocker, so it has to be
    readable at the dimmest point of its own breathing animation, not the
-   brightest. Bigger, brighter, and the trough of the loop lifted from
-   .5 to .72 — it still breathes, it just never disappears. */
+   brightest. */
 .env-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(3.6rem + var(--safe-b));
+  transform: translateX(-50%);
+  margin: 0;
   font-family: var(--font-text);
   font-size: clamp(.82rem, 3.2vw, .95rem);
   font-weight: 500;
   letter-spacing: .38em;
   text-indent: .38em;
   text-transform: lowercase;
-  color: rgba(238, 226, 202, .95);
+  color: rgba(250, 246, 238, .95);
+  pointer-events: none;
   animation: hint-breathe 3.6s ease-in-out infinite;
 }
 @keyframes hint-breathe {
@@ -407,8 +264,12 @@ html:not(.js) .env-scene { display: none; }
 /* An escape hatch out of the ceremony. A full-screen gate with exactly one
    accepted interaction and no stated alternative is the single largest UX
    liability on the page: anyone who does not read "tap to open" as a
-   literal instruction is simply stuck on a dark screen. */
+   literal instruction is simply stuck watching a video. */
 .env-skip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(1.3rem + var(--safe-b));
+  transform: translateX(-50%);
   border: 0;
   padding: .7rem 1.1rem;
   background: none;
@@ -418,50 +279,20 @@ html:not(.js) .env-scene { display: none; }
   letter-spacing: .22em;
   text-indent: .22em;
   text-transform: uppercase;
-  color: rgba(226, 210, 179, .62);
+  color: rgba(240, 233, 219, .68);
   text-decoration: underline;
   text-underline-offset: .35em;
   text-decoration-thickness: 1px;
   cursor: pointer;
   transition: color .35s var(--ease-soft);
 }
-.env-skip:hover, .env-skip:focus-visible { color: rgba(243, 233, 213, .96); }
+.env-skip:hover, .env-skip:focus-visible { color: rgba(255, 251, 244, .98); }
+
+/* --- opening sequence ---------------------------------------------------
+   The choreography now lives in the footage itself. All CSS has to do is
+   clear the hint and skip link off the card as it comes into frame. */
+.env-scene.is-opening .env-hint,
 .env-scene.is-opening .env-skip { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
-
-/* --- opening sequence --------------------------------------------------- */
-
-.env.is-pressed .env-seal { transform: translate(-50%, -50%) translateZ(4px) scale(.93); }
-
-/* A tappable-looking seal on a screen with exactly one accepted
-   interaction and no other visible affordance. Starts after the hint has
-   had its first breath (1.2s) so the two don't read as one busy object,
-   and it is slow enough (3s) to read as an invitation, not an alert.
-   `.is-pressed` above already overrides the transform on tap, so the two
-   never fight. Class-gated (added by save-the-date.js) rather than an
-   unconditional animation so it can be withheld under reduced motion. */
-.env.is-inviting .env-seal { animation: seal-breathe 3s var(--ease-soft) 1.2s infinite; }
-@keyframes seal-breathe {
-  0%, 100% { transform: translate(-50%, -50%) translateZ(4px) scale(1); }
-  50%      { transform: translate(-50%, -50%) translateZ(4px) scale(1.03); }
-}
-
-.env.is-open { cursor: default; }
-.env-scene.is-opening .env-hint { opacity: 0; animation: none; transition: opacity .3s ease; }
-
-.env.is-open .env-seal-l { transform: translate(-16%, 5%) rotate(-8deg); opacity: 0; }
-.env.is-open .env-seal-r { transform: translate( 16%, 5%) rotate( 8deg); opacity: 0; }
-
-.env.is-open .env-flap { transform: translateZ(3px) rotateX(-177deg); }
-.env.is-open .env-lining::after { opacity: 1; transition-delay: .85s; }
-.env.is-open .env-card { transform: translateZ(1px) translateY(-40%); }
-
-/* hand-off: the card opens up into the hero */
-.env.is-lifting { filter: drop-shadow(0 34px 54px rgba(0,0,0,0)); }
-.env.is-lifting .env-card {
-  transform: translateZ(60px) translateY(-40%) scale(2.9);
-  opacity: 0;
-  transition: transform .95s var(--ease-inout), opacity .8s ease .1s;
-}
 
 
 /* ==========================================================================
@@ -2216,7 +2047,6 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   :root { --hero-framing: 50% 46%; }
   :root { --hero-anchor: 52%; }
   .hero-cue { display: none; }
-  .env { width: min(62vh, 420px); }
 }
 
 /* --- tablet and up --- */
@@ -2276,16 +2106,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
     scroll-behavior: auto !important;
   }
 
-  /* the envelope becomes a short cross-fade instead of a 3D sequence */
-  .env { transition: opacity .45s linear !important; }
-  /* Belt and braces: save-the-date.js never adds .is-inviting under
-     reduced motion, and the gate is bypassed outright before the seal
-     could ever pulse — but pinning it here costs nothing. */
-  .env.is-inviting .env-seal { animation: none; }
-  .env.is-open { opacity: 0; }
-  .env.is-open .env-flap { transform: translateZ(3px) rotateX(0deg); }
-  .env.is-open .env-card { transform: translateZ(1px); }
+  /* Belt and braces: save-the-date.js hides the whole scene outright under
+     reduced motion before any of this could ever run — pinning it here
+     costs nothing. */
   .env-scene { transition: opacity .5s linear !important; }
+  .env { transition: opacity .45s linear !important; }
   .env-hint { animation: none; opacity: .8; }
 
   .page { transition: opacity .5s linear !important; }
