@@ -105,3 +105,86 @@ naming an uncut crop in `config.media.heroVideoMobile` left every guest on a
 phone looking at a dead still. Prefer leaving that value empty until the file
 actually ships — the fallback is a safety net, not a reason to point at
 nothing.
+
+
+## The envelope clip
+
+| File | Status | Notes |
+| --- | --- | --- |
+| `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 24fps, H.264 High, no audio track, `+faststart`. ~900 KB. Cut from a 10s, 1280×720 source. |
+| `envelope-open-poster.jpg` | **shipped** | The clip's own frame 0 — see below. |
+
+This is what plays when a guest taps the envelope, in place of the old
+CSS/SVG 3D fold. `save-the-date.js` plays it on tap and waits for its
+`ended` event to hand off to the hero — see the "Envelope" section there —
+rather than a fixed timer, so the hand-off can never drift out of sync
+with what is actually on screen.
+
+### The source ran long and needed cropping in
+
+The original 10s take is a locked-off studio shot: a cream envelope on a
+warm grey backdrop with generous headroom on all four sides, the flap
+opening in the first ~3s and the card creeping out over the next ~5s before
+holding on the fully-revealed card for the last ~2s. Two problems for a
+tap-triggered intro: the hold at the end shows nothing new, and the
+headroom reads as empty space rather than a full-bleed reveal once the clip
+fills a phone screen.
+
+Both are fixed in one `ffmpeg` pass — trim off the static hold, crop in
+toward the envelope, then speed the remainder up so the whole thing reads
+as brisk rather than slow:
+
+```
+ffmpeg -i master.mp4 \
+  -vf "trim=0:8.6,setpts=(PTS-STARTPTS)/1.75,crop=iw*0.88:ih*0.86,fade=t=out:st=4.4:d=0.5:color=white" \
+  -an -c:v libx264 -crf 19 -preset slow -profile:v high -level 4.0 \
+  -pix_fmt yuv420p -g 48 -movflags +faststart envelope-open.mp4
+```
+
+The crop factors (0.88 × 0.86) were checked frame-by-frame against the
+widest moment in the shot (the closed envelope, before the camera pushes
+in at all) so nothing is ever clipped at any point in the clip — see the
+frame checks that produced these numbers if the source is ever re-cut.
+
+### It ends on a held white frame, on purpose
+
+The `fade=t=out:...:color=white` at the tail is not a UI fade — it is
+baked into the pixels. The clip's last ~0.5s dissolve to solid white and
+hold there through its final frame, so `.env-scene`'s own CSS opacity
+transition (§1 of `save-the-date.css`) has a plain white field to fade
+*from* on both the video and the scene's background colour
+(`--paper-deep`, warm and close to white already). That is what makes the
+hand-off into the hero read as one continuous fade instead of a video
+frame cutting to a differently-coloured overlay.
+
+### Confirmed silent, and on purpose
+
+`volumedetect` on the source measures a −61.9 dB mean / −39.9 dB peak — a
+noise floor, not sound design — so the track is dropped entirely with
+`-an`, same as the hero loop. The element still ships `muted` in markup
+and as a property set in JS (iOS requires the latter for autoplay-adjacent
+`play()` calls to be treated as allowed), even though there is nothing on
+the track to hear.
+
+### The poster must come from the clip, not be regenerated separately
+
+Same reasoning as the hero poster above: `envelope-open-poster.jpg` is
+frame 0 of `envelope-open.mp4` exactly, exported with `ffmpeg -i
+envelope-open.mp4 -frames:v 1 -update 1 -q:v 3 envelope-open-poster.jpg`
+after the crop above, not a separate re-export from the master. A guest
+sees the poster before they tap and the video's first frame the instant
+they do — if the two ever diverge, even slightly, that hand-off shows.
+
+### `save-the-date.js` has to assume playback can fail silently
+
+Playwright's bundled Chromium — the same open-source build noted above for
+the hero loop — doesn't just fall back quietly here: calling `.play()` on
+an undecodable source leaves the element's `readyState` at `HAVE_NOTHING`
+forever, with no `error` event and no rejected promise. A guest on a real
+but similarly decoder-less browser would be stuck on a frame that never
+moves, watching a screen with no stated way past it. `playEnvelopeVideo()`
+in `save-the-date.js` covers this with a flat timeout — comfortably past
+the clip's own runtime — that hands off to the hero the same way a
+missing file or a genuine decode error would, on top of the `error` and
+rejected-`play()` handlers that catch the failures a browser actually
+reports.
