@@ -67,7 +67,7 @@ window.TRAVEL = {
       bestFor: 'Staying where the wedding is',
       amenities: ['On-site', 'Lakefront', 'Spa', 'Pools', 'Marina'],
       blurb: 'Montana’s only AAA Four Diamond resort, and the easiest option ' +
-        'there is — you don’t have to leave the property. On-site spa, ' +
+        'there is – you don’t have to leave the property. On-site spa, ' +
         'indoor and outdoor pools, a marina, and the Boat Club Restaurant, ' +
         'all right where the wedding is happening.',
       bookingUrl: 'https://www.lodgeatwhitefishlake.com',
@@ -88,7 +88,7 @@ window.TRAVEL = {
       amenities: ['Full kitchen', 'Multiple bedrooms', 'Lodge amenities included'],
       blurb: 'Full houses with full kitchens and multiple bedrooms, on the ' +
         'same property as the venue next to the Viking Creek Wetland ' +
-        'Preserve — plus access to everything at the Main Lodge. The best ' +
+        'Preserve – plus access to everything at the Main Lodge. The best ' +
         'option for a group wanting a house to themselves without giving ' +
         'up walkability to the wedding.',
       bookingUrl: 'https://www.luxuryhomesbythelodge.com',
@@ -108,7 +108,7 @@ window.TRAVEL = {
       bestFor: 'A quiet, small-inn stay',
       amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
       blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
-        'outdoor hot tub, and a full breakfast included — quieter and more ' +
+        'outdoor hot tub, and a full breakfast included – quieter and more ' +
         'personal than a hotel.',
       bookingUrl: 'https://www.hiddenmooselodge.com',
       phone: '(406) 862-6516',
@@ -127,14 +127,14 @@ window.TRAVEL = {
          guaranteed unless this page names it once. */
       id: 'grouse-mountain-lodge',
       name: 'Grouse Mountain Lodge',
-      tagline: 'Rebranding to Hotel Whitefish — call before booking',
+      tagline: 'Rebranding to Hotel Whitefish – call before booking',
       address: '2 Fairway Dr, Whitefish, MT 59937',
       driveMinutes: null,
       priceTier: '$$',
-      bestFor: 'Our room block — once confirmed',
+      bestFor: 'Our room block – once confirmed',
       amenities: ['Pool', 'On-site dining (renovation-dependent)'],
       blurb: 'Grouse Mountain Lodge is mid-renovation and relaunching in ' +
-        'phases as "Hotel Whitefish" — 144 rooms total, 72 already ' +
+        'phases as "Hotel Whitefish" – 144 rooms total, 72 already ' +
         'renovated and open (including a new bridal suite), with a new ' +
         '8,250 sq ft event pavilion opening fall 2026. The full relaunch ' +
         'is targeted for summer 2027, essentially our wedding weekend. We ' +
@@ -158,7 +158,7 @@ window.TRAVEL = {
       bestFor: 'Downtown, walkable to dinner',
       amenities: ['Rooftop hot tub', 'Restaurant + bar downstairs'],
       blurb: 'The pick if you want to walk to dinner and the bars afterward ' +
-        '— 20+ restaurants within five minutes on foot. Boutique rooms, a ' +
+        '– 20+ restaurants within five minutes on foot. Boutique rooms, a ' +
         'rooftop hot tub, and a restaurant and bar downstairs.',
       bookingUrl: 'https://www.firebrandhotel.com',
       phone: '(406) 863-1900',
@@ -178,7 +178,7 @@ window.TRAVEL = {
       bestFor: 'Easier on the budget, or a longer stay',
       amenities: [],
       blurb: 'Whitefish has a deep bench of cabins and condos on VRBO and ' +
-        'Airbnb, from downtown walk-ups to lakefront houses — search ' +
+        'Airbnb, from downtown walk-ups to lakefront houses – search ' +
         '"Whitefish, MT." Best option for larger groups or anyone staying ' +
         'longer than the wedding weekend.',
       bookingUrl: '',
@@ -253,7 +253,7 @@ window.TRAVEL = {
       { code: 'ORD', city: 'Chicago', status: 'nonstop-seasonal', airlines: ['United', 'American'] },
       { code: 'DFW', city: 'Dallas-Fort Worth', status: 'nonstop-seasonal', airlines: ['American'] },
       { code: 'LGA', city: 'New York (LaGuardia)', status: 'nonstop-seasonal', airlines: ['American'],
-        note: 'The longest nonstop route into FCA — about 4h45m, 2,029 miles.' },
+        note: 'The longest nonstop route into FCA – about 4h45m, 2,029 miles.' },
       { code: 'LAX', city: 'Los Angeles', status: 'nonstop-seasonal', airlines: ['Alaska', 'United'] },
       { code: 'SFO', city: 'San Francisco', status: 'nonstop-seasonal', airlines: ['United'] },
       { code: 'IAH', city: 'Houston', status: 'nonstop-seasonal', airlines: ['United'] },
@@ -327,7 +327,7 @@ window.TRAVEL = {
          quiet, green, waterfall season" is true and lands better than a
          guest arriving expecting the pass to be open. */
       blurb: 'Glacier is under an hour away, and the west side of the ' +
-        'park — Lake McDonald, Apgar, the Trail of the Cedars — is open ' +
+        'park – Lake McDonald, Apgar, the Trail of the Cedars – is open ' +
         'and stunning in mid-June. The full Going-to-the-Sun Road over ' +
         'Logan Pass usually doesn’t open until late June or early ' +
         'July, so plan on the lower valley rather than the alpine ' +
@@ -350,7 +350,7 @@ window.TRAVEL = {
       id: 'downtown',
       name: 'Downtown Whitefish',
       size: 'medium',
-      blurb: 'A few walkable blocks of Central Avenue — local shops, ' +
+      blurb: 'A few walkable blocks of Central Avenue – local shops, ' +
         'galleries, and good restaurants. If you’re around on a Tuesday ' +
         'evening in summer, the Whitefish Farmers Market takes over the ' +
         'north end of Central Avenue from 5-7:30pm with local produce, ' +
@@ -368,7 +368,7 @@ window.TRAVEL = {
          summer dates in April — check April 2027. */
       blurb: 'Ten minutes from the venue. Open weekends in early June, ' +
         'with a scenic gondola or chairlift up Big Mountain to 6,817 ' +
-        'feet, an alpine slide, and a zip line — should be running ' +
+        'feet, an alpine slide, and a zip line – should be running ' +
         'Saturday and Sunday. The Summit House at the top has some of the ' +
         'best views in the valley and a solid lunch menu. Check ' +
         'skiwhitefish.com for the 2027 dates before you count on a weekday.',
@@ -378,7 +378,7 @@ window.TRAVEL = {
       id: 'flathead-lake',
       name: 'Flathead Lake',
       size: 'small',
-      blurb: 'Bigfork and Flathead Lake are about 45 minutes south — a ' +
+      blurb: 'Bigfork and Flathead Lake are about 45 minutes south – a ' +
         'nice half-day for lake views, galleries, and lunch on the water.',
       photo: ''
     }
@@ -397,7 +397,7 @@ window.TRAVEL = {
          Do not soften the "wettest month" or the evening-cold framing —
          both are the actual, checked forecast pattern, not hedging. */
       a: 'Mid-June in northwest Montana runs warm in the afternoon and ' +
-        'genuinely cold once the sun goes down — think 70° at four ' +
+        'genuinely cold once the sun goes down – think 70° at four ' +
         'o’clock and mid-40s by ten. June is also the wettest month ' +
         'here. The reception is outdoors and lakeside, so bring a real ' +
         'layer, not a decorative one, and something you don’t mind ' +
@@ -405,7 +405,7 @@ window.TRAVEL = {
     },
     { q: 'Are kids invited?', a: '' },
     { q: 'Is there a shuttle from the hotels?', a: '', flag: 'SHUTTLE_CONFIRMED' },
-    { q: 'I can’t make it — what should I do?', a: '' }
+    { q: 'I can’t make it – what should I do?', a: '' }
   ],
 
 

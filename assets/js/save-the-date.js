@@ -135,7 +135,7 @@
 
     var metaArt = $('[data-hero-meta-alt]');
     if (metaArt && CFG.date && CFG.location) {
-      metaArt.alt = CFG.date.display + ' — ' + CFG.location.display;
+      metaArt.alt = CFG.date.display + ' – ' + CFG.location.display;
     }
 
     warnIfArtworkIsStale();
@@ -446,17 +446,35 @@
 
     var at = 0;
 
-    // Missing file, or a codec this browser has no decoder for: step to the
-    // next source. Once the list runs out, fail silently — the poster stays.
+    // A dropped connection or a cellular handoff mid-fetch — exactly the
+    // moment a guest is most likely to be opening this link — reports the
+    // *identical* error code as a genuinely missing or unsupported file
+    // (MEDIA_ERR_SRC_NOT_SUPPORTED either way; confirmed against a real
+    // aborted request, not assumed). The element cannot tell "broken" from
+    // "unlucky," so a failure gets two short-backoff retries on the same
+    // source before we treat it as broken and step to the next one. Once
+    // every source is out of retries, fail silently — the poster stays.
     // Clearing src is itself a change to src, so the handler has to retire
     // itself first or the giving-up path re-enters as another error.
+    var retryDelays = [600, 1800];
+
     function onError() {
       video.classList.remove('is-playing');
-      if (at < sources.length) { attempt(); return; }
+      if (retryDelays.length) {
+        setTimeout(retry, retryDelays.shift());
+        return;
+      }
+      if (at < sources.length) { retryDelays = [600, 1800]; attempt(); return; }
       video.removeEventListener('error', onError);
       video.removeAttribute('src');
     }
     video.addEventListener('error', onError);
+
+    function retry() {
+      video.src = sources[at - 1];
+      video.load();
+      play();
+    }
 
     function attempt() {
       video.src = sources[at++];
@@ -950,11 +968,11 @@
       // typed, so a filled-in field still has to look like the real thing.
       phone: {
         test: function (v) { return !v.trim() || v.replace(/\D/g, '').length >= 7; },
-        message: 'That doesn’t look like a full number — or leave it blank.'
+        message: 'That doesn’t look like a full number – or leave it blank.'
       },
       address: {
         test: function (v) { return !v.trim() || v.trim().length >= 8; },
-        message: 'That looks a little short for a full address — or leave it blank.'
+        message: 'That looks a little short for a full address – or leave it blank.'
       }
     };
 
@@ -1264,7 +1282,7 @@
           // old copy did neither, and read the same as the not-connected
           // state above — which is a different problem with a different fix.
           setStatus(
-            'That didn\'t send — it\'s on our end, not yours.' +
+            'That didn\'t send – it\'s on our end, not yours.' +
             (contactLink() ? ' Try again, or email us at' : ' Try again in a moment.'),
             true,
             contactLink()
