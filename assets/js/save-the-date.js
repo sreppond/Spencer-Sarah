@@ -1033,7 +1033,7 @@
         link.classList.toggle('is-filled', n < at);
       });
 
-      if (rail) rail.style.width = ((at + 1) / panes.length * 100) + '%';
+      if (rail) rail.style.transform = 'scaleX(' + ((at + 1) / panes.length) + ')';
 
       var last = at === panes.length - 1;
       if (sendLabel) sendLabel.textContent = last ? 'Send our details' : 'Continue';
