@@ -2508,11 +2508,15 @@ html.js .flight-fallback.is-superseded { display: none; }
   margin-top: clamp(2rem, 6vw, 2.6rem);
   list-style: none;
 }
+/* auto-fit + a capped track width reproduces the old fixed 2-/3-column
+   rhythm at full occupancy, but — unlike repeat(2|3, 1fr) — it collapses
+   unused tracks instead of leaving them blank. That matters here because
+   .lodge-card[hidden] (the filter chips above, JS in travel.js) can leave
+   a filtered view with only one or two cards; centering them beats a
+   card stranded on the left with a dead gap where the grid still
+   reserved 2 empty columns. */
 @media (min-width: 640px) {
-  .lodge-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 1024px) {
-  .lodge-grid { grid-template-columns: repeat(3, 1fr); }
+  .lodge-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 340px)); justify-content: center; }
 }
 /* Filtered out — kept in the DOM (so the count and a11y tree stay
    simple) but removed from layout and announcement. */
@@ -2549,7 +2553,9 @@ html.js .flight-fallback.is-superseded { display: none; }
 .lodge-card-photo {
   position: relative;
   aspect-ratio: 4 / 3;
-  background: var(--paper-deep);
+  /* Same gradient as the mosaic's "photograph to come" card (§3.6, .m-inner)
+     rather than a flat fill — one placeholder language, not two. */
+  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
 }
 .lodge-card-photo img { width: 100%; height: 100%; object-fit: cover; }
 /* The same "photograph to come" pattern as the mosaic (CSS §3.6) —
@@ -2819,7 +2825,9 @@ html.js .lodge-fallback.is-superseded { display: none; }
   transition: transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
 }
 .bento-tile:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -22px rgba(93,74,44,.4); }
-.bento-tile-photo { position: relative; aspect-ratio: 4 / 3; background: var(--paper-deep); }
+/* Same gradient as the mosaic's "photograph to come" card (§3.6, .m-inner)
+   rather than a flat fill — one placeholder language, not two. */
+.bento-tile-photo { position: relative; aspect-ratio: 4 / 3; background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%); }
 .bento-tile--large .bento-tile-photo { aspect-ratio: 16 / 9; }
 .bento-tile-photo img { width: 100%; height: 100%; object-fit: cover; }
 .bento-tile-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
