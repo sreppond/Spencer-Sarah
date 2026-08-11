@@ -107,6 +107,7 @@
   --ico-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12.5l5 5 10-11'/%3E%3C/svg%3E");
 
   --gutter: clamp(1.25rem, 6vw, 2.5rem);
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
@@ -431,6 +432,19 @@ html:not(.js) .env-scene { display: none; }
 
 .env.is-pressed .env-seal { transform: translate(-50%, -50%) translateZ(4px) scale(.93); }
 
+/* A tappable-looking seal on a screen with exactly one accepted
+   interaction and no other visible affordance. Starts after the hint has
+   had its first breath (1.2s) so the two don't read as one busy object,
+   and it is slow enough (3s) to read as an invitation, not an alert.
+   `.is-pressed` above already overrides the transform on tap, so the two
+   never fight. Class-gated (added by save-the-date.js) rather than an
+   unconditional animation so it can be withheld under reduced motion. */
+.env.is-inviting .env-seal { animation: seal-breathe 3s var(--ease-soft) 1.2s infinite; }
+@keyframes seal-breathe {
+  0%, 100% { transform: translate(-50%, -50%) translateZ(4px) scale(1); }
+  50%      { transform: translate(-50%, -50%) translateZ(4px) scale(1.03); }
+}
+
 .env.is-open { cursor: default; }
 .env-scene.is-opening .env-hint { opacity: 0; animation: none; transition: opacity .3s ease; }
 
@@ -447,6 +461,111 @@ html:not(.js) .env-scene { display: none; }
   transform: translateZ(60px) translateY(-40%) scale(2.9);
   opacity: 0;
   transition: transform .95s var(--ease-inout), opacity .8s ease .1s;
+}
+
+
+/* ==========================================================================
+   1.5 · SITE NAV
+   One component, pasted as a markup partial into every page (index.html,
+   lodging.html, travel/index.html), gated by site-nav.js.
+
+   🔒 On the save-the-date this must never appear over the hero — not at
+   low opacity, not as a scrim, not on scroll-up. It ships hidden and
+   site-nav.js only reveals it once .hero-viewport has fully cleared the
+   viewport. Pages with no hero (lodging, travel) reveal it immediately.
+   z-index sits below the envelope's 90: by the time the nav could ever
+   show, the envelope is long gone, but the ordering stays honest anyway.
+   ========================================================================== */
+
+.site-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  padding-top: var(--safe-t);
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .5s var(--ease-out), visibility 0s linear .5s;
+}
+.site-nav.is-shown {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .5s var(--ease-out), visibility 0s linear;
+}
+
+.site-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: .75rem var(--gutter);
+}
+
+.site-nav-word {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.site-nav-word:hover, .site-nav-word:focus-visible { color: var(--gold-text); }
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  list-style: none;
+}
+.site-nav-links a {
+  font-family: var(--font-text);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+  text-decoration: none;
+  padding: .4rem 0;                /* height toward the 44px tap floor */
+}
+.site-nav-links a:hover, .site-nav-links a:focus-visible { color: var(--gold-text); }
+/* "page" marks the current page on the site-wide nav (A3); "true" marks
+   the active in-page section on the travel page's scroll-spy variant
+   (B.4) — same visual treatment either way. */
+.site-nav-links a[aria-current="page"],
+.site-nav-links a[aria-current="true"] { color: var(--gold-text); }
+
+/* Under 480px the hairline bar collapses into a floating pill, closer to
+   an app's tab bar than a website header — full-width chrome felt heavy
+   at that size, and the pill keeps the same four destinations reachable
+   in far less vertical space. */
+@media (max-width: 480px) {
+  .site-nav { background: transparent; border-bottom: none; }
+  .site-nav-inner {
+    max-width: max-content;
+    margin: calc(.5rem + var(--safe-t)) auto 0;
+    padding: .6rem 1.1rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: rgba(251, 247, 240, .92);
+    -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px -16px rgba(93, 74, 44, .35);
+  }
+  .site-nav-word { display: none; }   /* the pill is a nav, not a masthead */
+  .site-nav-links { gap: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav { transition: opacity .2s linear !important; }
 }
 
 
@@ -1065,6 +1184,13 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 
 .sheet { position: relative; z-index: 2; padding: 0 var(--gutter); }
 .sheet-inner { max-width: 33rem; margin: 0 auto; }
+/* A prose measure is the wrong width for a multi-column card grid — this
+   modifier is the only place on the site that needs a wider column.
+   Double-class selector deliberately: CSS §8's responsive `.sheet-inner`
+   overrides at 768/1024 have equal specificity and come later in the
+   file, and would win the cascade over a single-class `.sheet-inner--wide`
+   at those breakpoints otherwise. */
+.sheet-inner.sheet-inner--wide { max-width: 68rem; }
 
 .eyebrow {
   font-family: var(--font-text);
@@ -1135,6 +1261,39 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
   font-style: italic;
   color: var(--gold-text);
 }
+
+/* --- the calendar action ---
+   The one thing to do on this screen, and the reason the hero's "Scroll for
+   detail" now leads somewhere. It gets real space above it so it reads as a
+   consequence of the sentence rather than a caption attached to it, and it
+   is --quiet rather than --gold: the invitation is the loud thing here. */
+.date-actions {
+  max-width: 22rem;
+  margin: clamp(2.8rem, 10vh, 4.5rem) auto 0;
+  text-align: center;
+}
+.date-btn { width: 100%; }
+
+/* The Android/Gmail path. A second full button would read as a choice
+   between two equal things, which it is not — almost everyone wants the
+   file. This is the escape hatch for the people who do not. */
+.date-alt {
+  display: inline-block;
+  margin-top: 1.1rem;
+  padding: .5rem .4rem;          /* keeps the tap target at 44px tall */
+  font-size: var(--t-small);
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.date-alt:hover, .date-alt:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+
 
 /* The sentence assembles a word at a time, and it is tied to the scroll
    rather than fired once on arrival — so scrolling back up takes it apart
@@ -1242,6 +1401,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   object-fit: cover;
   display: block;
 }
+/* When config supplies a WebP source, mosaic() wraps the <img> in a
+   <picture> — display:contents drops the wrapper out of the box tree so
+   the <img> above still sizes exactly as if it were .m-card's direct
+   child, same as every card without a WebP source. */
+.m-card picture { display: contents; }
 .m-frame {
   position: absolute;
   inset: 0;
@@ -1426,6 +1590,31 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   line-height: 1.5;
   color: var(--stone-text);
 }
+/* The way out for a guest who is mid-move and genuinely does not have an
+   address yet. Text, not a button shape — it is an escape hatch, not a
+   second call to action competing with "Send our details" below it. */
+.field-skip {
+  display: block;
+  margin-top: .8rem;
+  border: 0;
+  padding: .4rem 0;
+  background: none;
+  font: inherit;
+  font-size: var(--t-small);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  color: var(--stone-text);
+  cursor: pointer;
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.field-skip:hover, .field-skip:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+
 /* Errors led with italic text of the same weight and nearly the same
    colour as the hint sitting three pixels away. This one gets a mark, a
    solid weight and a colour that is only ever used for errors. */
@@ -1616,6 +1805,15 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-transform: none;
   color: var(--ink);
 }
+/* A required-looking question that turns out to be optional reads as a
+   small betrayal three fields in. Said plainly, in the question itself,
+   rather than left for the guest to discover by trying to skip it. */
+.step-optional {
+  font-style: normal;
+  font-size: .62em;
+  font-weight: 400;
+  color: var(--stone-text);
+}
 /* "2 of 4". Without it, a form that reveals itself one field at a time is
    a form with no visible end — which is the classic way multistep goes
    wrong. Announced separately by the live region, so it is decorative here. */
@@ -1671,6 +1869,16 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-wrap: pretty;
 }
 .form-status.is-error { color: var(--err); font-weight: 500; }
+/* The way out of a failed send. It sits inside an error sentence, so it
+   inherits the error ink and is distinguished by the underline alone —
+   a second colour here would be one accent too many. */
+.form-status-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+}
 
 /* Screen-reader-only, for the live region that narrates step changes. */
 .sr-only {
@@ -1767,6 +1975,35 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-wrap: pretty;
 }
 .done-next-btn { margin-top: 1.5rem; width: 100%; }
+/* Second action on the done screen: quiet, so the lodging button above it
+   stays the primary one, but full width so it is unmistakably a button. */
+.done-next-cal { margin-top: .8rem; width: 100%; }
+
+/* --- "sent something already?" ---
+   Only ever rendered on a return visit, where the done screen is shown
+   from a remembered submission rather than one that just happened. It is
+   the escape hatch for a guest who has moved house since August, so it
+   has to be findable — and quiet enough that it never competes with the
+   lodging hand-off above it. */
+.done-again {
+  margin-top: clamp(1.8rem, 6vw, 2.4rem);
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--stone-text);
+}
+.done-again-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: var(--gold-text);
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+  transition: color .3s var(--ease-soft);
+}
+.done-again-link:hover, .done-again-link:focus-visible { color: var(--ink); }
 
 
 /* §5 (the photo strip) is gone — the mosaic in §3.6 replaced it. */
@@ -1779,7 +2016,11 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
    this section is only what those pages need on top.
    ========================================================================== */
 
-.page-sub .paper { margin-top: 0; }
+/* Clearance for the fixed site nav (CSS §1.5), which occupies no layout
+   space of its own. On mobile the nav is a floating pill rather than a
+   full-width bar, but the clearance is kept anyway — the eyebrow above
+   the page title is exactly what the pill would otherwise sit over. */
+.page-sub .paper { margin-top: 0; padding-top: calc(3.4rem + var(--safe-t)); }
 .page-sub .paper::before { inset: 0; }
 
 .lodging-sheet {
@@ -1852,6 +2093,44 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   line-height: 1.62;
   color: var(--ink-soft);
   text-wrap: pretty;
+}
+
+/* The footer's quiet links: the calendar catch-all, and the page links that
+   are the no-JavaScript fallback for the site nav (which cannot show itself
+   without a script to gate it off the hero). Both are text, both are quiet,
+   and neither is allowed to turn the end card into a menu. */
+.end-cal { margin-top: 1.8rem; }
+.end-link {
+  display: inline-block;
+  padding: .5rem .4rem;          /* 44px tap target on a text link */
+  font-size: var(--t-small);
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.end-link:hover, .end-link:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+.end-nav {
+  margin-top: .9rem;
+  font-size: var(--t-small);
+}
+.end-nav a {
+  padding: .4rem;
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.end-nav a:hover, .end-nav a:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
 }
 
 
@@ -1999,6 +2278,10 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
 
   /* the envelope becomes a short cross-fade instead of a 3D sequence */
   .env { transition: opacity .45s linear !important; }
+  /* Belt and braces: save-the-date.js never adds .is-inviting under
+     reduced motion, and the gate is bypassed outright before the seal
+     could ever pulse — but pinning it here costs nothing. */
+  .env.is-inviting .env-seal { animation: none; }
   .env.is-open { opacity: 0; }
   .env.is-open .env-flap { transform: translateZ(3px) rotateX(0deg); }
   .env.is-open .env-card { transform: translateZ(1px); }
@@ -2063,4 +2346,671 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .m-card { will-change: auto; }
   .cue-arrow { animation: none; opacity: .9; }
 
+}
+
+
+/* ==========================================================================
+   10 · PRINT
+   Someone's grandmother will print this. Chrome (the envelope, the nav,
+   the audio toggle, the scroll cue, the mosaic's flying satellites) has no
+   job on paper — the content underneath it does. Background images are
+   dropped outright: they cost ink for no information and most home
+   printers render them badly or not at all.
+   ========================================================================== */
+
+@media print {
+  .env-scene,
+  .site-nav,
+  .audio-toggle,
+  .hero-cue,
+  .skip-link { display: none !important; }
+
+  /* The painting is the one background image worth the ink — everything
+     else (the paper's grain texture, the envelope's gradients, card
+     shadows) is decoration that print strips for free by dropping
+     background-image and box-shadow globally below. */
+  .hero-media { position: static; }
+  .hero-video { display: none; }
+
+  * , *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .paper::before { display: none; }   /* the paper-grain noise texture */
+
+  body { background: #fff; color: #000; }
+
+  /* The mosaic's scroll choreography has no meaning on a static page —
+     lay every card out in normal flow, at its natural size, so all six
+     print rather than five of them being cropped satellites mid-flight. */
+  .mosaic-viewport, .mosaic-stage { position: static; height: auto; }
+  .m-card {
+    position: static;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 1rem;
+    page-break-inside: avoid;
+  }
+
+  a { color: inherit; text-decoration: underline; }
+  /* A printed page cannot follow a link, so a URL worth having is worth
+     printing next to the words that carry it. Scoped to the content
+     links most likely to matter on paper (booking, mailto, tel); nav
+     chrome above is already display:none. */
+  .form-status a[href]::after,
+  .end-link[href]::after,
+  .lodging-back[href^="http"]::after { content: " (" attr(href) ")"; font-size: .85em; }
+
+  /* The travel page's interactive combobox has no job on paper — the
+     static three-column list is the whole answer, and it prints even
+     though html.js's is-superseded rule (§11.3) has hidden it on screen. */
+  .flight-finder { display: none !important; }
+  .flight-fallback { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Same story for the lodging cards' no-JS fallback list, and every
+     card/tile's expand-in-place state: paper has no "collapsed," so
+     every blurb, amenity, address and phone prints regardless of
+     whether a guest ever clicked to expand it on screen. */
+  .lodge-grid { display: none !important; }
+  .lodge-fallback { display: block !important; }
+  .lodge-detail-wrap, .bento-detail-wrap { grid-template-rows: 1fr !important; }
+  .lodge-card-chevron, .bento-tile-chevron { display: none; }
+}
+
+
+/* ==========================================================================
+   11 · TRAVEL PAGE
+   /travel/ reuses every token and structural class above — .paper, .sheet,
+   .sheet-inner, .flow-btn, .site-nav — and adds only what those don't
+   cover. Grows a subsection at a time as the page does; see travel.js.
+   ========================================================================== */
+
+/* Only travel/index.html sets this class, on the html element, from
+   travel.js — never touched by the save-the-date. The sitewide reduced-
+   motion rule (§9) already forces scroll-behavior:auto !important on *,
+   so this is automatically inert for anyone who asked for less motion. */
+html.smooth-scroll { scroll-behavior: smooth; }
+
+/* --- 11.1 · Hero ---
+   Quieter than the save-the-date's — no painting, no envelope, no
+   traced artwork — because this page's hero has a job the other one
+   doesn't: the countdown and the calendar action. Deliberately not
+   full-viewport; the guest should see there is more below immediately. */
+.travel-hero {
+  /* .page-sub .paper already reserves clearance for the fixed nav
+     (padding-top including --safe-t) — this is breathing room on top of
+     that, not a second nav offset. */
+  padding: clamp(1.2rem, 5vh, 2.5rem) var(--gutter) clamp(3rem, 9vh, 4.5rem);
+  text-align: center;
+}
+.travel-hero-inner { max-width: 34rem; margin: 0 auto; }
+.travel-hero-title {
+  margin-top: .6rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 10vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.travel-hero-divider { width: 9rem; height: auto; margin: 1.2rem auto 0; }
+.travel-hero-lede {
+  margin: 1.1rem auto 0;
+  max-width: 26rem;
+  font-size: clamp(var(--t-body), 3.6vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--ink-body);
+  text-wrap: pretty;
+}
+.travel-hero-cal { margin: clamp(2rem, 7vw, 2.6rem) auto 0; max-width: 22rem; }
+
+/* --- 11.2 · Countdown --- */
+.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
+.countdown-passed {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
+  font-weight: 600;
+  color: var(--ink);
+}
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+}
+.countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.6rem;
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--gold-text);
+}
+.countdown-unit {
+  margin-top: .35rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+/* A quick flip on the number that actually changed, not a jittery
+   ticker — one keyframe, retriggered by travel.js removing and
+   re-adding this class. Neutralized by the sitewide reduced-motion
+   animation-duration clamp (§9), same as every other animation here. */
+.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
+@keyframes countdown-flip {
+  0%   { opacity: .35; transform: translateY(-.3em); }
+  100% { opacity: 1;   transform: none; }
+}
+
+/* --- 11.3 · Getting Here (flight finder) --- */
+.travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
+.travel-section + .travel-section { padding-top: clamp(3rem, 9vh, 4.5rem); }
+
+.flight-finder { margin-top: clamp(2rem, 7vw, 2.8rem); }
+.flight-finder-label {
+  display: block;
+  margin-bottom: .5rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-indent: .14em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+.flight-combobox { position: relative; }
+.flight-search {
+  width: 100%;
+  padding: .85em 1em;
+  border: 1.5px solid var(--rule);
+  border-radius: .7rem;
+  background: var(--card);
+  font-family: var(--font-text);
+  font-size: var(--t-body);
+  color: var(--ink);
+  transition: border-color .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
+}
+.flight-search:hover { border-color: var(--stone); }
+.flight-search:focus {
+  outline: none;
+  border-color: var(--gold-text);
+  box-shadow: 0 0 0 3px rgba(122,92,51,.14);
+}
+.flight-listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + .4rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: .4rem;
+  list-style: none;
+  border: 1px solid var(--rule);
+  border-radius: .7rem;
+  background: var(--card);
+  box-shadow: 0 18px 40px -20px rgba(93,74,44,.35);
+}
+.flight-option {
+  padding: .65em .75em;
+  border-radius: .5rem;
+  font-size: var(--t-small);
+  color: var(--ink-body);
+  cursor: pointer;
+}
+.flight-option.is-active { background: var(--paper-warm); color: var(--ink); }
+.flight-option-code { margin-left: .4em; color: var(--stone-text); font-variant-numeric: tabular-nums; }
+.flight-listbox-empty { padding: .75em; font-size: var(--t-small); color: var(--stone-text); font-style: italic; }
+
+.flight-result {
+  margin-top: 1.1rem;
+  padding: 1.2rem 1.3rem;
+  border-radius: .8rem;
+  border: 1px solid var(--rule);
+  background: var(--card);
+  animation: flight-result-in .4s var(--ease-out);
+}
+@keyframes flight-result-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.flight-result-city {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.flight-result-line { margin-top: .4rem; font-size: var(--t-small); line-height: 1.55; }
+.flight-result--nonstop-year-round .flight-result-line { color: var(--olive); font-weight: 500; }
+.flight-result--nonstop-seasonal .flight-result-line { color: var(--gold-text); font-weight: 500; }
+.flight-result--connect .flight-result-line { color: var(--stone-text); }
+.flight-result-note { margin-top: .5rem; font-size: var(--t-small); color: var(--ink-soft); }
+
+.flight-always {
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
+  padding-top: clamp(1.6rem, 5vw, 2.2rem);
+  border-top: 1px solid var(--rule);
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.flight-always strong { color: var(--ink); font-weight: 600; }
+
+/* The static list: three columns on tablet+, stacked on phone. Hidden
+   once travel.js can build the interactive combobox above it; this is
+   also exactly what the print stylesheet shows (§10 extends to include
+   it once print styles are updated for this section). */
+.flight-fallback {
+  display: grid;
+  gap: 1.6rem;
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
+}
+@media (min-width: 640px) {
+  .flight-fallback { grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+}
+.flight-fallback-head {
+  font-family: var(--font-text);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  margin-bottom: .6rem;
+}
+.flight-fallback-caveat { text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--stone-text); }
+.flight-fallback ul { list-style: none; }
+.flight-fallback li {
+  padding: .4rem 0;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink-body);
+  border-bottom: 1px solid rgba(205,188,166,.4);
+}
+.flight-fallback li:last-child { border-bottom: none; }
+.flight-fallback-note { font-style: italic; color: var(--stone-text); }
+html.js .flight-fallback.is-superseded { display: none; }
+
+/* --- 11.4 · Where to Stay (lodging cards) --- */
+.lodge-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .6rem;
+  margin-top: clamp(1.8rem, 6vw, 2.4rem);
+}
+.lodge-chip {
+  padding: .55em 1.1em;
+  border: 1.5px solid var(--rule);
+  border-radius: 999px;
+  background: var(--card);
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .25s var(--ease-soft), border-color .25s var(--ease-soft), color .25s var(--ease-soft);
+}
+.lodge-chip:hover { border-color: var(--stone); }
+.lodge-chip.is-active {
+  background: var(--gold-text);
+  border-color: var(--gold-text);
+  color: var(--paper);
+}
+
+.lodge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.4rem;
+  margin-top: clamp(2rem, 6vw, 2.6rem);
+  list-style: none;
+}
+@media (min-width: 640px) {
+  .lodge-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .lodge-grid { grid-template-columns: repeat(3, 1fr); }
+}
+/* Filtered out — kept in the DOM (so the count and a11y tree stay
+   simple) but removed from layout and announcement. */
+.lodge-card[hidden] { display: none; }
+
+.lodge-card {
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  background: var(--card);
+  overflow: hidden;
+  transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft);
+}
+/* The one property this page can recommend without a caveat once the
+   block is actually confirmed — see travel-data.js flags.ROOM_BLOCK_CONFIRMED.
+   Never applied while that flag is false. */
+.lodge-card--room-block-confirmed {
+  border-color: var(--gold-text);
+  box-shadow: 0 0 0 1px var(--gold-text);
+}
+.lodge-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  margin: .9rem .9rem 0;
+  padding: .3em .7em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #fff8ec;
+}
+
+.lodge-card-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--paper-deep);
+}
+.lodge-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+/* The same "photograph to come" pattern as the mosaic (CSS §3.6) —
+   deliberately not hotlinking hotel photography, and safe to ship
+   before real photos exist. */
+.lodge-card-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
+.lodge-card-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
+.lodge-card-photo .m-empty-mark svg { width: 100%; height: auto; }
+.lodge-card-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
+
+.lodge-card-toggle {
+  display: block;
+  width: 100%;
+  padding: 1.1rem 1.2rem 1.3rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lodge-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
+.lodge-card-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lodge-card-price { flex: none; font-size: var(--t-small); color: var(--gold-text); font-weight: 600; letter-spacing: .05em; }
+.lodge-card-bestfor { margin-top: .3rem; font-size: var(--t-small); color: var(--stone-text); }
+.lodge-card-drive {
+  display: inline-block;
+  margin-top: .6rem;
+  padding: .25em .65em;
+  border-radius: 999px;
+  background: var(--paper-warm);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+}
+.lodge-card-drive.is-todo { font-style: italic; font-weight: 400; color: var(--stone-text); background: none; padding: 0; }
+.lodge-card-chevron {
+  display: inline-block;
+  margin-top: .8rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.lodge-card-chevron::after { content: '↓'; margin-left: .35em; display: inline-block; transition: transform .3s var(--ease-out); }
+.lodge-card-toggle[aria-expanded="true"] .lodge-card-chevron::after { transform: rotate(180deg); }
+
+/* Expand to auto height via the grid-rows 0fr→1fr technique — no JS
+   measuring, no FLIP maths, and it respects the sitewide reduced-motion
+   transition-duration clamp automatically. */
+.lodge-detail-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .4s var(--ease-out);
+}
+.lodge-card-toggle[aria-expanded="true"] + .lodge-detail-wrap { grid-template-rows: 1fr; }
+.lodge-detail { overflow: hidden; }
+.lodge-detail-inner { padding: 0 1.2rem 1.3rem; border-top: 1px solid var(--rule); }
+.lodge-detail-blurb { margin-top: 1rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
+.lodge-detail-meta { margin-top: .9rem; font-size: var(--t-small); line-height: 1.7; color: var(--ink-soft); }
+.lodge-detail-meta .is-todo { font-style: italic; color: var(--stone-text); }
+.lodge-detail-code {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  margin-top: .9rem;
+  padding: .5em 1em;
+  border: 1px dashed var(--gold-text);
+  border-radius: .6rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--gold-text);
+  background: none;
+  cursor: pointer;
+}
+.lodge-detail-book { margin-top: 1.1rem; width: 100%; }
+.lodge-detail-toast {
+  margin-top: .5rem;
+  font-size: var(--t-micro);
+  color: var(--olive);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.lodge-detail-toast.is-shown { opacity: 1; }
+
+.lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
+.lodge-fallback li {
+  padding: .7rem 0;
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-body);
+  border-bottom: 1px solid rgba(205,188,166,.4);
+}
+.lodge-fallback li:last-child { border-bottom: none; }
+.lodge-fallback strong { color: var(--ink); }
+.lodge-fallback-todo { font-style: italic; color: var(--stone-text); }
+html.js .lodge-fallback.is-superseded { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lodge-card-chevron::after { transition: none; }
+}
+
+/* --- 11.5 · Drive-time strip --- */
+/* The §E placeholder pattern, reused: divider, a stated fact about what's
+   missing and why, nothing invented in its place. */
+.drive-placeholder { margin-top: clamp(1.8rem, 6vw, 2.4rem); text-align: center; }
+.drive-placeholder-divider { width: 9rem; max-width: 50%; height: auto; margin: 0 auto 1.2rem; opacity: .8; }
+.drive-placeholder-line { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; font-style: italic; color: var(--stone-text); }
+.drive-placeholder-sub { margin-top: .5rem; font-size: var(--t-small); color: var(--ink-soft); }
+
+/* The real strip, built by travel.js the moment every property in
+   travel-data.js has a verified driveMinutes — not in use today, but
+   ready the moment it can be, with nothing here to change by hand. */
+.drive-strip {
+  position: relative;
+  margin-top: clamp(2rem, 6vw, 2.6rem);
+  padding: 2.5rem 0 1.5rem;
+  overflow-x: auto;
+}
+.drive-strip-track { position: relative; height: 2px; background: var(--rule); min-width: 32rem; }
+.drive-point { position: absolute; top: 50%; transform: translate(-50%, -50%); text-align: center; }
+.drive-point-dot {
+  width: .8rem; height: .8rem; margin: 0 auto;
+  border-radius: 50%; background: var(--gold-text); border: 2px solid var(--paper);
+  box-shadow: 0 0 0 1px var(--gold-text);
+  transition: transform .25s var(--ease-out);
+}
+.drive-point.is-highlighted .drive-point-dot { transform: scale(1.4); }
+.drive-point-label { position: absolute; top: 1.4rem; left: 50%; transform: translateX(-50%); width: 6.5rem; font-size: var(--t-micro); color: var(--ink-soft); }
+.drive-point-mins { position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%); font-size: var(--t-micro); font-weight: 600; color: var(--gold-text); white-space: nowrap; }
+
+/* --- 11.6 · The Weekend --- */
+.weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
+.weekend-card {
+  position: relative;
+  padding: 1.4rem 1.5rem 1.5rem;
+  margin-bottom: 1.2rem;
+  border-left: 3px solid var(--rule);
+  border-radius: 0 .8rem .8rem 0;
+  background: var(--card);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+.weekend-card.is-revealed { opacity: 1; transform: none; }
+.weekend-day {
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.weekend-date { margin-left: .5em; color: var(--stone-text); font-weight: 400; letter-spacing: normal; text-transform: none; }
+.weekend-title {
+  margin-top: .35rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.weekend-detail { margin-top: .5rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
+.weekend-detail.is-todo { font-style: italic; color: var(--stone-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .weekend-card { opacity: 1; transform: none; }
+}
+
+/* --- 11.7 · Questions (FAQ + local contact) --- */
+.faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
+.faq-item {
+  border-bottom: 1px solid var(--rule);
+}
+.faq-item summary {
+  padding: 1rem 1.6rem 1rem 0;
+  position: relative;
+  font-family: var(--font-text);
+  font-size: var(--t-body);
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: '+';
+  position: absolute;
+  right: 0;
+  top: 1rem;
+  font-size: 1.3rem;
+  color: var(--gold-text);
+  transition: transform .25s var(--ease-out);
+}
+.faq-item[open] summary::after { transform: rotate(45deg); }
+.faq-answer { padding: 0 1.6rem 1.2rem 0; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.faq-answer.is-todo { font-style: italic; color: var(--stone-text); }
+
+.local-contact {
+  margin-top: clamp(2.4rem, 7vw, 3rem);
+  padding: 1.6rem 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  background: linear-gradient(168deg, #fdfaf4 0%, var(--card) 60%, #f4ecdd 100%);
+  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 18px 40px -28px rgba(93,74,44,.5);
+}
+.local-contact-mark { display: inline-block; width: 2.2rem; color: var(--gold-deep); opacity: .8; }
+.local-contact-mark svg { width: 100%; height: auto; }
+.local-contact-line { margin-top: .6rem; font-size: var(--t-body); line-height: 1.6; color: var(--ink-body); }
+.local-contact-meta { margin-top: .7rem; font-size: var(--t-small); color: var(--ink-soft); }
+.local-contact-meta .is-todo { font-style: italic; color: var(--stone-text); }
+
+.couple-contact { margin-top: 1.6rem; text-align: center; font-size: var(--t-small); color: var(--ink-soft); }
+.couple-contact a { color: var(--gold-text); }
+
+/* --- 11.8 · The map (address-list fallback) ---
+   Guide's own stated fallback for B.8 while coordinates are unverified —
+   see the note in travel/index.html. Deliberately plain: a real map with
+   real pins is the thing worth building later, not this placeholder. */
+.map-address-list { margin-top: clamp(1.8rem, 6vw, 2.4rem); list-style: none; }
+.map-address-list li {
+  padding: .65rem 0;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--ink-body);
+  border-bottom: 1px solid rgba(205,188,166,.4);
+}
+.map-address-list li:last-child { border-bottom: none; }
+.map-address-list strong { color: var(--ink); }
+.map-address-list .is-todo { font-style: italic; color: var(--stone-text); }
+
+/* --- 11.9 · While You're Here (bento grid) --- */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  margin-top: clamp(2rem, 6vw, 2.6rem);
+  list-style: none;
+}
+@media (min-width: 640px) {
+  .bento-grid { grid-template-columns: repeat(3, 1fr); }
+  .bento-tile--large { grid-column: span 2; }
+}
+.bento-tile {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  background: var(--card);
+  overflow: hidden;
+  transition: transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
+}
+.bento-tile:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -22px rgba(93,74,44,.4); }
+.bento-tile-photo { position: relative; aspect-ratio: 4 / 3; background: var(--paper-deep); }
+.bento-tile--large .bento-tile-photo { aspect-ratio: 16 / 9; }
+.bento-tile-photo img { width: 100%; height: 100%; object-fit: cover; }
+.bento-tile-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
+.bento-tile-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
+.bento-tile-photo .m-empty-mark svg { width: 100%; height: auto; }
+.bento-tile-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
+
+.bento-tile-toggle {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.1rem 1.2rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.bento-tile-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.bento-tile-chevron {
+  display: inline-block;
+  margin-top: .5rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.bento-tile-chevron::after { content: '↓'; margin-left: .35em; display: inline-block; transition: transform .3s var(--ease-out); }
+.bento-tile-toggle[aria-expanded="true"] .bento-tile-chevron::after { transform: rotate(180deg); }
+
+.bento-detail-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease-out); }
+.bento-tile-toggle[aria-expanded="true"] + .bento-detail-wrap { grid-template-rows: 1fr; }
+.bento-detail { overflow: hidden; }
+.bento-detail-inner { padding: 0 1.1rem 1.2rem; border-top: 1px solid var(--rule); }
+.bento-detail-blurb { margin-top: .9rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
+.bento-detail-blurb.is-todo { font-style: italic; color: var(--stone-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-tile:hover { transform: none; }
+  .bento-tile-chevron::after { transition: none; }
 }

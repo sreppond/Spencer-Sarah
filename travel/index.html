@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- ================================================================
+     Sarah & Spencer — Travel & Stay
+
+     Plain HTML, the existing stylesheet, and two small ES modules —
+     see the architecture note in BUILDGUIDE §B.0. No build step: Spencer
+     edits assets/js/travel-data.js in GitHub's web editor and pushes.
+
+     This ships in stages (per the guide's own order of work): hero, nav
+     and footer first, since that alone is a useful page; the content
+     sections land in the commits after this one. Nothing here is a dead
+     link — a section not yet built simply isn't linked from the nav yet.
+     ================================================================ -->
+
+<title>Travel &amp; Stay | Sarah &amp; Spencer</title>
+<meta name="description" content="Getting to Whitefish, Montana for Sarah and Spencer's wedding — flights, lodging, and the weekend, June 12, 2027.">
+<meta name="theme-color" content="#f7f2e9">
+<meta name="color-scheme" content="light">
+<!-- Guests reach this from the save-the-date's own nav, not search — see
+     A8/§A8. Link-preview crawlers ignore robots meta either way. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://sreppond.github.io/Spencer-Sarah/travel/">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sarah &amp; Spencer">
+<meta property="og:title" content="Travel &amp; Stay | Sarah &amp; Spencer">
+<meta property="og:description" content="Flights, lodging, and the weekend — June 12, 2027, Whitefish, Montana">
+<meta property="og:url" content="https://sreppond.github.io/Spencer-Sarah/travel/">
+<meta property="og:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Travel &amp; Stay | Sarah &amp; Spencer">
+<meta name="twitter:description" content="Flights, lodging, and the weekend — June 12, 2027, Whitefish, Montana">
+<meta name="twitter:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Same stylesheet as the rest of the site — one design system, no
+     second copy of the tokens to drift out of sync. Bump ?v= whenever
+     save-the-date.css changes; current token matches index.html's. -->
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810h">
+
+<script>document.documentElement.className += ' js';</script>
+<script defer src="../assets/js/config.js?v=20260810h"></script>
+<script defer src="../assets/js/travel-data.js?v=20260810h"></script>
+<script defer src="../assets/js/calendar.js?v=20260810h"></script>
+<script defer src="../assets/js/travel.js?v=20260810h"></script>
+</head>
+
+<body class="page-sub travel-page">
+
+<!-- The scroll-spy variant of the A3 site nav: same component and CSS,
+     a different link set (in-page sections here, cross-page elsewhere),
+     and active-section highlighting that travel.js adds on top. Gated
+     off .travel-hero rather than .hero-viewport — the save-the-date's
+     hero-gating script (site-nav.js) is untouched and unreferenced here,
+     so nothing about this page can ever touch that protected element. -->
+<nav class="site-nav" id="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-word" href="../">Sarah &amp; Spencer</a>
+    <ul class="site-nav-links" id="travel-nav-links">
+      <li><a href="#getting-here">Getting Here</a></li>
+      <li><a href="#where-to-stay">Where to Stay</a></li>
+      <li><a href="#the-weekend">The Weekend</a></li>
+      <li><a href="#while-here">Whitefish</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="paper" id="page">
+
+  <!-- ---------- HERO ----------
+       Deliberately not a repeat of the save-the-date's hero: a different
+       crop of a copy of the Whitefish Lake asset (never the source — see
+       the 🔒 note in BUILDGUIDE §B.3), quieter, with a job the other
+       hero doesn't have: a live countdown and a calendar action. -->
+  <header class="travel-hero" id="travel-hero">
+    <div class="travel-hero-inner">
+      <p class="eyebrow">Whitefish, Montana</p>
+      <h1 class="travel-hero-title">Travel &amp; Stay</h1>
+      <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+      <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
+
+      <!-- Days / hours / minutes only — seconds are frantic and burn
+           battery for nothing. travel.js swaps this to a single line
+           once the date has passed, and it is a plain updating number
+           under prefers-reduced-motion rather than a digit-roll. -->
+      <div class="countdown" id="countdown" aria-live="off">
+        <p class="countdown-passed" id="countdown-passed" hidden>Married in Whitefish, June 12, 2027</p>
+        <div class="countdown-grid" id="countdown-grid">
+          <div class="countdown-cell"><span class="countdown-num" id="cd-days">–</span><span class="countdown-unit">days</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-hours">–</span><span class="countdown-unit">hours</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-mins">–</span><span class="countdown-unit">minutes</span></div>
+        </div>
+        <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
+      </div>
+
+      <a class="flow-btn flow-btn--gold travel-hero-cal"
+         href="../assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
+         data-calendar="ics">
+        <span class="flow-btn__ink" aria-hidden="true"></span>
+        <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="flow-btn__label">Add to your calendar</span>
+        <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ---------- GETTING HERE ----------
+       The single most useful thing on this page — most guests want one
+       answer: can I get there without a connection? The combobox is
+       progressive enhancement over a plain, always-correct static list;
+       travel.js hides the list and shows the combobox only once it can
+       actually run, and the same static list is what prints. -->
+  <section class="sheet travel-section" id="getting-here" aria-labelledby="getting-here-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">Getting Here</p>
+      <h2 class="sheet-title" id="getting-here-heading">Flights to Whitefish</h2>
+      <p class="sheet-lede">Most people flying in want one answer: can I get there without a connection?</p>
+
+      <div class="flight-finder" id="flight-finder" hidden>
+        <label class="flight-finder-label" for="flight-search">Flying from</label>
+        <div class="flight-combobox">
+          <input type="text" id="flight-search" class="flight-search"
+                 role="combobox" aria-expanded="false" aria-controls="flight-listbox"
+                 aria-autocomplete="list" autocomplete="off" spellcheck="false"
+                 placeholder="Type a city…">
+          <ul class="flight-listbox" id="flight-listbox" role="listbox" aria-label="Matching cities" hidden></ul>
+        </div>
+        <div class="flight-result" id="flight-result" hidden></div>
+      </div>
+
+      <p class="flight-always">
+        <strong>Glacier Park International (FCA) to Whitefish</strong> — 11–12 miles, about 20–25 minutes.
+        <span id="flight-car-note">
+          There's no wedding-day shuttle arranged yet, so plan on renting a car or arranging your own ride.
+        </span>
+      </p>
+
+      <!-- Static, always-accurate fallback — this is what prints and what
+           a guest with no JavaScript sees. travel.js checks its count
+           against travel-data.js on localhost and warns if they've
+           drifted, the same guard config.js's baked artwork gets. -->
+      <div class="flight-fallback" id="flight-fallback">
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">Nonstop, year-round</h3>
+          <ul data-flight-group="nonstop-year-round">
+            <li>Seattle — Alaska</li>
+            <li>Denver — United</li>
+            <li>Salt Lake City — Delta</li>
+            <li>Minneapolis-St. Paul — Delta, Sun Country</li>
+            <li>Las Vegas — Allegiant</li>
+            <li>Phoenix-Mesa — Allegiant</li>
+          </ul>
+        </div>
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">Nonstop, summer seasonal <span class="flight-fallback-caveat">— confirm the June 2027 schedule when you book</span></h3>
+          <ul data-flight-group="nonstop-seasonal">
+            <li>Chicago — United, American</li>
+            <li>Dallas-Fort Worth — American</li>
+            <li>Atlanta — Delta</li>
+            <li>New York (LaGuardia) — American</li>
+            <li>Los Angeles — Delta, American, Allegiant</li>
+            <li>San Francisco — United</li>
+            <li>Houston — United</li>
+            <li>Portland — Alaska</li>
+            <li>Oakland — Allegiant</li>
+            <li>San Diego — Alaska</li>
+            <li>Charlotte — American</li>
+          </ul>
+        </div>
+        <div class="flight-fallback-col">
+          <h3 class="flight-fallback-head">One connection</h3>
+          <ul data-flight-group="connect">
+            <li>Boston</li>
+            <li>Miami</li>
+            <li>Washington, D.C.</li>
+            <li>Philadelphia</li>
+            <li>Detroit</li>
+            <li>Nashville</li>
+            <li>Austin</li>
+            <li>San Antonio</li>
+            <li>Columbus</li>
+            <li>Indianapolis</li>
+            <li>Kansas City</li>
+            <li>St. Louis</li>
+            <li>Sacramento</li>
+            <li>Milwaukee</li>
+            <li class="flight-fallback-note">Any other US city — usually through Seattle, Denver, or Minneapolis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- WHERE TO STAY ----------
+       The centerpiece. Cards are built entirely from travel-data.js by
+       travel.js, so a price, a phone number or the whole card order can
+       change there without touching this markup — see the note on
+       reordering in travel-data.js if the Grouse Mountain / Hotel
+       Whitefish situation (§C.3) changes the recommended hierarchy. -->
+  <section class="sheet travel-section" id="where-to-stay" aria-labelledby="where-to-stay-heading">
+    <div class="sheet-inner sheet-inner--wide">
+      <p class="eyebrow">Where to Stay</p>
+      <h2 class="sheet-title" id="where-to-stay-heading">Lodging in Whitefish</h2>
+      <p class="sheet-lede">Six options, whatever the group and the budget.</p>
+
+      <div class="lodge-filters" id="lodge-filters" hidden role="group" aria-label="Filter lodging">
+        <button type="button" class="lodge-chip" data-tag="walk-to-ceremony">Walk to the ceremony</button>
+        <button type="button" class="lodge-chip" data-tag="best-for-groups">Best for groups</button>
+        <button type="button" class="lodge-chip" data-tag="downtown">Downtown</button>
+        <button type="button" class="lodge-chip" data-tag="easier-on-the-budget">Easier on the budget</button>
+        <button type="button" class="lodge-chip" data-tag="our-room-block">Our room block</button>
+      </div>
+
+      <ul class="lodge-grid" id="lodge-grid" hidden></ul>
+
+      <!-- No-JS fallback: a plain list, always accurate, always in the
+           DOM. travel.js hides it once the interactive grid above is
+           built and warns on localhost if the property count drifts
+           from travel-data.js. -->
+      <ul class="lodge-fallback" id="lodge-fallback">
+        <li>
+          <strong>The Lodge at Whitefish Lake</strong> — Staying where the wedding is. $$$$.
+          <span class="lodge-fallback-todo">Details coming.</span>
+        </li>
+        <li>
+          <strong>Viking Creek Homes</strong> — Groups wanting a house to themselves. $$$.
+          <span class="lodge-fallback-todo">Details coming.</span>
+        </li>
+        <li>
+          <strong>Hidden Moose Lodge</strong> — A quiet, small-inn stay. $$$.
+          <span class="lodge-fallback-todo">Details coming.</span>
+        </li>
+        <li>
+          <strong>Grouse Mountain Lodge</strong> — mid-renovation, relaunching as
+          "Hotel Whitefish." We're confirming the room block before publishing
+          details. $$$.
+        </li>
+        <li>
+          <strong>The Firebrand</strong> — Downtown, walkable to dinner. $$$.
+          <span class="lodge-fallback-todo">Details coming.</span>
+        </li>
+        <li>
+          <strong>Vacation rentals</strong> — Easier on the budget, or a longer stay. $$.
+          <span class="lodge-fallback-todo">Details coming.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ---------- DRIVE-TIME STRIP ----------
+       "How far is that really" answered at a glance — but only once the
+       numbers behind it are checked. Every driveMinutes in travel-data.js
+       but the venue's own (0, trivially true) is still null; rendering a
+       scaled strip from placeholder numbers would be exactly the
+       fabricated-fact §3 warns against, so this stays the honest §E
+       placeholder until they're verified. travel.js builds the real
+       strip automatically the moment every property has a real number —
+       nothing here needs to change by hand when that day comes. -->
+  <section class="sheet travel-section" id="drive-times" aria-labelledby="drive-times-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">How Far, Really</p>
+      <h2 class="sheet-title" id="drive-times-heading">Drive times</h2>
+      <div class="drive-strip" id="drive-strip" hidden></div>
+      <div class="drive-placeholder" id="drive-placeholder">
+        <img class="drive-placeholder-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+        <p class="drive-placeholder-line">Verified drive times — details coming.</p>
+        <p class="drive-placeholder-sub">We want these checked against a map, not guessed — they'll be here well before June.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- THE WEEKEND ----------
+       The most important logistical sentence on the whole site is in the
+       lede below, not buried in a card: fly in Friday. Most of the detail
+       under it is TODO by design (§E items 4 and 7) — each card still
+       renders as a designed placeholder, never as empty space, per §E. -->
+  <section class="sheet travel-section" id="the-weekend" aria-labelledby="the-weekend-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">The Weekend</p>
+      <h2 class="sheet-title" id="the-weekend-heading">Friday to Sunday</h2>
+      <p class="sheet-lede"><strong>Plan to fly in Friday</strong> — the welcome party that evening is
+        the start of the weekend, not an optional extra, and a Saturday-morning
+        flight means missing it.</p>
+
+      <ol class="weekend-list" id="weekend-list"></ol>
+    </div>
+  </section>
+
+  <!-- ---------- THE MAP ----------
+       B.8 is explicitly optional per the build guide's own appendix
+       ("ship without it if the budget is tight"), and every coordinate in
+       travel-data.js is either null or marked VERIFY — an interactive
+       Leaflet map built on unconfirmed pins would just be a fancier way
+       to show wrong dots. This ships the guide's own stated fallback
+       (a plain address list) rather than the full map, until locations
+       are confirmed. -->
+  <section class="sheet travel-section" id="the-map" aria-labelledby="the-map-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">Find Everything</p>
+      <h2 class="sheet-title" id="the-map-heading">On the map</h2>
+      <p class="sheet-lede">An interactive map lands here once every location is confirmed. For now, the addresses:</p>
+      <ul class="map-address-list" id="map-address-list"></ul>
+    </div>
+  </section>
+
+  <!-- ---------- WHILE YOU'RE HERE ----------
+       Bento grid: five tiles, sized by travel-data.js's `size` field.
+       Glacier's copy is verbatim from the build guide §D.1 — do not
+       soften it back toward the alpine crossing. -->
+  <section class="sheet travel-section" id="while-here" aria-labelledby="while-here-heading">
+    <div class="sheet-inner sheet-inner--wide">
+      <p class="eyebrow">Whitefish, Montana</p>
+      <h2 class="sheet-title" id="while-here-heading">While you're here</h2>
+      <p class="sheet-lede">Worth turning the weekend into a few extra days.</p>
+      <ul class="bento-grid" id="bento-grid"></ul>
+    </div>
+  </section>
+
+  <!-- ---------- QUESTIONS ----------
+       The section people land on when something has gone wrong, so it
+       stays plain and warm. Native <details>/<summary> — an accordion
+       that needs no JavaScript to open, close, or be keyboard-operable. -->
+  <section class="sheet travel-section" id="questions" aria-labelledby="questions-heading">
+    <div class="sheet-inner">
+      <p class="eyebrow">Questions</p>
+      <h2 class="sheet-title" id="questions-heading">If you're wondering</h2>
+
+      <div class="faq" id="faq"></div>
+
+      <div class="local-contact" id="local-contact">
+        <span class="local-contact-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" focusable="false"><g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">
+            <path d="M20 33V13"/>
+            <path d="M20 20c0-4 3.2-7.2 7.2-7.2C27.2 16.8 24 20 20 20Z"/>
+            <path d="M20 26c0-3.4 2.7-6.1 6.1-6.1C26.1 23.3 23.4 26 20 26Z"/>
+            <path d="M20 20c0-4-3.2-7.2-7.2-7.2C12.8 16.8 16 20 20 20Z"/>
+            <path d="M20 26c0-3.4-2.7-6.1-6.1-6.1C13.9 23.3 16.6 26 20 26Z"/>
+          </g></svg>
+        </span>
+        <p class="local-contact-line" id="local-contact-line">Questions before then? Spencer's mom has
+          scouted Whitefish lodging in person and is glad to help.</p>
+        <p class="local-contact-meta" id="local-contact-meta"></p>
+      </div>
+
+      <p class="couple-contact" id="couple-contact"></p>
+    </div>
+  </section>
+
+  <footer class="sheet end-sheet">
+    <img class="end-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+    <p class="end-names">Sarah &amp; Spencer</p>
+    <p class="end-meta">
+      <span>June 12, 2027</span>
+      <span class="end-dot" aria-hidden="true">·</span>
+      <span>Whitefish, Montana</span>
+    </p>
+    <p class="end-cal">
+      <a class="end-link" href="../assets/sarah-and-spencer.ics"
+         download="sarah-and-spencer.ics" data-calendar="ics">Add June 12 to your calendar</a>
+    </p>
+    <nav class="end-nav" aria-label="More">
+      <a href="../lodging.html">Lodging</a>
+      <span class="end-dot" aria-hidden="true">·</span>
+      <a href="../">Save the Date</a>
+    </nav>
+  </footer>
+
+</main>
+
+</body>
+</html>

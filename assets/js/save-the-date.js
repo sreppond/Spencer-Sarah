@@ -25,6 +25,67 @@
 
 
   /* ------------------------------------------------------------------
+     Storage
+
+     Three things about browser storage bite in practice, and all three
+     bite on this page:
+
+       · Safari in private mode *throws* on access rather than returning
+         null, so every call has to be wrapped or the script dies on a
+         line that was only trying to remember a preference;
+       · a flag with no expiry outlives its meaning — "you have seen the
+         envelope" is true for a week, not for three years;
+       · a value written by an older version of this file may be a bare
+         string rather than a record, and must not crash the read.
+
+     So every value is stored as {v, t} and read back through a max age
+     in days. A missing, expired, unparseable or inaccessible value all
+     resolve to the same thing: null.
+     ------------------------------------------------------------------ */
+  var store = (function () {
+    var ls = (function () {
+      try {
+        var area = window.localStorage;
+        area.setItem('std:probe', '1');
+        area.removeItem('std:probe');
+        return area;
+      } catch (e) { return null; }
+    }());
+
+    function clear(key) {
+      if (!ls) return;
+      try { ls.removeItem(key); } catch (e) {}
+    }
+
+    return {
+      clear: clear,
+
+      get: function (key, maxAgeDays) {
+        if (!ls) return null;
+        var raw;
+        try { raw = ls.getItem(key); } catch (e) { return null; }
+        if (!raw) return null;
+
+        var rec;
+        try { rec = JSON.parse(raw); } catch (e) { clear(key); return null; }
+        if (!rec || typeof rec.t !== 'number') { clear(key); return null; }
+
+        if (maxAgeDays && Date.now() - rec.t > maxAgeDays * 864e5) {
+          clear(key);
+          return null;
+        }
+        return rec.v;
+      },
+
+      set: function (key, value) {
+        if (!ls) return;
+        try { ls.setItem(key, JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
+      }
+    };
+  }());
+
+
+  /* ------------------------------------------------------------------
      Elements — every lookup shared across the sections below happens
      here, at the top, and nowhere else.
 
@@ -110,19 +171,21 @@
      ------------------------------------------------------------------ */
   var opened = false;
 
-  /* The ceremony is worth one viewing, not one per page load. A guest who
-     reloads, or comes back from the lodging tab, or restores the tab from
-     memory, has already opened this envelope and should land on the page.
-     sessionStorage, not localStorage, so a genuinely new visit still gets
-     the full thing. Private-mode Safari throws on access, hence the try. */
+  /* The ceremony is worth one viewing, not one per session. A guest who
+     opened it in August and comes back in March to check the hotels
+     should land straight on the page, not replay a 3-second animation a
+     fourth time while they are trying to find something. 30 days is long
+     enough to cover a real return visit and short enough that a genuinely
+     new visit — someone the link gets forwarded to next spring — still
+     gets the full thing. */
   var SEEN_KEY = 'std:opened';
+  var SEEN_TTL_DAYS = 30;
 
   function alreadyOpened() {
-    try { return sessionStorage.getItem(SEEN_KEY) === '1'; }
-    catch (e) { return false; }
+    return store.get(SEEN_KEY, SEEN_TTL_DAYS) === true;
   }
   function rememberOpened() {
-    try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
+    store.set(SEEN_KEY, true);
   }
 
   /* Drop straight to the page with no envelope at all. Used for a repeat
@@ -155,13 +218,17 @@
     opened = true;
     rememberOpened();
 
+    envelope.classList.remove('is-inviting');
     envelope.classList.add('is-open');
     envelope.setAttribute('aria-disabled', 'true');
     scene.classList.add('is-opening');
 
-    // Audio has to start inside the gesture that opened the envelope,
-    // or mobile browsers will refuse it.
-    startAmbient();
+    // Audio defaults off (see A6 below) and only autoplays here for a
+    // guest who has explicitly turned it on before — this tap is the one
+    // gesture available to satisfy the browser's autoplay policy, so it
+    // is now or never for that returning preference. The toggle itself
+    // still appears for everyone at the hand-off below.
+    if (audioPreference() === 'on') startAmbient();
 
     var lift = reduced ? 120 : 1900;   // card begins opening into the hero
     var hand = reduced ? 420 : 2500;   // scene starts dissolving
@@ -189,8 +256,19 @@
   }
 
   if (scene && envelope) {
-    // Seen it already this session? Never seal the page in the first place.
-    if (alreadyOpened()) {
+    // A guest who asked for less motion gets nothing from a full-screen 3D
+    // ceremony and no stated way to skip it faster than 2.8s of waiting —
+    // the gate does not appear for them at all, per §3.5's non-negotiables.
+    if (reduced) {
+      rememberOpened();
+      scene.style.display = 'none';
+      scene.setAttribute('aria-hidden', 'true');
+      opened = true;
+      revealHero();
+      startHeroVideo();
+      revealAudioToggle();
+    // Seen it already inside the last 30 days? Never seal the page at all.
+    } else if (alreadyOpened()) {
       scene.style.display = 'none';
       scene.setAttribute('aria-hidden', 'true');
       opened = true;
@@ -199,6 +277,19 @@
       revealAudioToggle();
     } else {
       seal();
+
+      // A full-screen gate with exactly one accepted interaction is the
+      // page's largest liability if that interaction is missed entirely —
+      // so if nothing has happened in 2.8s, open it for them. Anyone who
+      // has already acted (tap, Enter/Space, Escape, skip) has flipped
+      // `opened` to true by then, at which point this is a no-op.
+      setTimeout(openEnvelope, 2800);
+
+      // A slow pulse on the seal, starting once the hint has had its
+      // first breath, so the one tappable-looking thing on the screen
+      // actually reads as tappable. CSS carries the timing and the
+      // reduced-motion override; this only ever runs when !reduced.
+      envelope.classList.add('is-inviting');
 
       var skip = $('#env-skip');
       if (skip) {
@@ -398,9 +489,21 @@
 
   /* ------------------------------------------------------------------
      Ambient audio
+
+     Default off. The bed is genuinely quiet — mastered to -18 LUFS,
+     played at 0.16 gain, around -34 LUFS in the room — but it is still
+     sound a guest did not ask for on a link they may open at a desk, so
+     it now starts only on an explicit tap of the toggle, and that choice
+     is remembered for a returning visit.
      ------------------------------------------------------------------ */
   var audioFailed = false;
   var fadeTimer = null;
+
+  var AUDIO_KEY = 'std:audio';
+  var AUDIO_TTL_DAYS = 400;
+
+  function audioPreference() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS); }
+  function setAudioPreference(on) { store.set(AUDIO_KEY, on ? 'on' : 'off'); }
 
   function fadeTo(target, ms) {
     if (!audio) return;
@@ -463,8 +566,14 @@
         fadeTo(0, 500);
         setTimeout(function () { audio.pause(); }, 520);
         setPressed(false);
+        setAudioPreference(false);
       } else {
+        setAudioPreference(true);
         var opts = CFG.audio || {};
+        // A guest who never had a stored "on" preference never went
+        // through startAmbient() on envelope open, so audio.src is still
+        // empty at this point — this is the first tap that needs it set.
+        if (!audio.src) audio.src = (CFG.media || {}).ambientAudio || '';
         audio.volume = 0;
         var p = audio.play();
         if (p && p.then) {
@@ -601,7 +710,22 @@
       img.alt = data.alt || '';
       img.addEventListener('error', function () { markEmpty(fig); }, { once: true });
       img.src = data.src;
-      fig.insertBefore(img, fig.firstChild);
+
+      // A WebP source is offered first when config supplies one, with the
+      // JPEG in `src` as the <picture> fallback for a browser or codec that
+      // cannot decode it — the <img> above still carries the error handler,
+      // src and alt, so nothing about the empty-frame fallback changes.
+      if (data.webp) {
+        var picture = document.createElement('picture');
+        var source = document.createElement('source');
+        source.type = 'image/webp';
+        source.srcset = data.webp;
+        picture.appendChild(source);
+        picture.appendChild(img);
+        fig.insertBefore(picture, fig.firstChild);
+      } else {
+        fig.insertBefore(img, fig.firstChild);
+      }
     });
 
     function markEmpty(fig) {
@@ -707,6 +831,56 @@
     var submit = $('#guest-submit');
     var done = $('#form-done');
 
+
+    /* ---- "you already sent this" ------------------------------------
+       A guest who sends their address in August and comes back in March
+       to look up the hotel currently gets a blank four-step form, which
+       reads as "that never went through" and produces a duplicate row.
+       On success we remember it, and a later visit lands on the done
+       screen with a quiet way back to the form for anyone who has moved.
+
+       Deliberately not a lock: the key is one click from being cleared,
+       and clearing it is the whole affordance. A guest who has genuinely
+       moved house must be able to tell us.                              */
+    var SENT_KEY = 'std:sent';
+    var rememberDays = (CFG.form || {}).rememberSentDays;
+
+    function showDone(remembered) {
+      if (!done) return;
+      form.hidden = true;
+      done.hidden = false;
+
+      var lede = $('.sheet-lede', form.parentNode);
+      if (lede) lede.hidden = true;
+
+      if (!remembered || $('.done-again', done)) return;
+
+      var again = document.createElement('p');
+      again.className = 'done-again';
+      again.textContent = 'Sent something already? ';
+
+      var link = document.createElement('button');
+      link.type = 'button';
+      link.className = 'done-again-link';
+      link.textContent = 'Update it';
+      link.addEventListener('click', function () {
+        store.clear(SENT_KEY);
+        again.remove();
+        done.hidden = true;
+        form.hidden = false;
+        if (lede) lede.hidden = false;
+        if (stepped) go(0, true);
+      });
+
+      again.appendChild(link);
+      done.appendChild(again);
+    }
+
+    // Set when the guest uses the "don't have it handy" link below rather
+    // than just leaving the address blank — sent with the payload so
+    // Spencer can tell "hasn't gotten to it" from "moving, follow up."
+    var addressPending = false;
+
     var rules = {
       name: {
         test: function (v) { return v.trim().length >= 2; },
@@ -716,13 +890,19 @@
         test: function (v) { return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v.trim()); },
         message: 'That email address does not look quite right.'
       },
+      // Phone and address are both optional now — asking for a phone
+      // number at save-the-date stage reads as data collection, and some
+      // guests are genuinely mid-move and do not have an address yet (see
+      // the "send the rest" link below). Neither is `required` in the
+      // markup any more; the test here only fires once something has been
+      // typed, so a filled-in field still has to look like the real thing.
       phone: {
-        test: function (v) { return (v.replace(/\D/g, '').length >= 7); },
-        message: 'Please add a number we can text.'
+        test: function (v) { return !v.trim() || v.replace(/\D/g, '').length >= 7; },
+        message: 'That doesn’t look like a full number — or leave it blank.'
       },
       address: {
-        test: function (v) { return v.trim().length >= 8; },
-        message: 'Please add the address the invitation should go to.'
+        test: function (v) { return !v.trim() || v.trim().length >= 8; },
+        message: 'That looks a little short for a full address — or leave it blank.'
       }
     };
 
@@ -857,10 +1037,29 @@
       });
     });
 
-    function setStatus(text, isError) {
+    /* A status message is usually a sentence, but the failure case has to
+       offer a way out, and a tappable mailto: is worth far more on a phone
+       than an address a guest has to select by hand. `link` is optional and
+       built as a real node, so nothing here ever interpolates into HTML. */
+    function setStatus(text, isError, link) {
       if (!status) return;
       status.textContent = text || '';
       status.classList.toggle('is-error', !!isError);
+      if (link && link.href && link.label) {
+        status.appendChild(document.createTextNode(' '));
+        var a = document.createElement('a');
+        a.className = 'form-status-link';
+        a.href = link.href;
+        a.textContent = link.label;
+        status.appendChild(a);
+      }
+    }
+
+    /* The only address a guest can fall back on. Empty in config means the
+       sentence is dropped rather than a dead mailto: being shipped. */
+    function contactLink() {
+      var email = (CFG.contact || {}).email;
+      return email ? { href: 'mailto:' + email, label: email } : null;
     }
 
     if (stepped) {
@@ -871,6 +1070,24 @@
       }
     }
 
+    // "Don't have it handy? Send the rest and we'll follow up." Address is
+    // optional already (see rules.address above), so this link's real job
+    // is reassurance plus an explicit flag — a blank address a guest chose
+    // to skip past reads differently to Spencer than one nobody got to.
+    var addressSkip = $('#g-address-skip');
+    if (addressSkip) {
+      addressSkip.addEventListener('click', function () {
+        var addrInput = form.elements.address;
+        if (addrInput) { addrInput.value = ''; clearError(addrInput); }
+        addressPending = true;
+        submit.click();
+      });
+    }
+
+    // Ran after the stepper is built, so the form underneath the done
+    // screen is in a sane state if the guest asks to update it.
+    if (rememberDays && store.get(SENT_KEY, rememberDays)) showDone(true);
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
@@ -878,8 +1095,11 @@
       // does, so the guard against a double send is explicit.
       if (sending) return;
 
-      // Honeypot: a real guest never sees this field.
+      // Honeypot: a real guest never sees either of these. `company` is
+      // ours; `_gotcha` is the name Formspree filters on, so a bot that
+      // fills every field is caught on our side and on theirs.
       if (form.elements.company && form.elements.company.value) return;
+      if (form.elements._gotcha && form.elements._gotcha.value) return;
 
       // Mid-flow, "submit" means "next": check this one answer and move on.
       // Enter in the field does the same thing, because the button never
@@ -911,14 +1131,30 @@
         return;
       }
 
+      var email = form.elements.email.value.trim();
+
+      var address = form.elements.address.value.trim();
+
       var payload = {
         name: form.elements.name.value.trim(),
-        email: form.elements.email.value.trim(),
+        email: email,
         phone: form.elements.phone.value.trim(),
-        address: form.elements.address.value.trim(),
+        address: address,
+        // Only meaningful when address is blank: distinguishes "used the
+        // 'send the rest' link" from "just didn't fill this in."
+        addressStatus: !address ? (addressPending ? 'pending' : 'blank') : 'given',
         submittedAt: new Date().toISOString(),
-        source: 'save-the-date'
+        source: 'save-the-date',
+        // So a reply to the notification email reaches the guest rather
+        // than the form service. Formspree reads this name; anything else
+        // records it as one more column.
+        _replyto: email
       };
+
+      var opts = CFG.form || {};
+      Object.keys(opts.extraFields || {}).forEach(function (k) {
+        if (!(k in payload)) payload[k] = opts.extraFields[k];
+      });
 
       var endpoint = CFG.FORM_ENDPOINT;
 
@@ -943,7 +1179,6 @@
       if (sendLabel) sendLabel.textContent = 'Sending…';
       setStatus('', false);
 
-      var opts = CFG.form || {};
       var init = { method: opts.method || 'POST', headers: { Accept: 'application/json' } };
 
       if (opts.encoding === 'formdata') {
@@ -959,10 +1194,8 @@
         .then(function (res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           form.removeAttribute('aria-busy');
-          form.hidden = true;
-          done.hidden = false;
-          var lede = $('.sheet-lede', form.parentNode);
-          if (lede) lede.hidden = true;
+          store.set(SENT_KEY, payload.name || true);
+          showDone(false);
           done.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
           // The form the guest was standing in has just been removed from
           // the page. Without this, focus falls back to <body> and a screen
@@ -975,7 +1208,15 @@
           submit.classList.remove('is-sending');
           form.removeAttribute('aria-busy');
           if (sendLabel) sendLabel.textContent = 'Send our details';
-          setStatus('Something went wrong sending that. Please try again, or text it to us directly.', true);
+          // An error tells you what happened and what to do about it. The
+          // old copy did neither, and read the same as the not-connected
+          // state above — which is a different problem with a different fix.
+          setStatus(
+            'That didn\'t send — it\'s on our end, not yours.' +
+            (contactLink() ? ' Try again, or email us at' : ' Try again in a moment.'),
+            true,
+            contactLink()
+          );
         });
     });
   }());
