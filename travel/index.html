@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- ================================================================
+     Sarah & Spencer — Travel & Stay
+
+     Plain HTML, the existing stylesheet, and two small ES modules —
+     see the architecture note in BUILDGUIDE §B.0. No build step: Spencer
+     edits assets/js/travel-data.js in GitHub's web editor and pushes.
+
+     This ships in stages (per the guide's own order of work): hero, nav
+     and footer first, since that alone is a useful page; the content
+     sections land in the commits after this one. Nothing here is a dead
+     link — a section not yet built simply isn't linked from the nav yet.
+     ================================================================ -->
+
+<title>Travel &amp; Stay | Sarah &amp; Spencer</title>
+<meta name="description" content="Getting to Whitefish, Montana for Sarah and Spencer's wedding — flights, lodging, and the weekend, June 12, 2027.">
+<meta name="theme-color" content="#f7f2e9">
+<meta name="color-scheme" content="light">
+<!-- Guests reach this from the save-the-date's own nav, not search — see
+     A8/§A8. Link-preview crawlers ignore robots meta either way. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://sreppond.github.io/Spencer-Sarah/travel/">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sarah &amp; Spencer">
+<meta property="og:title" content="Travel &amp; Stay | Sarah &amp; Spencer">
+<meta property="og:description" content="Flights, lodging, and the weekend — June 12, 2027, Whitefish, Montana">
+<meta property="og:url" content="https://sreppond.github.io/Spencer-Sarah/travel/">
+<meta property="og:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Travel &amp; Stay | Sarah &amp; Spencer">
+<meta name="twitter:description" content="Flights, lodging, and the weekend — June 12, 2027, Whitefish, Montana">
+<meta name="twitter:image" content="https://sreppond.github.io/Spencer-Sarah/assets/img/social-preview.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Same stylesheet as the rest of the site — one design system, no
+     second copy of the tokens to drift out of sync. Bump ?v= whenever
+     save-the-date.css changes; current token matches index.html's. -->
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810d">
+
+<script>document.documentElement.className += ' js';</script>
+<script defer src="../assets/js/config.js?v=20260810d"></script>
+<script defer src="../assets/js/travel-data.js?v=20260810d"></script>
+<script defer src="../assets/js/calendar.js?v=20260810d"></script>
+<script defer src="../assets/js/travel.js?v=20260810d"></script>
+</head>
+
+<body class="page-sub travel-page">
+
+<!-- The scroll-spy variant of the A3 site nav: same component and CSS,
+     a different link set (in-page sections here, cross-page elsewhere),
+     and active-section highlighting that travel.js adds on top. Gated
+     off .travel-hero rather than .hero-viewport — the save-the-date's
+     hero-gating script (site-nav.js) is untouched and unreferenced here,
+     so nothing about this page can ever touch that protected element. -->
+<nav class="site-nav" id="site-nav" aria-label="Site">
+  <div class="site-nav-inner">
+    <a class="site-nav-word" href="../">Sarah &amp; Spencer</a>
+    <ul class="site-nav-links" id="travel-nav-links">
+      <li><a href="#getting-here">Getting Here</a></li>
+      <li><a href="#where-to-stay">Where to Stay</a></li>
+      <li><a href="#the-weekend">The Weekend</a></li>
+      <li><a href="#while-here">Whitefish</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="paper" id="page">
+
+  <!-- ---------- HERO ----------
+       Deliberately not a repeat of the save-the-date's hero: a different
+       crop of a copy of the Whitefish Lake asset (never the source — see
+       the 🔒 note in BUILDGUIDE §B.3), quieter, with a job the other
+       hero doesn't have: a live countdown and a calendar action. -->
+  <header class="travel-hero" id="travel-hero">
+    <div class="travel-hero-inner">
+      <p class="eyebrow">Whitefish, Montana</p>
+      <h1 class="travel-hero-title">Travel &amp; Stay</h1>
+      <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+      <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
+
+      <!-- Days / hours / minutes only — seconds are frantic and burn
+           battery for nothing. travel.js swaps this to a single line
+           once the date has passed, and it is a plain updating number
+           under prefers-reduced-motion rather than a digit-roll. -->
+      <div class="countdown" id="countdown" aria-live="off">
+        <p class="countdown-passed" id="countdown-passed" hidden>Married in Whitefish, June 12, 2027</p>
+        <div class="countdown-grid" id="countdown-grid">
+          <div class="countdown-cell"><span class="countdown-num" id="cd-days">–</span><span class="countdown-unit">days</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-hours">–</span><span class="countdown-unit">hours</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-mins">–</span><span class="countdown-unit">minutes</span></div>
+        </div>
+        <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
+      </div>
+
+      <a class="flow-btn flow-btn--gold travel-hero-cal"
+         href="../assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
+         data-calendar="ics">
+        <span class="flow-btn__ink" aria-hidden="true"></span>
+        <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="flow-btn__label">Add to your calendar</span>
+        <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Content sections land here in the commits that follow: Getting
+       Here, Where to Stay, the drive-time strip, the map, The Weekend,
+       While You're Here, and Questions. Each arrives with its own nav
+       link already in place above, so nothing here is ever a dead
+       link — see BUILDGUIDE Appendix, "ship after step 7." -->
+
+  <footer class="sheet end-sheet">
+    <img class="end-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
+    <p class="end-names">Sarah &amp; Spencer</p>
+    <p class="end-meta">
+      <span>June 12, 2027</span>
+      <span class="end-dot" aria-hidden="true">·</span>
+      <span>Whitefish, Montana</span>
+    </p>
+    <p class="end-cal">
+      <a class="end-link" href="../assets/sarah-and-spencer.ics"
+         download="sarah-and-spencer.ics" data-calendar="ics">Add June 12 to your calendar</a>
+    </p>
+    <nav class="end-nav" aria-label="More">
+      <a href="../lodging.html">Lodging</a>
+      <span class="end-dot" aria-hidden="true">·</span>
+      <a href="../">Save the Date</a>
+    </nav>
+  </footer>
+
+</main>
+
+</body>
+</html>

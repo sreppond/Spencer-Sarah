@@ -537,7 +537,11 @@ html:not(.js) .env-scene { display: none; }
   padding: .4rem 0;                /* height toward the 44px tap floor */
 }
 .site-nav-links a:hover, .site-nav-links a:focus-visible { color: var(--gold-text); }
-.site-nav-links a[aria-current="page"] { color: var(--gold-text); }
+/* "page" marks the current page on the site-wide nav (A3); "true" marks
+   the active in-page section on the travel page's scroll-spy variant
+   (B.4) — same visual treatment either way. */
+.site-nav-links a[aria-current="page"],
+.site-nav-links a[aria-current="true"] { color: var(--gold-text); }
 
 /* Under 480px the hairline bar collapses into a floating pill, closer to
    an app's tab bar than a website header — full-width chrome felt heavy
@@ -2390,4 +2394,97 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   .form-status a[href]::after,
   .end-link[href]::after,
   .lodging-back[href^="http"]::after { content: " (" attr(href) ")"; font-size: .85em; }
+}
+
+
+/* ==========================================================================
+   11 · TRAVEL PAGE
+   /travel/ reuses every token and structural class above — .paper, .sheet,
+   .sheet-inner, .flow-btn, .site-nav — and adds only what those don't
+   cover. Grows a subsection at a time as the page does; see travel.js.
+   ========================================================================== */
+
+/* Only travel/index.html sets this class, on the html element, from
+   travel.js — never touched by the save-the-date. The sitewide reduced-
+   motion rule (§9) already forces scroll-behavior:auto !important on *,
+   so this is automatically inert for anyone who asked for less motion. */
+html.smooth-scroll { scroll-behavior: smooth; }
+
+/* --- 11.1 · Hero ---
+   Quieter than the save-the-date's — no painting, no envelope, no
+   traced artwork — because this page's hero has a job the other one
+   doesn't: the countdown and the calendar action. Deliberately not
+   full-viewport; the guest should see there is more below immediately. */
+.travel-hero {
+  /* .page-sub .paper already reserves clearance for the fixed nav
+     (padding-top including --safe-t) — this is breathing room on top of
+     that, not a second nav offset. */
+  padding: clamp(1.2rem, 5vh, 2.5rem) var(--gutter) clamp(3rem, 9vh, 4.5rem);
+  text-align: center;
+}
+.travel-hero-inner { max-width: 34rem; margin: 0 auto; }
+.travel-hero-title {
+  margin-top: .6rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 10vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.05;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.travel-hero-divider { width: 9rem; height: auto; margin: 1.2rem auto 0; }
+.travel-hero-lede {
+  margin: 1.1rem auto 0;
+  max-width: 26rem;
+  font-size: clamp(var(--t-body), 3.6vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--ink-body);
+  text-wrap: pretty;
+}
+.travel-hero-cal { margin: clamp(2rem, 7vw, 2.6rem) auto 0; max-width: 22rem; }
+
+/* --- 11.2 · Countdown --- */
+.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
+.countdown-passed {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
+  font-weight: 600;
+  color: var(--ink);
+}
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+}
+.countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.6rem;
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--gold-text);
+}
+.countdown-unit {
+  margin-top: .35rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+/* A quick flip on the number that actually changed, not a jittery
+   ticker — one keyframe, retriggered by travel.js removing and
+   re-adding this class. Neutralized by the sitewide reduced-motion
+   animation-duration clamp (§9), same as every other animation here. */
+.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
+@keyframes countdown-flip {
+  0%   { opacity: .35; transform: translateY(-.3em); }
+  100% { opacity: 1;   transform: none; }
 }
