@@ -23,6 +23,38 @@
     }, CFG);
   }
 
+  /* Wrap every word of `el` in its own <span class="word" style="--word-i:n">,
+     in place, so a per-word CSS effect (the invitation line's assembly, a
+     step question's entrance) has something to hang a stagger off of.
+     Walks the child nodes rather than flattening textContent, so a nested
+     element — the <em> that carries the invitation's second line, the <em>
+     that flags a step as optional — keeps its own markup instead of being
+     thrown away. Words are rejoined with ordinary spaces, never non-breaking
+     ones, so the wrapped text still wraps like plain text. Returns the word
+     count, for callers (like the invitation line) that need it. */
+  function wrapWords(el) {
+    var count = 0;
+    (function walk(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 1) { walk(child); return; }
+        if (child.nodeType !== 3 || !child.nodeValue.trim()) return;
+
+        var frag = document.createDocumentFragment();
+        child.nodeValue.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          var span = document.createElement('span');
+          span.className = 'word';
+          span.style.setProperty('--word-i', String(count++));
+          span.textContent = part;
+          frag.appendChild(span);
+        });
+        node.replaceChild(frag, child);
+      });
+    }(el));
+    return count;
+  }
+
 
   /* ------------------------------------------------------------------
      Storage
@@ -686,7 +718,9 @@
 
     // Wraps every visible character of `node`'s own text in its own span;
     // whitespace stays untouched so the line still wraps normally. Returns
-    // how many characters it wrapped.
+    // how many characters it wrapped. Character-level, so this stays
+    // separate from wrapWords() above (shared by the stepper's question
+    // entrance) rather than reusing it.
     function wrapChars(node) {
       var i = 0;
       Array.prototype.slice.call(node.childNodes).forEach(function (child) {
@@ -1028,6 +1062,15 @@
       stepper.hidden = false;
 
       panes.forEach(function (pane, i) {
+        // The question itself arrives a word at a time whenever this pane
+        // is unhidden — see CSS §4.1's step-q-word-in. Wrapping is a one-time
+        // setup; the entrance replays on its own every time go() flips
+        // [hidden], because that is what starts a CSS animation on a
+        // newly-displayed element. Only done here, under `stepped`, because
+        // that is the only mode where a pane is ever hidden and re-shown.
+        var q = $('.step-q', pane);
+        if (q) wrapWords(q);
+
         var li = document.createElement('li');
 
         var dot = document.createElement('button');

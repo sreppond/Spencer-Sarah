@@ -1633,6 +1633,40 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   to   { opacity: 1; transform: none; }
 }
 
+/* The question itself gets a second, livelier entrance on top of the pane's
+   plain fade: each word blurs, drifts up and scales in, one after another,
+   settling with a small overshoot rather than just easing to a stop — the
+   bit of bounce that makes a four-question form feel like it is greeting
+   you instead of processing you. Ported from the React DepthParallaxWords
+   component (animate-text catalog's depth-parallax-words), retimed a touch
+   snappier since this plays on every "Continue" tap rather than once.
+   Words are wrapped by save-the-date.js's buildStepper(); the animation
+   itself needs nothing from JS — it replays for free whenever go() lifts
+   [hidden] off a pane, the same mechanic step-in above already relies on. */
+.step-q .word {
+  display: inline-block;
+  will-change: filter, opacity, transform;
+}
+html.js .gform.is-stepped .step-q .word {
+  animation: step-q-word-in .6s var(--ease-reveal) both;
+  animation-delay: calc(var(--word-i, 0) * 55ms);
+}
+@keyframes step-q-word-in {
+  0% {
+    filter: blur(4px);
+    opacity: 0;
+    transform: translateY(16px) scale(.9);
+  }
+  65% {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    transform: none;
+  }
+}
+
 /* One field per screen means the label is no longer a caption on a list —
    it is the question being asked, so it is set as one. It stays the real
    <label>, so this is a size change, not an extra layer of text for a
@@ -2136,6 +2170,9 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
 
   /* Steps still change, they just do not slide or pop. */
   .gform.is-stepped .step { animation: none; }
+  html.js .gform.is-stepped .step-q .word {
+    animation: none; opacity: 1; filter: none; transform: none; will-change: auto;
+  }
   .form-done { animation: none; }
   .step-dot.is-done::after, .done-mark::after { animation: none; }
   .step-dot.is-current { transform: none; }
