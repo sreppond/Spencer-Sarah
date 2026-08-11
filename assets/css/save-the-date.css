@@ -1136,6 +1136,39 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
   color: var(--gold-text);
 }
 
+/* --- the calendar action ---
+   The one thing to do on this screen, and the reason the hero's "Scroll for
+   detail" now leads somewhere. It gets real space above it so it reads as a
+   consequence of the sentence rather than a caption attached to it, and it
+   is --quiet rather than --gold: the invitation is the loud thing here. */
+.date-actions {
+  max-width: 22rem;
+  margin: clamp(2.8rem, 10vh, 4.5rem) auto 0;
+  text-align: center;
+}
+.date-btn { width: 100%; }
+
+/* The Android/Gmail path. A second full button would read as a choice
+   between two equal things, which it is not — almost everyone wants the
+   file. This is the escape hatch for the people who do not. */
+.date-alt {
+  display: inline-block;
+  margin-top: 1.1rem;
+  padding: .5rem .4rem;          /* keeps the tap target at 44px tall */
+  font-size: var(--t-small);
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.date-alt:hover, .date-alt:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
+}
+
+
 /* The sentence assembles a word at a time, and it is tied to the scroll
    rather than fired once on arrival — so scrolling back up takes it apart
    again, last word first, at exactly the rate you scroll.
@@ -1777,6 +1810,9 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   text-wrap: pretty;
 }
 .done-next-btn { margin-top: 1.5rem; width: 100%; }
+/* Second action on the done screen: quiet, so the lodging button above it
+   stays the primary one, but full width so it is unmistakably a button. */
+.done-next-cal { margin-top: .8rem; width: 100%; }
 
 /* --- "sent something already?" ---
    Only ever rendered on a return visit, where the done screen is shown
@@ -1888,6 +1924,27 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   line-height: 1.62;
   color: var(--ink-soft);
   text-wrap: pretty;
+}
+
+/* The footer's quiet links: the calendar catch-all, and the page links that
+   are the no-JavaScript fallback for the site nav (which cannot show itself
+   without a script to gate it off the hero). Both are text, both are quiet,
+   and neither is allowed to turn the end card into a menu. */
+.end-cal { margin-top: 1.8rem; }
+.end-link {
+  display: inline-block;
+  padding: .5rem .4rem;          /* 44px tap target on a text link */
+  font-size: var(--t-small);
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule);
+  transition: color .3s var(--ease-soft), text-decoration-color .3s var(--ease-soft);
+}
+.end-link:hover, .end-link:focus-visible {
+  color: var(--ink);
+  text-decoration-color: var(--gold-text);
 }
 
 

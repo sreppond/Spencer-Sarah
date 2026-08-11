@@ -66,6 +66,11 @@
 <script>document.documentElement.className += ' js';</script>
 
 <script defer src="assets/js/config.js?v=20260810a"></script>
+<!-- Standalone and self-wiring: it reads config.js, upgrades every
+     [data-calendar] href, and is the one ICS generator on this site.
+     Must load after config.js and can load before or after the page
+     script — it depends on neither. -->
+<script defer src="assets/js/calendar.js?v=20260810a"></script>
 <script defer src="assets/js/save-the-date.js?v=20260810a"></script>
 </head>
 
@@ -281,6 +286,33 @@
       <h2 class="celebrate" id="celebrate-heading">
         Come celebrate with us in <em>Whitefish, Montana!</em>
       </h2>
+
+      <!-- The calendar action lives here, and deliberately not on the hero:
+           see the note in the hero above about errands competing with the
+           invitation. This is where the hero's own instruction — "Scroll for
+           detail" — lands, so the first thing under the painting is the one
+           thing a guest can do before we ask them for anything.
+
+           Both hrefs work with JavaScript off. The .ics is a committed file
+           (regenerate with tools/make-ics.js) and the Google URL is written
+           out; assets/js/calendar.js replaces both from config.js at runtime
+           and warns on localhost if they have drifted. -->
+      <div class="date-actions">
+        <a class="flow-btn flow-btn--quiet date-btn"
+           href="assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
+           data-calendar="ics">
+          <span class="flow-btn__ink" aria-hidden="true"></span>
+          <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="flow-btn__label">Add to your calendar</span>
+          <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a class="date-alt" data-calendar="google"
+           href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=Sarah%20%26%20Spencer%E2%80%99s%20Wedding&amp;dates=20270612/20270613&amp;ctz=America/Denver&amp;location=The%20Lodge%20at%20Whitefish%20Lake%2C%201380%20Wisconsin%20Ave%2C%20Whitefish%2C%20MT%2059937&amp;details=Details%3A%20https%3A%2F%2Fsreppond.github.io%2FSpencer-Sarah%2F">Or open it in Google Calendar</a>
+      </div>
     </section>
 
     <!-- ---------- MOSAIC ----------
@@ -447,6 +479,22 @@
                 <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </a>
+
+            <!-- The moment of highest intent on the page: someone has just
+                 told us they are coming. If they only do one more thing,
+                 it should be putting the day in their calendar. -->
+            <a class="flow-btn flow-btn--quiet done-next-cal"
+               href="assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
+               data-calendar="ics">
+              <span class="flow-btn__ink" aria-hidden="true"></span>
+              <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="flow-btn__label">Add to your calendar</span>
+              <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
           </div>
         </div>
       </div>
@@ -464,6 +512,14 @@
         <span data-config="location.display">Whitefish, Montana</span>
       </p>
       <p class="end-note">Formal invitation and weekend details to follow.</p>
+
+      <!-- Catches the guest who scrolled straight past the button under the
+           invitation line, and the one who came back in March for the hotel
+           list and never went near the form. -->
+      <p class="end-cal">
+        <a class="end-link" href="assets/sarah-and-spencer.ics"
+           download="sarah-and-spencer.ics" data-calendar="ics">Add June 12 to your calendar</a>
+      </p>
     </footer>
 
   </div><!-- /paper -->
