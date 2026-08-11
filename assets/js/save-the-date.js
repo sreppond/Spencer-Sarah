@@ -1291,11 +1291,10 @@
 
           // The save-the-date's only job past this point is handing the
           // guest to the page that actually answers "now what" — flights,
-          // lodging, the weekend. A brief confirmation first, so the send
-          // doesn't feel like it silently teleported them somewhere else.
-          var sub = $('#done-sub');
-          if (sub) sub.textContent = 'Taking you to Travel & Stay…';
-          setTimeout(function () { location.href = 'travel/'; }, 1200);
+          // lodging, the weekend. That hand-off is a click, not a timed
+          // redirect (see .done-next in the markup): the booking-deadline
+          // note sitting under it needs to actually be read, not carried
+          // past by an automatic navigation.
         })
         .catch(function () {
           sending = false;

@@ -409,16 +409,28 @@
         <!-- tabindex=-1 so the script can move focus here on success.
              Swapping the form out without moving focus leaves a screen
              reader parked on a button that no longer exists. -->
-        <!-- The form is the last thing on the page. A successful send
-             hands the guest straight to Travel & Stay a moment later —
-             see save-the-date.js — once this confirmation has actually
-             registered. A remembered return visit (already submitted,
-             days ago) stays here instead of redirecting again, with a
-             quiet "sent something already? update it" link. -->
+        <!-- The form is the last thing on the page. A successful send lands
+             here with a CTA on to Travel & Stay and a quiet note about the
+             lodging deadline — see .done-next / .done-note. A remembered
+             return visit (already submitted, days ago) shows the same
+             screen, with a quiet "sent something already? update it" link
+             added by save-the-date.js. -->
         <div class="form-done" id="form-done" tabindex="-1" hidden>
           <span class="done-mark" aria-hidden="true"></span>
           <p class="done-line">Thank you — you're all set.</p>
           <p class="done-sub" id="done-sub">We'll be in touch well before June.</p>
+
+          <a class="flow-btn flow-btn--gold done-next" href="travel/">
+            <span class="flow-btn__ink" aria-hidden="true"></span>
+            <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="flow-btn__label">Continue to Travel &amp; Stay</span>
+            <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <p class="done-note">A gentle heads-up: Whitefish has limited lodging for the weekend, so we'd suggest booking your stay before the end of October to make sure a room is still there for you.</p>
         </div>
       </div>
     </section>

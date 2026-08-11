@@ -1861,6 +1861,23 @@ html.js .gform.is-stepped .step-q .word {
   color: var(--ink-soft);
 }
 
+/* The hand-off to Travel & Stay. A deliberate click rather than a timed
+   redirect: the note underneath is the whole point of pausing here, and
+   an automatic navigation would carry the guest past it unread. */
+.done-next {
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
+}
+
+/* Deliberately quieter than .done-sub — a nudge, not news. Lives under
+   the CTA so it reads as a footnote to "continue," not a reason to stay. */
+.done-note {
+  margin-top: 1rem;
+  font-size: var(--t-small);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--stone-text);
+}
+
 /* --- "sent something already?" ---
    Only ever rendered on a return visit, where the done screen is shown
    from a remembered submission rather than one that just happened. It is
