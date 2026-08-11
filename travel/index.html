@@ -48,13 +48,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260810h">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260811a">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260810h"></script>
-<script defer src="../assets/js/travel-data.js?v=20260810h"></script>
-<script defer src="../assets/js/calendar.js?v=20260810h"></script>
-<script defer src="../assets/js/travel.js?v=20260810h"></script>
+<script defer src="../assets/js/config.js?v=20260811a"></script>
+<script defer src="../assets/js/travel-data.js?v=20260811a"></script>
+<script defer src="../assets/js/calendar.js?v=20260811a"></script>
+<script defer src="../assets/js/travel.js?v=20260811a"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -162,7 +162,7 @@
             <li>Seattle — Alaska</li>
             <li>Denver — United</li>
             <li>Salt Lake City — Delta</li>
-            <li>Minneapolis-St. Paul — Delta, Sun Country</li>
+            <li>Minneapolis-St. Paul — Delta (plus Sun Country, seasonal)</li>
             <li>Las Vegas — Allegiant</li>
             <li>Phoenix-Mesa — Allegiant</li>
           </ul>
@@ -172,15 +172,13 @@
           <ul data-flight-group="nonstop-seasonal">
             <li>Chicago — United, American</li>
             <li>Dallas-Fort Worth — American</li>
-            <li>Atlanta — Delta</li>
             <li>New York (LaGuardia) — American</li>
-            <li>Los Angeles — Delta, American, Allegiant</li>
+            <li>Los Angeles — Alaska, United</li>
             <li>San Francisco — United</li>
             <li>Houston — United</li>
             <li>Portland — Alaska</li>
             <li>Oakland — Allegiant</li>
             <li>San Diego — Alaska</li>
-            <li>Charlotte — American</li>
           </ul>
         </div>
         <div class="flight-fallback-col">
@@ -203,6 +201,17 @@
             <li class="flight-fallback-note">Any other US city — usually through Seattle, Denver, or Minneapolis</li>
           </ul>
         </div>
+      </div>
+
+      <div class="flight-always" id="flight-train">
+        <h3 class="flight-fallback-head">By train, if you want to make an occasion of it</h3>
+        <p>Amtrak's Empire Builder runs daily between Chicago and Seattle/Portland and
+          stops right in downtown Whitefish — the depot is a few blocks from The
+          Firebrand and about 2 miles from the venue. It's an overnight ride from
+          Seattle or Portland, or a genuinely epic two-night trip from Chicago through
+          Glacier country. Not the fast way to get here, but a memorable one if
+          anyone's got the time. Check amtrak.com for the current Empire Builder
+          schedule closer to June 2027 — long-distance timetables shift.</p>
       </div>
     </div>
   </section>
@@ -314,7 +323,7 @@
     <div class="sheet-inner">
       <p class="eyebrow">Find Everything</p>
       <h2 class="sheet-title" id="the-map-heading">On the map</h2>
-      <p class="sheet-lede">An interactive map lands here once every location is confirmed. For now, the addresses:</p>
+      <p class="sheet-lede">Every address in one place, each one a tap away from directions.</p>
       <ul class="map-address-list" id="map-address-list"></ul>
     </div>
   </section>

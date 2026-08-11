@@ -2751,7 +2751,7 @@ html.js .flight-fallback.is-superseded { display: none; }
   letter-spacing: .04em;
   color: var(--ink-soft);
 }
-.lodge-card-drive.is-todo { font-style: italic; font-weight: 400; color: var(--stone-text); background: none; padding: 0; }
+.lodge-card-drive.is-todo { font-style: italic; font-weight: 400; color: var(--stone-text); background: none; padding: 0; margin-right: .6rem; }
 .lodge-card-chevron {
   display: inline-block;
   margin-top: .8rem;
@@ -2945,6 +2945,7 @@ html.js .lodge-fallback.is-superseded { display: none; }
 .map-address-list li:last-child { border-bottom: none; }
 .map-address-list strong { color: var(--ink); }
 .map-address-list .is-todo { font-style: italic; color: var(--stone-text); }
+.map-address-list a { color: var(--gold-text); text-decoration: underline; }
 
 /* --- 11.9 · While You're Here (bento grid) --- */
 .bento-grid {

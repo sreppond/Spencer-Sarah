@@ -611,7 +611,32 @@
     if (flights.airportName) points.push({ label: flights.airportName, mins: null, isAirport: true });
 
     var allVerified = points.every(function (p) { return typeof p.mins === 'number'; });
-    if (!allVerified) return;   // placeholder stays, nothing to build yet
+    if (!allVerified) {
+      // Every lodging property's own drive-to-venue minutes aren't checked
+      // yet, so the scaled strip below can't build honestly — but the key
+      // route pairs (airport, depot, park entrance, neighboring towns) ARE
+      // checked, so show those in place of the bare "details coming" text.
+      var routes = TRAVEL.driveTimes || [];
+      if (placeholder && routes.length) {
+        var line = placeholder.querySelector('.drive-placeholder-line');
+        var sub = placeholder.querySelector('.drive-placeholder-sub');
+        if (line) line.textContent = 'The key routes, checked';
+        if (sub) sub.textContent = 'Property-to-venue times are still being checked — here are the routes that are.';
+
+        var routeList = document.createElement('ul');
+        routeList.className = 'map-address-list';
+        routes.forEach(function (r) {
+          var li = document.createElement('li');
+          var strong = document.createElement('strong');
+          strong.textContent = r.from + ' → ' + r.to;
+          li.appendChild(strong);
+          li.appendChild(document.createTextNode(' — ' + r.distance + ', ' + r.minutes + (r.note ? ' (' + r.note + ')' : '')));
+          routeList.appendChild(li);
+        });
+        placeholder.appendChild(routeList);
+      }
+      return;   // scaled strip stays off, nothing more to build yet
+    }
 
     var max = Math.max.apply(null, points.map(function (p) { return p.mins; }));
     strip.innerHTML = '';
@@ -790,15 +815,28 @@
 
     var list = TRAVEL.lodging || [];
     var flights = TRAVEL.flights || {};
+    var extras = TRAVEL.extraMapPoints || [];
 
-    list.forEach(function (l) {
+    function mapsLink(address) {
+      var a = document.createElement('a');
+      a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'View on Google Maps';
+      return a;
+    }
+
+    function addRow(name, address, extraText) {
       var li = document.createElement('li');
-      var name = document.createElement('strong');
-      name.textContent = l.name;
-      li.appendChild(name);
+      var nameEl = document.createElement('strong');
+      nameEl.textContent = name;
+      li.appendChild(nameEl);
       li.appendChild(document.createTextNode(' — '));
-      if (l.address) {
-        li.appendChild(document.createTextNode(l.address));
+      if (address) {
+        li.appendChild(document.createTextNode(address + ' · '));
+        li.appendChild(mapsLink(address));
+      } else if (extraText) {
+        li.appendChild(document.createTextNode(extraText));
       } else {
         var todo = document.createElement('span');
         todo.className = 'is-todo';
@@ -806,15 +844,17 @@
         li.appendChild(todo);
       }
       ul.appendChild(li);
+    }
+
+    list.forEach(function (l) {
+      if (l.noFixedAddress) return;   // category, not one property — nothing to pin
+      addRow(l.name, l.address);
     });
 
+    extras.forEach(function (p) { addRow(p.name, p.address); });
+
     if (flights.airportName) {
-      var li = document.createElement('li');
-      var name = document.createElement('strong');
-      name.textContent = flights.airportName + ' (' + flights.airportCode + ')';
-      li.appendChild(name);
-      li.appendChild(document.createTextNode(' — ' + (flights.airportToVenue || '')));
-      ul.appendChild(li);
+      addRow(flights.airportName + ' (' + flights.airportCode + ')', null, flights.airportToVenue || '');
     }
   }());
 
