@@ -338,4 +338,256 @@
       });
     }
   }());
+
+
+  /* ------------------------------------------------------------------
+     Where to Stay — filterable, expandable lodging cards.
+
+     Built entirely from travel-data.js so a price, a phone number, or
+     the whole recommended order (see the note on Grouse Mountain /
+     Hotel Whitefish in travel-data.js) is a data change, never a
+     template change.
+     ------------------------------------------------------------------ */
+  (function lodging() {
+    var grid = $('#lodge-grid');
+    var filters = $('#lodge-filters');
+    var fallback = $('#lodge-fallback');
+    if (!grid) return;
+
+    var list = TRAVEL.lodging || [];
+    if (!list.length) return;   // leave the static fallback as the whole answer
+
+    var flags = TRAVEL.flags || {};
+    var activeTags = [];
+    var cardId = 0;
+
+    // The same five-stroke sprig used on the wax seal and the mosaic's
+    // empty frame (save-the-date.js `markEmpty`) — duplicated rather than
+    // shared across a file boundary for one small inline icon.
+    var EMPTY_MARK =
+      '<span class="m-empty-mark" aria-hidden="true">' +
+      '<svg viewBox="0 0 40 40" focusable="false"><g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">' +
+      '<path d="M20 34V12"/>' +
+      '<path d="M20 20c0-4.2 3.4-7.6 7.6-7.6C27.6 16.6 24.2 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6 2.9-6.5 6.5-6.5C26.5 24.1 23.6 27 20 27Z"/>' +
+      '<path d="M20 20c0-4.2-3.4-7.6-7.6-7.6C12.4 16.6 15.8 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6-2.9-6.5-6.5-6.5C13.5 24.1 16.4 27 20 27Z"/>' +
+      '</g></svg></span>';
+
+    function photoNode(entry) {
+      var wrap = document.createElement('div');
+      wrap.className = 'lodge-card-photo';
+      if (!entry.photo) {
+        wrap.classList.add('is-empty');
+        wrap.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+        return wrap;
+      }
+      var img = document.createElement('img');
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.alt = entry.name;
+      img.addEventListener('error', function () {
+        wrap.classList.add('is-empty');
+        wrap.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+      }, { once: true });
+      img.src = entry.photo;
+      wrap.appendChild(img);
+      return wrap;
+    }
+
+    function todoOrText(value, label) {
+      if (value) return { text: value, todo: false };
+      return { text: label + ' — details coming.', todo: true };
+    }
+
+    function buildCard(entry) {
+      var id = 'lodge-detail-' + (cardId++);
+      var confirmedBlock = entry.isRoomBlock && flags.ROOM_BLOCK_CONFIRMED;
+
+      var li = document.createElement('li');
+      li.className = 'lodge-card' + (confirmedBlock ? ' lodge-card--room-block-confirmed' : '');
+      li.dataset.tags = (entry.tags || []).join(' ');
+
+      if (confirmedBlock) {
+        var badge = document.createElement('span');
+        badge.className = 'lodge-card-badge';
+        badge.textContent = 'Our room block';
+        li.appendChild(badge);
+      }
+
+      li.appendChild(photoNode(entry));
+
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'lodge-card-toggle';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-controls', id);
+
+      var top = document.createElement('div');
+      top.className = 'lodge-card-top';
+      var name = document.createElement('span');
+      name.className = 'lodge-card-name';
+      name.textContent = entry.name;
+      var price = document.createElement('span');
+      price.className = 'lodge-card-price';
+      price.textContent = entry.priceTier || '';
+      top.appendChild(name);
+      if (entry.priceTier) top.appendChild(price);
+      toggle.appendChild(top);
+
+      var bestFor = document.createElement('p');
+      bestFor.className = 'lodge-card-bestfor';
+      bestFor.textContent = entry.bestFor || '';
+      toggle.appendChild(bestFor);
+
+      var drive = document.createElement('span');
+      if (entry.driveMinutes === 0) {
+        drive.className = 'lodge-card-drive';
+        drive.textContent = 'At the venue';
+      } else if (typeof entry.driveMinutes === 'number') {
+        drive.className = 'lodge-card-drive';
+        drive.textContent = entry.driveMinutes + ' min to the venue';
+      } else {
+        drive.className = 'lodge-card-drive is-todo';
+        drive.textContent = 'drive time coming';
+      }
+      toggle.appendChild(drive);
+
+      var chevron = document.createElement('span');
+      chevron.className = 'lodge-card-chevron';
+      chevron.textContent = 'Details';
+      toggle.appendChild(chevron);
+
+      li.appendChild(toggle);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'lodge-detail-wrap';
+      var detail = document.createElement('div');
+      detail.className = 'lodge-detail';
+      detail.id = id;
+      detail.setAttribute('role', 'region');
+      detail.setAttribute('aria-label', entry.name + ' details');
+
+      var inner = document.createElement('div');
+      inner.className = 'lodge-detail-inner';
+
+      var blurb = document.createElement('p');
+      blurb.className = 'lodge-detail-blurb';
+      var blurbInfo = todoOrText(entry.blurb, 'More about ' + entry.name);
+      blurb.textContent = blurbInfo.text;
+      if (blurbInfo.todo) blurb.classList.add('is-todo');
+      inner.appendChild(blurb);
+
+      var meta = document.createElement('p');
+      meta.className = 'lodge-detail-meta';
+      var metaParts = [];
+      if (entry.amenities && entry.amenities.length) metaParts.push(entry.amenities.join(' · '));
+      var addr = todoOrText(entry.address, 'Address');
+      var phone = todoOrText(entry.phone, 'Phone');
+      metaParts.push(addr.todo ? '<span class="is-todo">' + addr.text + '</span>' : addr.text);
+      metaParts.push(phone.todo ? '<span class="is-todo">' + phone.text + '</span>' : phone.text);
+      meta.innerHTML = metaParts.join('<br>');
+      inner.appendChild(meta);
+
+      // Only ever rendered when the block is confirmed AND a code exists —
+      // gated on both, since a confirmed block with no code yet should
+      // still show the plain card, not a copy button with nothing to copy.
+      if (confirmedBlock && TRAVEL.roomBlock && TRAVEL.roomBlock.code) {
+        var codeBtn = document.createElement('button');
+        codeBtn.type = 'button';
+        codeBtn.className = 'lodge-detail-code';
+        codeBtn.textContent = 'Copy the group code: ' + TRAVEL.roomBlock.code;
+        var toast = document.createElement('span');
+        toast.className = 'lodge-detail-toast';
+        toast.setAttribute('role', 'status');
+        toast.textContent = 'Copied.';
+        codeBtn.addEventListener('click', function () {
+          var code = TRAVEL.roomBlock.code;
+          var done = function () {
+            toast.classList.add('is-shown');
+            setTimeout(function () { toast.classList.remove('is-shown'); }, 1800);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(done).catch(done);
+          } else {
+            done();
+          }
+        });
+        inner.appendChild(codeBtn);
+        inner.appendChild(toast);
+      } else if (entry.isRoomBlock && !flags.ROOM_BLOCK_CONFIRMED) {
+        var pending = document.createElement('p');
+        pending.className = 'lodge-detail-meta is-todo';
+        pending.textContent = 'Room block details coming.';
+        inner.appendChild(pending);
+      }
+
+      if (entry.bookingUrl) {
+        var book = document.createElement('a');
+        book.className = 'flow-btn flow-btn--gold lodge-detail-book';
+        book.href = entry.bookingUrl;
+        book.target = '_blank';
+        book.rel = 'noopener noreferrer';
+        book.innerHTML =
+          '<span class="flow-btn__ink" aria-hidden="true"></span>' +
+          '<svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+          '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '<span class="flow-btn__label">Book</span>' +
+          '<svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+          '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        inner.appendChild(book);
+      }
+      // No bookingUrl: no button at all — a dead link on a card someone
+      // is actually trying to book from is worse than no link.
+
+      detail.appendChild(inner);
+      wrap.appendChild(detail);
+      li.appendChild(wrap);
+
+      toggle.addEventListener('click', function () {
+        var open = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+      });
+
+      return li;
+    }
+
+    list.forEach(function (entry) { grid.appendChild(buildCard(entry)); });
+
+    grid.hidden = false;
+    if (filters) filters.hidden = false;
+    if (fallback) fallback.classList.add('is-superseded');
+
+    // Multi-select, OR across the selection: a card shows if it carries
+    // ANY active tag, or if nothing is selected at all.
+    if (filters) {
+      filters.addEventListener('click', function (e) {
+        var chip = e.target.closest('.lodge-chip');
+        if (!chip) return;
+        var tag = chip.dataset.tag;
+        var i = activeTags.indexOf(tag);
+        if (i > -1) { activeTags.splice(i, 1); chip.classList.remove('is-active'); }
+        else { activeTags.push(tag); chip.classList.add('is-active'); }
+        applyFilter();
+      });
+    }
+
+    function applyFilter() {
+      $$('.lodge-card', grid).forEach(function (card) {
+        var tags = (card.dataset.tags || '').split(' ');
+        var match = !activeTags.length || activeTags.some(function (t) { return tags.indexOf(t) > -1; });
+        card.hidden = !match;
+      });
+    }
+
+    if (fallback && /localhost|127\.0\.0\.1/.test(location.hostname)) {
+      var staticCount = $$('li', fallback).length;
+      if (staticCount !== list.length) {
+        console.warn(
+          '[travel] the static lodge-fallback list has ' + staticCount +
+          ' properties but travel-data.js has ' + list.length + '. Update the static <ul> in travel/index.html to match.'
+        );
+      }
+    }
+  }());
 }());

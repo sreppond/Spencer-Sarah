@@ -1184,6 +1184,13 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 
 .sheet { position: relative; z-index: 2; padding: 0 var(--gutter); }
 .sheet-inner { max-width: 33rem; margin: 0 auto; }
+/* A prose measure is the wrong width for a multi-column card grid — this
+   modifier is the only place on the site that needs a wider column.
+   Double-class selector deliberately: CSS §8's responsive `.sheet-inner`
+   overrides at 768/1024 have equal specificity and come later in the
+   file, and would win the cascade over a single-class `.sheet-inner--wide`
+   at those breakpoints otherwise. */
+.sheet-inner.sheet-inner--wide { max-width: 68rem; }
 
 .eyebrow {
   font-family: var(--font-text);
@@ -2619,3 +2626,186 @@ html.smooth-scroll { scroll-behavior: smooth; }
 .flight-fallback li:last-child { border-bottom: none; }
 .flight-fallback-note { font-style: italic; color: var(--stone-text); }
 html.js .flight-fallback.is-superseded { display: none; }
+
+/* --- 11.4 · Where to Stay (lodging cards) --- */
+.lodge-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .6rem;
+  margin-top: clamp(1.8rem, 6vw, 2.4rem);
+}
+.lodge-chip {
+  padding: .55em 1.1em;
+  border: 1.5px solid var(--rule);
+  border-radius: 999px;
+  background: var(--card);
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .25s var(--ease-soft), border-color .25s var(--ease-soft), color .25s var(--ease-soft);
+}
+.lodge-chip:hover { border-color: var(--stone); }
+.lodge-chip.is-active {
+  background: var(--gold-text);
+  border-color: var(--gold-text);
+  color: var(--paper);
+}
+
+.lodge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.4rem;
+  margin-top: clamp(2rem, 6vw, 2.6rem);
+  list-style: none;
+}
+@media (min-width: 640px) {
+  .lodge-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .lodge-grid { grid-template-columns: repeat(3, 1fr); }
+}
+/* Filtered out — kept in the DOM (so the count and a11y tree stay
+   simple) but removed from layout and announcement. */
+.lodge-card[hidden] { display: none; }
+
+.lodge-card {
+  border: 1px solid var(--rule);
+  border-radius: 1rem;
+  background: var(--card);
+  overflow: hidden;
+  transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft);
+}
+/* The one property this page can recommend without a caveat once the
+   block is actually confirmed — see travel-data.js flags.ROOM_BLOCK_CONFIRMED.
+   Never applied while that flag is false. */
+.lodge-card--room-block-confirmed {
+  border-color: var(--gold-text);
+  box-shadow: 0 0 0 1px var(--gold-text);
+}
+.lodge-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  margin: .9rem .9rem 0;
+  padding: .3em .7em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #fff8ec;
+}
+
+.lodge-card-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--paper-deep);
+}
+.lodge-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+/* The same "photograph to come" pattern as the mosaic (CSS §3.6) —
+   deliberately not hotlinking hotel photography, and safe to ship
+   before real photos exist. */
+.lodge-card-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
+.lodge-card-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
+.lodge-card-photo .m-empty-mark svg { width: 100%; height: auto; }
+.lodge-card-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
+
+.lodge-card-toggle {
+  display: block;
+  width: 100%;
+  padding: 1.1rem 1.2rem 1.3rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lodge-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
+.lodge-card-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lodge-card-price { flex: none; font-size: var(--t-small); color: var(--gold-text); font-weight: 600; letter-spacing: .05em; }
+.lodge-card-bestfor { margin-top: .3rem; font-size: var(--t-small); color: var(--stone-text); }
+.lodge-card-drive {
+  display: inline-block;
+  margin-top: .6rem;
+  padding: .25em .65em;
+  border-radius: 999px;
+  background: var(--paper-warm);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+}
+.lodge-card-drive.is-todo { font-style: italic; font-weight: 400; color: var(--stone-text); background: none; padding: 0; }
+.lodge-card-chevron {
+  display: inline-block;
+  margin-top: .8rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.lodge-card-chevron::after { content: '↓'; margin-left: .35em; display: inline-block; transition: transform .3s var(--ease-out); }
+.lodge-card-toggle[aria-expanded="true"] .lodge-card-chevron::after { transform: rotate(180deg); }
+
+/* Expand to auto height via the grid-rows 0fr→1fr technique — no JS
+   measuring, no FLIP maths, and it respects the sitewide reduced-motion
+   transition-duration clamp automatically. */
+.lodge-detail-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .4s var(--ease-out);
+}
+.lodge-card-toggle[aria-expanded="true"] + .lodge-detail-wrap { grid-template-rows: 1fr; }
+.lodge-detail { overflow: hidden; }
+.lodge-detail-inner { padding: 0 1.2rem 1.3rem; border-top: 1px solid var(--rule); }
+.lodge-detail-blurb { margin-top: 1rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
+.lodge-detail-meta { margin-top: .9rem; font-size: var(--t-small); line-height: 1.7; color: var(--ink-soft); }
+.lodge-detail-meta .is-todo { font-style: italic; color: var(--stone-text); }
+.lodge-detail-code {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  margin-top: .9rem;
+  padding: .5em 1em;
+  border: 1px dashed var(--gold-text);
+  border-radius: .6rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--gold-text);
+  background: none;
+  cursor: pointer;
+}
+.lodge-detail-book { margin-top: 1.1rem; width: 100%; }
+.lodge-detail-toast {
+  margin-top: .5rem;
+  font-size: var(--t-micro);
+  color: var(--olive);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.lodge-detail-toast.is-shown { opacity: 1; }
+
+.lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
+.lodge-fallback li {
+  padding: .7rem 0;
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-body);
+  border-bottom: 1px solid rgba(205,188,166,.4);
+}
+.lodge-fallback li:last-child { border-bottom: none; }
+.lodge-fallback strong { color: var(--ink); }
+.lodge-fallback-todo { font-style: italic; color: var(--stone-text); }
+html.js .lodge-fallback.is-superseded { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lodge-card-chevron::after { transition: none; }
+}
