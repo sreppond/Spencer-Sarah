@@ -571,43 +571,6 @@
   }
 
 
-  /* ------------------------------------------------------------------
-     Lodging action — config drives the label, the note and the link.
-     An empty href means the block is not open yet, so the button is
-     removed rather than shipped as a dead end.
-     ------------------------------------------------------------------ */
-  (function lodging() {
-    var link = $('#lodging-link');
-    var cfg = CFG.lodging || {};
-
-    var deadline = $('[data-lodging-deadline]');
-    var blurb = $('[data-lodging-blurb]');
-    if (deadline && cfg.deadline) deadline.textContent = cfg.deadline;
-    if (blurb) {
-      if (cfg.blurb) blurb.textContent = cfg.blurb;
-      else blurb.remove();
-    }
-
-    if (!link) return;
-    // No destination yet: drop the button, keep the deadline. A dead link
-    // on the last screen of the form is worse than no link at all.
-    if (!cfg.href) { link.remove(); return; }
-
-    link.href = cfg.href;
-    var label = link.querySelector('[data-lodging-label]');
-    if (label && cfg.label) label.textContent = cfg.label;
-
-    // An off-site href leaves the site, and nothing about the button says
-    // so. A same-site link (e.g. travel/#where-to-stay) does not need the
-    // warning.
-    if (/^https?:/i.test(cfg.href)) {
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.setAttribute('aria-label', (cfg.label || 'Lodging details') + ' (opens in a new tab)');
-    }
-  }());
-
-
   /* The envelope is optional markup. Without it nothing ever hands off to
      the hero, so the hero reveals itself and the loop starts immediately.
      Function declarations hoist, and the elements they touch are all
@@ -1367,6 +1330,14 @@
           // the page. Without this, focus falls back to <body> and a screen
           // reader is told nothing about what replaced it.
           done.focus({ preventScroll: true });
+
+          // The save-the-date's only job past this point is handing the
+          // guest to the page that actually answers "now what" — flights,
+          // lodging, the weekend. A brief confirmation first, so the send
+          // doesn't feel like it silently teleported them somewhere else.
+          var sub = $('#done-sub');
+          if (sub) sub.textContent = 'Taking you to Travel & Stay…';
+          setTimeout(function () { location.href = 'travel/'; }, 1200);
         })
         .catch(function () {
           sending = false;
