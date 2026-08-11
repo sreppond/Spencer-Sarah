@@ -151,7 +151,7 @@ window.SAVE_THE_DATE = {
      warns against. Index 1, the next-most-prominent satellite, is worth
      the same treatment once it exists. */
   mosaic: [
-    { src: 'assets/photos/mosaic-centre.jpg', webp: '', alt: 'Sarah and Spencer sharing an umbrella in the rain' },
+    { src: 'assets/photos/mosaic-centre.jpg', webp: '', alt: 'Sarah and Spencer holding hands on a street in Kyoto, Japan' },
     { src: 'assets/photos/mosaic-1.jpg', webp: '', alt: '' },
     { src: 'assets/photos/mosaic-2.jpg', webp: '', alt: '' },
     { src: 'assets/photos/mosaic-3.jpg', webp: '', alt: '' },
