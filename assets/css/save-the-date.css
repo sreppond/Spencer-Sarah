@@ -2674,6 +2674,198 @@ html.js .flight-fallback.is-superseded { display: none; }
 }
 .lodge-detail-toast.is-shown { opacity: 1; }
 
+
+/* ---- Lodging — at a glance (expanding cards) --------------------------
+   A quick visual compare-and-choose above the detailed cards: hover or
+   focus previews a property, a click (or Enter/Space) jumps to and opens
+   its full entry in .lodge-grid below. Built by lodgingExpand() in
+   travel.js from the same TRAVEL.lodging array .lodge-grid uses — one
+   data source, two views. Photos follow the same "photograph to come"
+   placeholder as .lodge-card-photo (see the note there): no stock imagery
+   standing in for a specific, named property. */
+.lodge-expand-intro {
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
+  font-size: var(--t-small);
+  font-style: italic;
+  color: var(--stone-text);
+}
+.lodge-expand[hidden] { display: none; }
+.lodge-expand {
+  list-style: none;
+  display: grid;
+  gap: .55rem;
+  margin: .9rem 0 0;
+  height: 620px;
+  grid-template-columns: 1fr;
+  transition: grid-template-rows .5s var(--ease-out);
+}
+@media (min-width: 768px) {
+  .lodge-expand {
+    height: 460px;
+    grid-template-rows: 1fr;
+    transition: grid-template-columns .5s var(--ease-out);
+  }
+}
+.lodge-expand.is-reduced { transition: none; }
+.lodge-expand.is-reduced .lodge-expand-photo,
+.lodge-expand.is-reduced .lodge-expand-icon,
+.lodge-expand.is-reduced .lodge-expand-name,
+.lodge-expand.is-reduced .lodge-expand-tagline,
+.lodge-expand.is-reduced .lodge-expand-price,
+.lodge-expand.is-reduced .lodge-expand-label { transition: none; }
+
+.lodge-expand-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 64px;
+  border-radius: 1rem;
+  border: 1px solid var(--rule);
+  background: var(--card);
+  cursor: pointer;
+}
+.lodge-expand-card:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
+
+.lodge-expand-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+  filter: grayscale(1);
+  transition: transform .4s var(--ease-out), filter .4s var(--ease-out);
+}
+.lodge-expand-card[data-active="true"] .lodge-expand-photo { transform: scale(1); filter: grayscale(0); }
+
+/* Same placeholder language as .lodge-card-photo.is-empty — deliberately
+   not hotlinking hotel photography here either. */
+.lodge-expand-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+}
+.lodge-expand-empty .m-empty-mark { width: clamp(18px, 5vw, 26px); color: var(--leaf); opacity: .75; }
+.lodge-expand-empty .m-empty-mark svg { width: 100%; height: auto; }
+/* No caption here, unlike .lodge-card-photo's roomier version: at the
+   width an inactive track collapses to, "photograph to come" would sit
+   directly under the vertical property-name label and the two would
+   overlap. The mark alone still reads as "no photo yet"; the caption
+   comes back once the card is active and has room (.lodge-expand-name
+   already says the property's name by then). */
+.lodge-expand-empty .m-empty-note { display: none; }
+.lodge-expand-card[data-active="true"] .lodge-expand-empty .m-empty-note {
+  display: block;
+  font-size: var(--t-micro);
+  font-style: italic;
+  color: var(--stone-text);
+  text-align: center;
+  padding: 0 .4rem;
+}
+
+.lodge-expand-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(37,29,18,.82) 0%, rgba(37,29,18,.38) 48%, rgba(37,29,18,0) 78%);
+}
+
+.lodge-expand-badge {
+  position: absolute;
+  top: .6rem;
+  left: .6rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: .3em .7em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #fff8ec;
+}
+
+.lodge-expand-copy {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: .3rem;
+  padding: .9rem;
+  color: #fff8ec;
+}
+
+.lodge-expand-label {
+  display: none;
+}
+@media (min-width: 768px) {
+  .lodge-expand-label {
+    display: block;
+    align-self: flex-start;
+    transform-origin: left;
+    transform: rotate(90deg);
+    white-space: nowrap;
+    font-family: var(--font-text);
+    font-size: var(--t-micro);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255,248,236,.85);
+    opacity: 1;
+    transition: opacity .3s var(--ease-out);
+  }
+  .lodge-expand-card[data-active="true"] .lodge-expand-label { opacity: 0; }
+}
+
+.lodge-expand-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  color: #f4e3c1;
+  opacity: 0;
+  transition: opacity .3s var(--ease-out) .05s;
+}
+.lodge-expand-icon svg { width: 100%; height: 100%; }
+.lodge-expand-card[data-active="true"] .lodge-expand-icon { opacity: 1; }
+
+.lodge-expand-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  line-height: 1.2;
+  opacity: 0;
+  transition: opacity .3s var(--ease-out) .1s;
+}
+.lodge-expand-card[data-active="true"] .lodge-expand-name { opacity: 1; }
+
+.lodge-expand-tagline {
+  display: block;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  line-height: 1.4;
+  max-width: 34ch;
+  color: rgba(255,248,236,.9);
+  opacity: 0;
+  transition: opacity .3s var(--ease-out) .16s;
+}
+.lodge-expand-card[data-active="true"] .lodge-expand-tagline { opacity: 1; }
+
+.lodge-expand-price {
+  display: block;
+  font-size: var(--t-micro);
+  letter-spacing: .06em;
+  color: #f4e3c1;
+  opacity: 0;
+  transition: opacity .3s var(--ease-out) .22s;
+}
+.lodge-expand-card[data-active="true"] .lodge-expand-price { opacity: 1; }
+
 .lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
 .lodge-fallback li {
   padding: .7rem 0;

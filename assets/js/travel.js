@@ -610,6 +610,197 @@
 
 
   /* ------------------------------------------------------------------
+     Where to Stay — "at a glance" expanding cards.
+
+     A quick visual compare-and-choose that sits above the detailed
+     .lodge-grid built by lodging() just above: hover or focus widens a
+     card to preview it, a click (or Enter/Space) jumps to and opens that
+     same property's full entry below. Reads the same TRAVEL.lodging array
+     lodging() does, in the same order, so index N here always lines up
+     with the Nth card's '#lodge-detail-N' toggle that lodging() just
+     built — no shared id needed between the two.
+
+     Photos follow the exact same "photograph to come" fallback as
+     .lodge-card-photo: this deliberately never stands in a stock image
+     for a specific, named property (see the note on .lodge-card-photo.is-empty
+     in the CSS) — a missing assets/photos/lodging/*.jpg is a placeholder,
+     not something to paper over with a lookalike from Unsplash.
+     ------------------------------------------------------------------ */
+  (function lodgingExpand() {
+    var strip = $('#lodge-expand');
+    if (!strip) return;
+
+    var list = TRAVEL.lodging || [];
+    if (!list.length) return;
+
+    var flags = TRAVEL.flags || {};
+    var mq = window.matchMedia('(min-width: 768px)');
+    var isDesktop = mq.matches;
+    var activeIndex = 0;
+
+    var EMPTY_MARK =
+      '<span class="m-empty-mark" aria-hidden="true">' +
+      '<svg viewBox="0 0 40 40" focusable="false"><g fill="none" stroke="currentColor" stroke-width=".9" stroke-linecap="round">' +
+      '<path d="M20 34V12"/>' +
+      '<path d="M20 20c0-4.2 3.4-7.6 7.6-7.6C27.6 16.6 24.2 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6 2.9-6.5 6.5-6.5C26.5 24.1 23.6 27 20 27Z"/>' +
+      '<path d="M20 20c0-4.2-3.4-7.6-7.6-7.6C12.4 16.6 15.8 20 20 20Z"/>' +
+      '<path d="M20 27c0-3.6-2.9-6.5-6.5-6.5C13.5 24.1 16.4 27 20 27Z"/>' +
+      '</g></svg></span>';
+
+    // One small line icon per property, hand-drawn in the same thin
+    // (stroke-width ~1.4) currentColor style as EMPTY_MARK above rather
+    // than pulled in as an icon-font dependency for six glyphs.
+    var ICONS = {
+      'lodge-at-whitefish-lake': '<path d="M2.5 14.3c2.2-2 4.4-2 6.6 0s4.4 2 6.6 0 4.4-2 6.6 0"/><path d="M2.5 18.8c2.2-2 4.4-2 6.6 0s4.4 2 6.6 0 4.4-2 6.6 0"/>',
+      'viking-creek-homes': '<path d="M3.3 10.8 12 4.2l8.7 6.6"/><path d="M5.4 9.6V19.8h13.2V9.6"/><path d="M9.8 19.8v-5.1h4.4v5.1"/>',
+      'hidden-moose-lodge': '<path d="M15.4 4.1a8 8 0 1 0 4.4 14.7A7.3 7.3 0 0 1 15.4 4.1Z"/>',
+      'grouse-mountain-lodge': '<path d="M2.3 19 8.5 7.8l3.6 5.7L15.2 9l6.5 10Z"/>',
+      'the-firebrand': '<path d="M12 2.4c1.3 2.9 3.9 4.8 3.9 8.5a3.9 3.9 0 1 1-7.8 0c0-1.3.7-2.4 1.4-3.4C10.2 6.1 11 4.3 12 2.4Z"/>',
+      'vacation-rentals': '<circle cx="7.4" cy="13" r="3.6"/><path d="M11 13h9.7"/><path d="M16.6 13v3"/><path d="M19.7 13v2.2"/>'
+    };
+
+    function iconFor(entry) {
+      var d = ICONS[entry.id];
+      if (!d) return '';
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + d + '</svg>';
+    }
+
+    function setActive(index) {
+      activeIndex = index;
+      $$('.lodge-expand-card', strip).forEach(function (card, i) {
+        card.dataset.active = String(i === index);
+      });
+      var tracks = list.map(function (_, i) { return i === index ? '5fr' : '1fr'; }).join(' ');
+      if (isDesktop) {
+        strip.style.gridTemplateRows = '1fr';
+        strip.style.gridTemplateColumns = tracks;
+      } else {
+        strip.style.gridTemplateColumns = '1fr';
+        strip.style.gridTemplateRows = tracks;
+      }
+    }
+
+    // The expand strip only previews; a click hands off to the existing,
+    // fully-detailed accordion card below (price, amenities, address,
+    // phone, booking link, room-block code) rather than duplicating any
+    // of that here.
+    function openDetail(index) {
+      var toggle = $('[aria-controls="lodge-detail-' + index + '"]');
+      if (!toggle) return;
+      if (toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+      var card = toggle.closest('.lodge-card');
+      if (card) card.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    }
+
+    list.forEach(function (entry, index) {
+      var li = document.createElement('li');
+      li.className = 'lodge-expand-card';
+      li.dataset.active = String(index === 0);
+      li.tabIndex = 0;
+      li.setAttribute('role', 'button');
+      li.setAttribute('aria-label', 'Preview ' + entry.name + ', then view full details');
+
+      if (entry.isRoomBlock && flags.ROOM_BLOCK_CONFIRMED) {
+        var badge = document.createElement('span');
+        badge.className = 'lodge-expand-badge';
+        badge.textContent = 'Our room block';
+        li.appendChild(badge);
+      }
+
+      if (entry.photo) {
+        var img = document.createElement('img');
+        img.className = 'lodge-expand-photo';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.alt = '';
+        img.addEventListener('error', function () {
+          img.remove();
+          var empty = document.createElement('div');
+          empty.className = 'lodge-expand-empty';
+          empty.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+          li.insertBefore(empty, li.firstChild);
+        }, { once: true });
+        img.src = entry.photo;
+        li.appendChild(img);
+      } else {
+        var empty = document.createElement('div');
+        empty.className = 'lodge-expand-empty';
+        empty.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
+        li.appendChild(empty);
+      }
+
+      var scrim = document.createElement('div');
+      scrim.className = 'lodge-expand-scrim';
+      li.appendChild(scrim);
+
+      var copy = document.createElement('div');
+      copy.className = 'lodge-expand-copy';
+
+      var label = document.createElement('span');
+      label.className = 'lodge-expand-label';
+      label.setAttribute('aria-hidden', 'true');
+      label.textContent = entry.name;
+      copy.appendChild(label);
+
+      var icon = document.createElement('span');
+      icon.className = 'lodge-expand-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = iconFor(entry);
+      copy.appendChild(icon);
+
+      var name = document.createElement('span');
+      name.className = 'lodge-expand-name';
+      name.textContent = entry.name;
+      copy.appendChild(name);
+
+      var tagline = document.createElement('span');
+      tagline.className = 'lodge-expand-tagline';
+      tagline.textContent = entry.tagline || entry.bestFor || '';
+      copy.appendChild(tagline);
+
+      if (entry.priceTier) {
+        var price = document.createElement('span');
+        price.className = 'lodge-expand-price';
+        price.textContent = entry.priceTier;
+        copy.appendChild(price);
+      }
+
+      li.appendChild(copy);
+
+      li.addEventListener('mouseenter', function () { setActive(index); });
+      li.addEventListener('focus', function () { setActive(index); });
+      li.addEventListener('click', function () { setActive(index); openDetail(index); });
+      li.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          setActive(index);
+          openDetail(index);
+        }
+      });
+
+      strip.appendChild(li);
+    });
+
+    if (reduced) strip.classList.add('is-reduced');
+    setActive(0);
+    strip.hidden = false;
+    var intro = $('#lodge-expand-intro');
+    if (intro) intro.hidden = false;
+
+    // matchMedia's own listener, not a resize poll — fires only on the
+    // 768px crossing itself, and only re-lays-out the already-built cards.
+    var onBreakpointChange = function (e) {
+      isDesktop = e.matches;
+      setActive(activeIndex);
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onBreakpointChange);
+    else if (mq.addListener) mq.addListener(onBreakpointChange);
+  }());
+
+
+  /* ------------------------------------------------------------------
      Drive-time strip — renders the real, scaled version only once every
      property in travel-data.js has a checked driveMinutes. Today only
      the venue's own (0, trivially true) is set, so the honest §E
