@@ -722,72 +722,30 @@
 
 
   /* ------------------------------------------------------------------
-     The invitation line assembles from a scatter, one letter converging
-     after another, rather than rising into place.
+     The invitation line arrives a word at a time — each one lifting out
+     of a soft blur as its own window of scroll passes — and dissolves
+     back the same way if you scroll away, last word first.
 
-     The letters are wrapped here rather than written into index.html so
-     the markup stays a sentence a human can edit. Two things this must
-     not break, both of them CSS §3.5:
+     wrapWords() (shared with the stepper's question entrance, above)
+     wraps every word in its own <span class="word">, including the ones
+     inside the <em> that carries the sentence's second line — it walks
+     into child elements rather than flattening the text, so the cascade
+     numbers continuously across the line break instead of resetting at
+     it. See that function's comment for why whitespace is left alone.
 
-       · the <em> is display:block and carries the second line, so it is
-         walked and wrapped separately from the text before it — each
-         visual line gets its own centre to converge toward, rather than
-         one axis shared across the line break;
-       · whitespace is left as plain text, never wrapped or replaced with
-         a non-breaking space — .celebrate is a 20ch measure that has to
-         wrap to three lines on a phone, and this is what lets it.
-
-     Each span carries --char-dx, its position relative to its own line's
-     centre character, normalised to roughly -1..1; the CSS turns that into
-     how far the letter starts from home and how much it tips in 3D.
-     ------------------------------------------------------------------ */
+     --word-dur and --word-off are published once, from the word count,
+     so every word gets an evenly spaced slice of the scroll and the
+     last one finishes exactly as --celebrate-p reaches 1 — however long
+     the sentence is. CSS §3.5 turns those into each word's own local
+     progress, eased and applied as opacity/blur/lift. */
   (function celebrate() {
     var el = $('.celebrate');
     if (!el) return;
-    var em = el.querySelector('em');
 
-    // Wraps every visible character of `node`'s own text in its own span;
-    // whitespace stays untouched so the line still wraps normally. Returns
-    // how many characters it wrapped. Character-level, so this stays
-    // separate from wrapWords() above (shared by the stepper's question
-    // entrance) rather than reusing it.
-    function wrapChars(node) {
-      var i = 0;
-      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
-        if (child.nodeType !== 3 || !child.nodeValue) return;
-        var frag = document.createDocumentFragment();
-        child.nodeValue.split('').forEach(function (ch) {
-          if (/\s/.test(ch)) { frag.appendChild(document.createTextNode(ch)); return; }
-          var span = document.createElement('span');
-          span.className = 'char';
-          span.style.setProperty('--char-i', String(i++));
-          span.textContent = ch;
-          frag.appendChild(span);
-        });
-        node.replaceChild(frag, child);
-      });
-      return i;
-    }
-
-    // `el`'s own child text nodes are the first line; `wrapChars` never
-    // recurses into element children, so the <em> (the second line) is
-    // untouched by this call and wrapped on its own right after.
-    var n1 = wrapChars(el);
-    var n2 = em ? wrapChars(em) : 0;
-
-    // Turns each line's raw character index into --char-dx: roughly -1 at
-    // the line's first letter, 0 at its centre, +1 at its last — so the
-    // spread reads the same whether the line is short or long.
-    function centerLine(root, n) {
-      var half = n / 2 || 1;
-      Array.prototype.forEach.call(root.children, function (span) {
-        if (span.className !== 'char') return;
-        var dx = (Number(span.style.getPropertyValue('--char-i')) - half) / half;
-        span.style.setProperty('--char-dx', String(Math.round(dx * 1000) / 1000));
-      });
-    }
-    centerLine(el, n1);
-    if (em) centerLine(em, n2);
+    var n = wrapWords(el);
+    var wordDur = 0.4;
+    el.style.setProperty('--word-dur', wordDur);
+    el.style.setProperty('--word-off', n > 1 ? (1 - wordDur) / (n - 1) : 0);
 
     // Reduced motion: the line is set, not assembling. CSS pins the
     // progress at 1 as well, so there is nothing to drive.
@@ -795,11 +753,11 @@
 
     /* The line is tied to the scroll rather than fired once on arrival,
        which is the whole point: run the scroll backwards and the sentence
-       scatters again, last letter home first, at the rate you scroll.
+       dissolves again, last word home first, at the rate you scroll.
 
        Progress is measured from the section's own position, not from a
        runway, so nothing has to be pinned for it to work — the section
-       scrolls like any other and only the letters read the number.
+       scrolls like any other and only the words read the number.
 
          p = 0   the top edge is at the bottom of the viewport
          p = 1   the top edge has risen to 38% of the viewport

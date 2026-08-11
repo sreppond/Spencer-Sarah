@@ -1075,11 +1075,6 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 .celebrate-sheet {
   padding-top: clamp(4.5rem, 16vh, 9rem);
   padding-bottom: clamp(4rem, 14vh, 8rem);
-  /* Letters travel in from well outside their resting position (see
-     .celebrate .char below); clip rather than let that create a
-     horizontal scrollbar on the very section that is meant to read as
-     the calm, settled one. */
-  overflow-x: clip;
 }
 
 .celebrate {
@@ -1136,38 +1131,41 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 }
 
 
-/* The sentence assembles from its own scatter rather than rising into
-   place: every letter starts thrown out to one side of where it belongs,
-   and closes back in on its resting position as the section scrolls
-   through view — tied to the scroll itself, so scrolling back up throws
-   the line apart again, last letter home first.
+/* The sentence arrives a word at a time, each one lifting out of a soft
+   blur into its resting position as the section scrolls through view —
+   tied to the scroll itself, so scrolling back up dissolves the line
+   again, last word home first.
 
    Nothing is pinned to do this. The section scrolls normally; only the
-   letters read the progress.
+   words read the progress.
 
    --celebrate-p (0 → 1) is published by the script as the section crosses
-   the viewport. Each letter carries --char-dx, set once by the script: its
-   position relative to its own line's centre character, normalised to
-   roughly -1..1 so the spread looks the same whether the line is short or
-   long. A letter at the centre starts almost home; one at either end
-   starts furthest out and rotates in as it arrives. */
+   the viewport. --word-dur and --word-off are published once, from the
+   word count: each word's own local progress --lp is the slice of
+   --celebrate-p between (word-i × word-off) and that plus word-dur, so
+   the words overlap into a cascade rather than blinking through in strict
+   sequence, and the last word always lands exactly as --celebrate-p
+   reaches 1. --ew shapes --lp with a quick ease-out (matching --ease-out
+   elsewhere on the page) so each word settles rather than arriving at a
+   constant rate. */
 .celebrate {
   --celebrate-p: 0;
-  perspective: 500px;
 }
-html.js .celebrate .char {
-  display: inline-block;      /* translateX/rotateX need a block box */
-  transform:
-    translateX(calc(var(--char-dx, 0) * 5em * (1 - var(--celebrate-p))))
-    rotateX(calc(var(--char-dx, 0) * 50deg * (1 - var(--celebrate-p))));
+html.js .celebrate .word {
+  --lp: clamp(0, calc((var(--celebrate-p, 0) - (var(--word-i, 0) * var(--word-off, 0))) / var(--word-dur, .4)), 1);
+  --ew: calc(2 * var(--lp) - var(--lp) * var(--lp));
+  display: inline-block;
+  opacity: var(--ew);
+  filter: blur(calc((1 - var(--ew)) * 6px));
+  transform: translateY(calc((1 - var(--ew)) * 14px));
   /* Deliberately no transition: the scroll position *is* the timeline, and
-     a transition on top of it would lag behind the finger. Smoothness comes
-     from rAF and from rounding the progress, not from easing. */
-  will-change: transform;
+     a transition on top of it would lag behind the finger. The ease-out
+     lives in --ew above, not in a transition-timing-function. */
+  will-change: opacity, filter, transform;
 }
 /* Without the script there is no progress to read, so the line is simply
    set — same rule the hero and the mosaic follow. */
-html:not(.js) .celebrate .char { transform: none; }
+html:not(.js) .celebrate .word { opacity: 1; filter: none; transform: none; }
 
 
 /* ==========================================================================
@@ -2181,7 +2179,7 @@ html.js .gform.is-stepped .step-q .word {
      The script bails before it publishes any progress, so pinning the
      variable here is belt and braces rather than a second source of truth. */
   html.js .celebrate { --celebrate-p: 1 !important; }
-  html.js .celebrate .char { transform: none; will-change: auto; }
+  html.js .celebrate .word { filter: none; transform: none; will-change: auto; }
 
   /* The mosaic is assembled, not assembling: --mosaic-p pinned at 1 puts
      every card at its final position, the runway collapses to one screen,
