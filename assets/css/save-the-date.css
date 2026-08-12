@@ -2263,20 +2263,11 @@ html.js .gform.is-stepped .step-q .word {
   .form-status a[href]::after,
   .end-link[href]::after { content: " (" attr(href) ")"; font-size: .85em; }
 
-  /* The travel page's interactive combobox has no job on paper — the
-     static three-column list is the whole answer, and it prints even
-     though html.js's is-superseded rule (§11.3) has hidden it on screen. */
-  .flight-finder { display: none !important; }
-  .flight-fallback { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; }
-
-  /* Same story for the lodging cards' no-JS fallback list, and every
-     card/tile's expand-in-place state: paper has no "collapsed," so
-     every blurb, amenity, address and phone prints regardless of
-     whether a guest ever clicked to expand it on screen. */
-  .lodge-grid { display: none !important; }
+  /* The lodging gallery and its lightbox have no job on paper — the
+     static no-JS fallback list is the whole answer, and it prints even
+     though html.js's is-superseded rule (§11.4) has hidden it on screen. */
+  .lodge-gallery, .lodge-lightbox { display: none !important; }
   .lodge-fallback { display: block !important; }
-  .lodge-detail-wrap, .bento-detail-wrap { grid-template-rows: 1fr !important; }
-  .lodge-card-chevron, .bento-tile-chevron { display: none; }
 }
 
 
@@ -2326,6 +2317,25 @@ html.smooth-scroll { scroll-behavior: smooth; }
 }
 .travel-hero-cal { margin: clamp(2rem, 7vw, 2.6rem) auto 0; max-width: 22rem; }
 
+/* A quiet line, not a button — two small text links standing in for the
+   flight-finder and map sections the August 2026 redesign cut. Kept
+   deliberately low-visual-weight so it reads as a utility, not a peer
+   of the calendar CTA above it. */
+.travel-hero-utility {
+  margin-top: clamp(1.1rem, 4vw, 1.5rem);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+}
+.travel-hero-utility a {
+  color: var(--gold-text);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .25s var(--ease-soft);
+}
+.travel-hero-utility a:hover,
+.travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
+.travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
+
 /* --- 11.2 · Countdown --- */
 .countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
 .countdown-passed {
@@ -2372,205 +2382,166 @@ html.smooth-scroll { scroll-behavior: smooth; }
   100% { opacity: 1;   transform: none; }
 }
 
-/* --- 11.3 · Getting Here (flight finder) --- */
+/* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
 .travel-section + .travel-section { padding-top: clamp(3rem, 9vh, 4.5rem); }
 
-.flight-finder { margin-top: clamp(2rem, 7vw, 2.8rem); }
-.flight-finder-label {
-  display: block;
-  margin-bottom: .5rem;
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .14em;
-  text-indent: .14em;
-  text-transform: uppercase;
-  color: var(--stone-text);
-}
-.flight-combobox { position: relative; }
-.flight-search {
-  width: 100%;
-  padding: .85em 1em;
-  border: 1.5px solid var(--rule);
+/* --- 11.4 · Where to Stay (lodging gallery + lightbox) --- */
+
+/* The "book by" urgency line — see travel-data.js lodgingBookBy for
+   where the copy comes from. A soft callout, not an alarm: it's real,
+   useful guidance, not a warning. */
+.lodge-urgency {
+  margin-top: clamp(1rem, 4vw, 1.4rem);
+  padding: .7em 1.2em;
   border-radius: .7rem;
-  background: var(--card);
-  font-family: var(--font-text);
-  font-size: var(--t-body);
-  color: var(--ink);
-  transition: border-color .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
-}
-.flight-search:hover { border-color: var(--stone); }
-.flight-search:focus {
-  outline: none;
-  border-color: var(--gold-text);
-  box-shadow: 0 0 0 3px rgba(122,92,51,.14);
-}
-.flight-listbox {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + .4rem);
-  left: 0;
-  right: 0;
-  max-height: 16rem;
-  overflow-y: auto;
-  margin: 0;
-  padding: .4rem;
-  list-style: none;
-  border: 1px solid var(--rule);
-  border-radius: .7rem;
-  background: var(--card);
-  box-shadow: 0 18px 40px -20px rgba(93,74,44,.35);
-}
-.flight-option {
-  padding: .65em .75em;
-  border-radius: .5rem;
+  background: var(--paper-warm);
   font-size: var(--t-small);
-  color: var(--ink-body);
-  cursor: pointer;
-}
-.flight-option.is-active { background: var(--paper-warm); color: var(--ink); }
-.flight-option-code { margin-left: .4em; color: var(--stone-text); font-variant-numeric: tabular-nums; }
-.flight-listbox-empty { padding: .75em; font-size: var(--t-small); color: var(--stone-text); font-style: italic; }
-
-.flight-result {
-  margin-top: 1.1rem;
-  padding: 1.2rem 1.3rem;
-  border-radius: .8rem;
-  border: 1px solid var(--rule);
-  background: var(--card);
-  animation: flight-result-in .4s var(--ease-out);
-}
-@keyframes flight-result-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.flight-result-city {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.flight-result-line { margin-top: .4rem; font-size: var(--t-small); line-height: 1.55; }
-.flight-result--nonstop-year-round .flight-result-line { color: var(--olive); font-weight: 500; }
-.flight-result--nonstop-seasonal .flight-result-line { color: var(--gold-text); font-weight: 500; }
-.flight-result--connect .flight-result-line { color: var(--stone-text); }
-.flight-result-note { margin-top: .5rem; font-size: var(--t-small); color: var(--ink-soft); }
-
-.flight-always {
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
-  padding-top: clamp(1.6rem, 5vw, 2.2rem);
-  border-top: 1px solid var(--rule);
-  font-size: var(--t-small);
-  line-height: 1.6;
-  color: var(--ink-soft);
-}
-.flight-always strong { color: var(--ink); font-weight: 600; }
-
-/* The static list: three columns on tablet+, stacked on phone. Hidden
-   once travel.js can build the interactive combobox above it; this is
-   also exactly what the print stylesheet shows (§10 extends to include
-   it once print styles are updated for this section). */
-.flight-fallback {
-  display: grid;
-  gap: 1.6rem;
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
-}
-@media (min-width: 640px) {
-  .flight-fallback { grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
-}
-.flight-fallback-head {
-  font-family: var(--font-text);
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--gold-text);
-  margin-bottom: .6rem;
-}
-.flight-fallback-caveat { text-transform: none; letter-spacing: normal; font-weight: 400; color: var(--stone-text); }
-.flight-fallback ul { list-style: none; }
-.flight-fallback li {
-  padding: .4rem 0;
-  font-size: var(--t-small);
+  font-weight: 500;
   line-height: 1.5;
-  color: var(--ink-body);
-  border-bottom: 1px solid rgba(205,188,166,.4);
+  color: var(--gold-text);
+  text-align: center;
 }
-.flight-fallback li:last-child { border-bottom: none; }
-.flight-fallback-note { font-style: italic; color: var(--stone-text); }
-html.js .flight-fallback.is-superseded { display: none; }
+.lodge-urgency:empty { display: none; }
 
-/* --- 11.4 · Where to Stay (lodging cards) --- */
-.lodge-filters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: .6rem;
-  margin-top: clamp(1.8rem, 6vw, 2.4rem);
-}
-.lodge-chip {
-  padding: .55em 1.1em;
-  border: 1.5px solid var(--rule);
-  border-radius: 999px;
-  background: var(--card);
-  font-family: var(--font-text);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: background .25s var(--ease-soft), border-color .25s var(--ease-soft), color .25s var(--ease-soft);
-}
-/* Border-color alone was a ~1.5px, low-contrast shift — technically a
-   hover state, practically invisible. Background + text darken together
-   so it reads at a glance, while staying short of .is-active's solid
-   gold fill so the two states can't be mistaken for each other. */
-.lodge-chip:hover { border-color: var(--stone); background: var(--paper-warm); color: var(--ink); }
-.lodge-chip.is-active {
-  background: var(--gold-text);
-  border-color: var(--gold-text);
-  color: var(--paper);
-}
-
-.lodge-grid {
+/* Fixed 6-card gallery, not a filtered/reflowing list — 1 / 2 / 3
+   columns by breakpoint, one consistent 4:3 photo per card. */
+.lodge-gallery {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.4rem;
   margin-top: clamp(2rem, 6vw, 2.6rem);
   list-style: none;
 }
-/* auto-fit + a capped track width reproduces the old fixed 2-/3-column
-   rhythm at full occupancy, but — unlike repeat(2|3, 1fr) — it collapses
-   unused tracks instead of leaving them blank. That matters here because
-   .lodge-card[hidden] (the filter chips above, JS in travel.js) can leave
-   a filtered view with only one or two cards; centering them beats a
-   card stranded on the left with a dead gap where the grid still
-   reserved 2 empty columns. */
 @media (min-width: 640px) {
-  .lodge-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 340px)); justify-content: center; }
+  .lodge-gallery { grid-template-columns: repeat(2, 1fr); }
 }
-/* Filtered out — kept in the DOM (so the count and a11y tree stay
-   simple) but removed from layout and announcement. */
-.lodge-card[hidden] { display: none; }
+@media (min-width: 1024px) {
+  .lodge-gallery { grid-template-columns: repeat(3, 1fr); }
+}
 
-.lodge-card {
+/* Same fade + rise as .weekend-card — travel.js toggles .is-revealed
+   per card, staggered slightly, the first time each scrolls into view. */
+.lodge-gallery-item {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+.lodge-gallery-item.is-revealed { opacity: 1; transform: none; }
+
+.lodge-gallery-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
   border: 1px solid var(--rule);
   border-radius: 1rem;
   background: var(--card);
   overflow: hidden;
-  transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
 }
-/* Same lift-and-shadow as .bento-tile below — two cards that look alike
-   should feel alike; this one was missing the hover entirely, so the
-   whole toggle read as inert until you actually clicked it. */
-.lodge-card:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -22px rgba(93,74,44,.4); }
-/* The one property this page can recommend without a caveat once the
-   block is actually confirmed — see travel-data.js flags.ROOM_BLOCK_CONFIRMED.
-   Never applied while that flag is false. */
-.lodge-card--room-block-confirmed {
-  border-color: var(--gold-text);
-  box-shadow: 0 0 0 1px var(--gold-text);
+.lodge-gallery-card:hover,
+.lodge-gallery-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 34px -22px rgba(93,74,44,.4);
 }
-.lodge-card-badge {
+.lodge-gallery-card:focus-visible { outline: 2.5px solid var(--gold-text); outline-offset: 3px; }
+
+.lodge-gallery-photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  /* Same gradient as the mosaic's "photograph to come" card — one
+     placeholder language, not two. */
+  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+}
+.lodge-gallery-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s var(--ease-out);
+}
+/* Hover zoom is desktop-only — (hover: hover) keeps a lingering touch
+   from leaving the image scaled on a phone with no way to "unhover" it. */
+@media (hover: hover) and (pointer: fine) {
+  .lodge-gallery-card:hover .lodge-gallery-photo img,
+  .lodge-gallery-card:focus-visible .lodge-gallery-photo img { transform: scale(1.06); }
+}
+/* A bare icon centered in a lot of empty space reads as "nothing
+   loaded" rather than a considered placeholder — the soft vignette and
+   medallion ring below give it enough presence to read as intentional,
+   without turning six identical cards into six competing focal points. */
+.lodge-gallery-photo.is-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 62%),
+    linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+}
+.lodge-gallery-photo .m-empty-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(52px, 11vw, 72px);
+  height: clamp(52px, 11vw, 72px);
+  padding: clamp(13px, 3vw, 18px);
+  border: 1px solid rgba(158,156,132,.38);
+  border-radius: 50%;
+  color: var(--leaf);
+  opacity: .85;
+}
+.lodge-gallery-photo .m-empty-mark svg { width: 100%; height: 100%; }
+.lodge-gallery-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
+
+/* Tap affordance for touch, which has no hover to signal "clickable."
+   Always in the DOM; CSS decides which input method sees it. */
+.lodge-gallery-expand {
+  position: absolute;
+  right: .6rem;
+  bottom: .6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(37,29,18,.55);
+  color: #fff8ec;
+  opacity: 0;
+  transition: opacity .25s var(--ease-soft);
+}
+.lodge-gallery-expand svg { width: 60%; height: 60%; }
+@media (hover: none) {
+  .lodge-gallery-expand { opacity: 1; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .lodge-gallery-card:hover .lodge-gallery-expand,
+  .lodge-gallery-card:focus-visible .lodge-gallery-expand { opacity: 1; }
+}
+
+.lodge-gallery-badges {
+  position: absolute;
+  top: .7rem;
+  left: .7rem;
+  right: .7rem;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.lodge-gallery-badge {
   display: inline-flex;
   align-items: center;
-  gap: .4em;
-  margin: .9rem .9rem 0;
   padding: .3em .7em;
   border-radius: 999px;
   background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
@@ -2579,84 +2550,255 @@ html.js .flight-fallback.is-superseded { display: none; }
   letter-spacing: .08em;
   color: #fff8ec;
 }
-
-.lodge-card-photo {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  /* Same gradient as the mosaic's "photograph to come" card (§3.6, .m-inner)
-     rather than a flat fill — one placeholder language, not two. */
-  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+/* "Details coming" reads as a status, not an achievement — a muted
+   scrim badge rather than the gold treatment .lodge-gallery-badge
+   otherwise gets, so the two are never mistaken for each other. */
+.lodge-gallery-badge--pending {
+  margin-left: auto;
+  background: rgba(37,29,18,.62);
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: none;
 }
-.lodge-card-photo img { width: 100%; height: 100%; object-fit: cover; }
-/* The same "photograph to come" pattern as the mosaic (CSS §3.6) —
-   deliberately not hotlinking hotel photography, and safe to ship
-   before real photos exist. */
-.lodge-card-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
-.lodge-card-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
-.lodge-card-photo .m-empty-mark svg { width: 100%; height: auto; }
-.lodge-card-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
 
-.lodge-card-toggle {
-  display: block;
-  width: 100%;
-  padding: 1.1rem 1.2rem 1.3rem;
-  border: 0;
-  background: none;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+.lodge-gallery-body {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+  padding: 1rem 1.2rem 1.3rem;
 }
-.lodge-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
-.lodge-card-name {
+.lodge-gallery-top { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
+.lodge-gallery-name {
   font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 600;
   color: var(--ink);
 }
-.lodge-card-price { flex: none; font-size: var(--t-small); color: var(--gold-text); font-weight: 600; letter-spacing: .05em; }
-.lodge-card-bestfor { margin-top: .3rem; font-size: var(--t-small); color: var(--stone-text); }
-.lodge-card-drive {
-  display: inline-block;
-  margin-top: .6rem;
-  padding: .25em .65em;
-  border-radius: 999px;
-  background: var(--paper-warm);
-  font-size: var(--t-micro);
+.lodge-gallery-price { flex: none; font-size: var(--t-small); color: var(--gold-text); font-weight: 600; letter-spacing: .05em; }
+.lodge-gallery-oneliner { font-size: var(--t-small); color: var(--stone-text); }
+.lodge-gallery-proximity { font-size: var(--t-micro); color: var(--ink-soft); }
+
+.lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
+.lodge-fallback li {
+  padding: .7rem 0;
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-body);
+  border-bottom: 1px solid rgba(205,188,166,.4);
+}
+.lodge-fallback li:last-child { border-bottom: none; }
+.lodge-fallback strong { color: var(--ink); }
+.lodge-fallback-todo { font-style: italic; color: var(--stone-text); }
+html.js .lodge-fallback.is-superseded { display: none; }
+
+
+/* ---- Lodging lightbox ---------------------------------------------------
+   One dialog, reused for all six properties — see the markup note in
+   travel/index.html and the open() function in travel.js. Desktop is a
+   two-column dialog (media / detail panel); phone stacks them as a
+   bottom sheet. Motion is a fade + slight rise, ~220ms, and the sitewide
+   reduced-motion clamp (§9) already reduces its duration to ~0, so no
+   separate reduced-motion override is needed here. */
+.lodge-lightbox[hidden] { display: none; }
+.lodge-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gutter);
+}
+html.lodge-lightbox-open,
+html.lodge-lightbox-open body { overflow-y: hidden; }
+
+.lodge-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(37,29,18,.66);
+  opacity: 0;
+  transition: opacity .25s var(--ease-out);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .lodge-lightbox-backdrop { backdrop-filter: blur(3px); }
+}
+.lodge-lightbox.is-open .lodge-lightbox-backdrop { opacity: 1; }
+
+.lodge-lightbox-dialog {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 62rem);
+  max-height: min(88vh, 46rem);
+  border-radius: 1.1rem;
+  background: var(--card);
+  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 30px 70px -28px rgba(37,29,18,.55);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(14px) scale(.98);
+  transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
+}
+.lodge-lightbox.is-open .lodge-lightbox-dialog { opacity: 1; transform: none; }
+.lodge-lightbox-dialog:focus { outline: none; }
+@media (min-width: 768px) {
+  .lodge-lightbox-dialog { grid-template-columns: 1.1fr 1fr; max-height: min(84vh, 40rem); }
+}
+
+/* Phone: a near-bottom-sheet feel — full-bleed to the viewport edges,
+   anchored low, scrollable as one column rather than a centered card. */
+@media (max-width: 767px) {
+  .lodge-lightbox { padding: 0; align-items: flex-end; }
+  .lodge-lightbox-dialog {
+    grid-template-rows: auto auto;
+    width: 100%;
+    max-height: 92svh;
+    border-radius: 1.1rem 1.1rem 0 0;
+    overflow-y: auto;
+  }
+}
+
+.lodge-lightbox-close {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 2.75rem = 44px at the default root size — the accessible touch-target
+     floor (WCAG 2.5.5 / Apple HIG), not just whatever looked balanced
+     against the icon glyph inside it. */
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(37,29,18,.5);
+  color: #fff8ec;
+  cursor: pointer;
+  transition: background .2s var(--ease-soft), transform .2s var(--ease-soft);
+}
+.lodge-lightbox-close:hover,
+.lodge-lightbox-close:focus-visible { background: rgba(37,29,18,.75); }
+.lodge-lightbox-close:hover { transform: scale(1.06); }
+.lodge-lightbox-close:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
+.lodge-lightbox-close svg { width: 40%; height: 40%; }
+
+.lodge-lightbox-media {
+  position: relative;
+  min-height: 15rem;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 60%),
+    linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+  overflow: hidden;
+}
+.lightbox-photo-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+}
+.lightbox-photo-empty .m-empty-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(76px, 13vw, 100px);
+  height: clamp(76px, 13vw, 100px);
+  padding: clamp(19px, 3.4vw, 25px);
+  border: 1px solid rgba(158,156,132,.38);
+  border-radius: 50%;
+  color: var(--leaf);
+  opacity: .85;
+}
+.lightbox-photo-empty .m-empty-mark svg { width: 100%; height: 100%; }
+.lightbox-photo-empty .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
+.lightbox-photo-track {
+  display: flex;
+  height: 100%;
+  transition: transform .35s var(--ease-out);
+}
+.lightbox-photo-track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; }
+.lightbox-photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(37,29,18,.5);
+  color: #fff8ec;
+  cursor: pointer;
+  transition: background .2s var(--ease-soft);
+}
+.lightbox-photo-nav:hover,
+.lightbox-photo-nav:focus-visible { background: rgba(37,29,18,.75); }
+.lightbox-photo-nav:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
+.lightbox-photo-nav--prev { left: .6rem; }
+.lightbox-photo-nav--next { right: .6rem; }
+.lightbox-photo-nav svg { width: 38%; height: 38%; }
+.lightbox-photo-dots {
+  position: absolute;
+  bottom: .8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: .4rem;
+}
+/* The visible dot stays small and quiet; padding pads the actual hit
+   area out to a real touch target without inflating the dot itself. */
+.lightbox-photo-dot {
+  width: .5rem;
+  height: .5rem;
+  padding: .55rem;
+  background-clip: content-box;
+  border: 0;
+  border-radius: 50%;
+  background-color: rgba(255,248,236,.55);
+  cursor: pointer;
+  transition: background-color .2s var(--ease-soft);
+}
+.lightbox-photo-dot[aria-selected="true"] { background-color: #fff8ec; }
+.lightbox-photo-dot:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
+
+.lodge-lightbox-panel {
+  padding: 1.6rem 1.7rem clamp(1.6rem, 4vh, 2rem);
+  overflow-y: auto;
+}
+.lodge-lightbox-badges { display: flex; flex-wrap: wrap; gap: .5rem; }
+.lodge-lightbox-badges .lodge-gallery-badge { color: #fff8ec; }
+.lodge-lightbox-name {
+  margin-top: .7rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.4vw, 1.7rem);
   font-weight: 600;
-  letter-spacing: .04em;
+  color: var(--ink);
+}
+.lodge-lightbox-price { margin-top: .2rem; font-size: var(--t-small); font-weight: 600; letter-spacing: .05em; color: var(--gold-text); }
+.lodge-lightbox-blurb { margin-top: .9rem; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.lodge-lightbox-blurb.is-todo { font-style: italic; color: var(--stone-text); }
+.lodge-lightbox-proximity { margin-top: .6rem; font-size: var(--t-small); color: var(--ink-soft); }
+.lodge-lightbox-proximity[hidden] { display: none; }
+.lodge-lightbox-meta { margin-top: .9rem; font-size: var(--t-small); }
+.lodge-lightbox-amenities {
+  padding-bottom: .7rem;
+  margin-bottom: .7rem;
+  border-bottom: 1px solid rgba(205,188,166,.4);
+  letter-spacing: .01em;
   color: var(--ink-soft);
 }
-.lodge-card-drive.is-todo { font-style: italic; font-weight: 400; color: var(--stone-text); background: none; padding: 0; margin-right: .6rem; }
-.lodge-card-chevron {
-  display: inline-block;
-  margin-top: .8rem;
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--gold-text);
-}
-.lodge-card-chevron::after { content: '↓'; margin-left: .35em; display: inline-block; transition: transform .3s var(--ease-out); }
-.lodge-card-toggle[aria-expanded="true"] .lodge-card-chevron::after { transform: rotate(180deg); }
+.lodge-lightbox-contact { line-height: 1.7; color: var(--ink-soft); }
+.lodge-lightbox-meta .is-todo { font-style: italic; color: var(--stone-text); }
+.lodge-lightbox-actions { margin-top: 1.2rem; display: flex; flex-direction: column; gap: .7rem; }
 
-/* Expand to auto height via the grid-rows 0fr→1fr technique — no JS
-   measuring, no FLIP maths, and it respects the sitewide reduced-motion
-   transition-duration clamp automatically. */
-.lodge-detail-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows .4s var(--ease-out);
-}
-.lodge-card-toggle[aria-expanded="true"] + .lodge-detail-wrap { grid-template-rows: 1fr; }
-.lodge-detail { overflow: hidden; }
-.lodge-detail-inner { padding: 0 1.2rem 1.3rem; border-top: 1px solid var(--rule); }
-.lodge-detail-blurb { margin-top: 1rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
-.lodge-detail-meta { margin-top: .9rem; font-size: var(--t-small); line-height: 1.7; color: var(--ink-soft); }
-.lodge-detail-meta .is-todo { font-style: italic; color: var(--stone-text); }
 .lodge-detail-code {
   display: inline-grid;
   place-items: center;
-  margin-top: .9rem;
   padding: .5em 1em;
   border: 1px dashed var(--gold-text);
   border-radius: .6rem;
@@ -2679,255 +2821,34 @@ html.js .flight-fallback.is-superseded { display: none; }
 .lodge-detail-code-label--done { opacity: 0; color: var(--olive); }
 .lodge-detail-code.is-copied .lodge-detail-code-label--done { opacity: 1; }
 .lodge-detail-code.is-copied .lodge-detail-code-label:not(.lodge-detail-code-label--done) { opacity: 0; }
-.lodge-detail-book { margin-top: 1.1rem; width: 100%; }
 .lodge-detail-toast {
-  margin-top: .5rem;
+  margin-top: -.3rem;
   font-size: var(--t-micro);
   color: var(--olive);
   opacity: 0;
   transition: opacity .3s ease;
 }
 .lodge-detail-toast.is-shown { opacity: 1; }
-
-
-/* ---- Lodging — at a glance (expanding cards) --------------------------
-   A quick visual compare-and-choose above the detailed cards: hover or
-   focus previews a property, a click (or Enter/Space) jumps to and opens
-   its full entry in .lodge-grid below. Built by lodgingExpand() in
-   travel.js from the same TRAVEL.lodging array .lodge-grid uses — one
-   data source, two views. Photos follow the same "photograph to come"
-   placeholder as .lodge-card-photo (see the note there): no stock imagery
-   standing in for a specific, named property. */
-.lodge-expand-intro {
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
+.lodge-detail-meta { font-size: var(--t-small); line-height: 1.6; color: var(--ink-soft); }
+.lodge-detail-meta.is-todo { font-style: italic; color: var(--stone-text); }
+.lodge-detail-book { width: 100%; }
+.lodge-detail-directions {
+  align-self: flex-start;
   font-size: var(--t-small);
-  font-style: italic;
-  color: var(--stone-text);
+  color: var(--gold-text);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .25s var(--ease-soft);
 }
-.lodge-expand[hidden] { display: none; }
-.lodge-expand {
-  list-style: none;
-  display: grid;
-  gap: .55rem;
-  margin: .9rem 0 0;
-  height: 620px;
-  grid-template-columns: 1fr;
-  transition: grid-template-rows .5s var(--ease-out);
-}
-@media (min-width: 768px) {
-  .lodge-expand {
-    height: 460px;
-    grid-template-rows: 1fr;
-    transition: grid-template-columns .5s var(--ease-out);
-  }
-}
-.lodge-expand.is-reduced { transition: none; }
-.lodge-expand.is-reduced .lodge-expand-photo,
-.lodge-expand.is-reduced .lodge-expand-icon,
-.lodge-expand.is-reduced .lodge-expand-name,
-.lodge-expand.is-reduced .lodge-expand-tagline,
-.lodge-expand.is-reduced .lodge-expand-price,
-.lodge-expand.is-reduced .lodge-expand-label { transition: none; }
-
-.lodge-expand-card {
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  min-height: 64px;
-  border-radius: 1rem;
-  border: 1px solid var(--rule);
-  background: var(--card);
-  cursor: pointer;
-}
-.lodge-expand-card:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
-
-.lodge-expand-photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.12);
-  filter: grayscale(1);
-  transition: transform .4s var(--ease-out), filter .4s var(--ease-out);
-}
-.lodge-expand-card[data-active="true"] .lodge-expand-photo { transform: scale(1); filter: grayscale(0); }
-
-/* Same placeholder language as .lodge-card-photo.is-empty — deliberately
-   not hotlinking hotel photography here either. */
-.lodge-expand-empty {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .4rem;
-  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
-}
-.lodge-expand-empty .m-empty-mark { width: clamp(18px, 5vw, 26px); color: var(--leaf); opacity: .75; }
-.lodge-expand-empty .m-empty-mark svg { width: 100%; height: auto; }
-/* No caption here, unlike .lodge-card-photo's roomier version: at the
-   width an inactive track collapses to, "photograph to come" would sit
-   directly under the vertical property-name label and the two would
-   overlap. The mark alone still reads as "no photo yet"; the caption
-   comes back once the card is active and has room (.lodge-expand-name
-   already says the property's name by then). */
-.lodge-expand-empty .m-empty-note { display: none; }
-.lodge-expand-card[data-active="true"] .lodge-expand-empty .m-empty-note {
-  display: block;
-  font-size: var(--t-micro);
-  font-style: italic;
-  color: var(--stone-text);
-  text-align: center;
-  padding: 0 .4rem;
-}
-
-.lodge-expand-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(37,29,18,.82) 0%, rgba(37,29,18,.38) 48%, rgba(37,29,18,0) 78%);
-}
-
-.lodge-expand-badge {
-  position: absolute;
-  top: .6rem;
-  left: .6rem;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  padding: .3em .7em;
-  border-radius: 999px;
-  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .08em;
-  color: #fff8ec;
-}
-
-.lodge-expand-copy {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: .3rem;
-  padding: .9rem;
-  color: #fff8ec;
-}
-
-.lodge-expand-label {
-  display: none;
-}
-@media (min-width: 768px) {
-  .lodge-expand-label {
-    display: block;
-    align-self: flex-start;
-    transform-origin: left;
-    transform: rotate(90deg);
-    white-space: nowrap;
-    font-family: var(--font-text);
-    font-size: var(--t-micro);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: rgba(255,248,236,.85);
-    opacity: 1;
-    transition: opacity .3s var(--ease-out);
-  }
-  .lodge-expand-card[data-active="true"] .lodge-expand-label { opacity: 0; }
-}
-
-.lodge-expand-icon {
-  display: block;
-  width: 22px;
-  height: 22px;
-  color: #f4e3c1;
-  opacity: 0;
-  transition: opacity .3s var(--ease-out) .05s;
-}
-.lodge-expand-icon svg { width: 100%; height: 100%; }
-.lodge-expand-card[data-active="true"] .lodge-expand-icon { opacity: 1; }
-
-.lodge-expand-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
-  line-height: 1.2;
-  opacity: 0;
-  transition: opacity .3s var(--ease-out) .1s;
-}
-.lodge-expand-card[data-active="true"] .lodge-expand-name { opacity: 1; }
-
-.lodge-expand-tagline {
-  display: block;
-  font-family: var(--font-text);
-  font-size: var(--t-small);
-  line-height: 1.4;
-  max-width: 34ch;
-  color: rgba(255,248,236,.9);
-  opacity: 0;
-  transition: opacity .3s var(--ease-out) .16s;
-}
-.lodge-expand-card[data-active="true"] .lodge-expand-tagline { opacity: 1; }
-
-.lodge-expand-price {
-  display: block;
-  font-size: var(--t-micro);
-  letter-spacing: .06em;
-  color: #f4e3c1;
-  opacity: 0;
-  transition: opacity .3s var(--ease-out) .22s;
-}
-.lodge-expand-card[data-active="true"] .lodge-expand-price { opacity: 1; }
-
-.lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
-.lodge-fallback li {
-  padding: .7rem 0;
-  font-size: var(--t-small);
-  line-height: 1.6;
-  color: var(--ink-body);
-  border-bottom: 1px solid rgba(205,188,166,.4);
-}
-.lodge-fallback li:last-child { border-bottom: none; }
-.lodge-fallback strong { color: var(--ink); }
-.lodge-fallback-todo { font-style: italic; color: var(--stone-text); }
-html.js .lodge-fallback.is-superseded { display: none; }
+.lodge-detail-directions:hover,
+.lodge-detail-directions:focus-visible { text-decoration-color: currentColor; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lodge-card-chevron::after { transition: none; }
+  .lodge-gallery-card:hover { transform: none; }
+  .lodge-gallery-item { opacity: 1; transform: none; }
 }
 
-/* --- 11.5 · Drive-time strip --- */
-/* The §E placeholder pattern, reused: divider, a stated fact about what's
-   missing and why, nothing invented in its place. */
-.drive-placeholder { margin-top: clamp(1.8rem, 6vw, 2.4rem); text-align: center; }
-.drive-placeholder-divider { width: 9rem; max-width: 50%; height: auto; margin: 0 auto 1.2rem; opacity: .8; }
-.drive-placeholder-line { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; font-style: italic; color: var(--stone-text); }
-.drive-placeholder-sub { margin-top: .5rem; font-size: var(--t-small); color: var(--ink-soft); }
-
-/* The real strip, built by travel.js the moment every property in
-   travel-data.js has a verified driveMinutes — not in use today, but
-   ready the moment it can be, with nothing here to change by hand. */
-.drive-strip {
-  position: relative;
-  margin-top: clamp(2rem, 6vw, 2.6rem);
-  padding: 2.5rem 0 1.5rem;
-  overflow-x: auto;
-}
-.drive-strip-track { position: relative; height: 2px; background: var(--rule); min-width: 32rem; }
-.drive-point { position: absolute; top: 50%; transform: translate(-50%, -50%); text-align: center; }
-.drive-point-dot {
-  width: .8rem; height: .8rem; margin: 0 auto;
-  border-radius: 50%; background: var(--gold-text); border: 2px solid var(--paper);
-  box-shadow: 0 0 0 1px var(--gold-text);
-  transition: transform .25s var(--ease-out);
-}
-.drive-point.is-highlighted .drive-point-dot { transform: scale(1.4); }
-.drive-point-label { position: absolute; top: 1.4rem; left: 50%; transform: translateX(-50%); width: 6.5rem; font-size: var(--t-micro); color: var(--ink-soft); }
-.drive-point-mins { position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%); font-size: var(--t-micro); font-weight: 600; color: var(--gold-text); white-space: nowrap; }
-
-/* --- 11.6 · The Weekend --- */
+/* --- 11.5 · The Weekend --- */
 .weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
 .weekend-card {
   position: relative;
@@ -2963,7 +2884,7 @@ html.js .lodge-fallback.is-superseded { display: none; }
   .weekend-card { opacity: 1; transform: none; }
 }
 
-/* --- 11.7 · Questions (FAQ + local contact) --- */
+/* --- 11.6 · Questions (FAQ + local contact) --- */
 .faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
 .faq-item {
   border-bottom: 1px solid var(--rule);
@@ -3013,91 +2934,3 @@ html.js .lodge-fallback.is-superseded { display: none; }
 
 .couple-contact { margin-top: 1.6rem; text-align: center; font-size: var(--t-small); color: var(--ink-soft); }
 .couple-contact a { color: var(--gold-text); }
-
-/* --- 11.8 · The map (address-list fallback) ---
-   Guide's own stated fallback for B.8 while coordinates are unverified —
-   see the note in travel/index.html. Deliberately plain: a real map with
-   real pins is the thing worth building later, not this placeholder. */
-.map-address-list { margin-top: clamp(1.8rem, 6vw, 2.4rem); list-style: none; }
-.map-address-list li {
-  padding: .65rem 0;
-  font-size: var(--t-small);
-  line-height: 1.5;
-  color: var(--ink-body);
-  border-bottom: 1px solid rgba(205,188,166,.4);
-}
-.map-address-list li:last-child { border-bottom: none; }
-.map-address-list strong { color: var(--ink); }
-.map-address-list .is-todo { font-style: italic; color: var(--stone-text); }
-.map-address-list a { color: var(--gold-text); text-decoration: underline; }
-
-/* --- 11.9 · While You're Here (bento grid) --- */
-.bento-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.2rem;
-  margin-top: clamp(2rem, 6vw, 2.6rem);
-  list-style: none;
-}
-@media (min-width: 640px) {
-  .bento-grid { grid-template-columns: repeat(3, 1fr); }
-  .bento-tile--large { grid-column: span 2; }
-}
-.bento-tile {
-  position: relative;
-  border: 1px solid var(--rule);
-  border-radius: 1rem;
-  background: var(--card);
-  overflow: hidden;
-  transition: transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
-}
-.bento-tile:hover { transform: translateY(-3px); box-shadow: 0 18px 34px -22px rgba(93,74,44,.4); }
-/* Same gradient as the mosaic's "photograph to come" card (§3.6, .m-inner)
-   rather than a flat fill — one placeholder language, not two. */
-.bento-tile-photo { position: relative; aspect-ratio: 4 / 3; background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%); }
-.bento-tile--large .bento-tile-photo { aspect-ratio: 16 / 9; }
-.bento-tile-photo img { width: 100%; height: 100%; object-fit: cover; }
-.bento-tile-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
-.bento-tile-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
-.bento-tile-photo .m-empty-mark svg { width: 100%; height: auto; }
-.bento-tile-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
-
-.bento-tile-toggle {
-  display: block;
-  width: 100%;
-  padding: 1rem 1.1rem 1.2rem;
-  border: 0;
-  background: none;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.bento-tile-name {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.bento-tile-chevron {
-  display: inline-block;
-  margin-top: .5rem;
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--gold-text);
-}
-.bento-tile-chevron::after { content: '↓'; margin-left: .35em; display: inline-block; transition: transform .3s var(--ease-out); }
-.bento-tile-toggle[aria-expanded="true"] .bento-tile-chevron::after { transform: rotate(180deg); }
-
-.bento-detail-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease-out); }
-.bento-tile-toggle[aria-expanded="true"] + .bento-detail-wrap { grid-template-rows: 1fr; }
-.bento-detail { overflow: hidden; }
-.bento-detail-inner { padding: 0 1.1rem 1.2rem; border-top: 1px solid var(--rule); }
-.bento-detail-blurb { margin-top: .9rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
-.bento-detail-blurb.is-todo { font-style: italic; color: var(--stone-text); }
-
-@media (prefers-reduced-motion: reduce) {
-  .bento-tile:hover, .lodge-card:hover { transform: none; }
-  .bento-tile-chevron::after { transition: none; }
-}
