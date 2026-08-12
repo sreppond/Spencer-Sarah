@@ -265,207 +265,26 @@ html:not(.js) .env-scene { display: none; }
 
 
 /* ==========================================================================
-   1.5 · SITE NAV
-   travel/index.html only now. index.html has its own hero-top bar instead
-   (below) — this pill remains exactly as it was for the travel page, which
-   still gates it behind its own hero with the copy of this logic in
-   travel.js.
-
-   🔒 On the travel page this must never appear over the hero — not at
-   low opacity, not as a scrim, not on scroll-up. It ships hidden and is
-   revealed only once its hero has fully cleared the viewport.
-   z-index sits below the envelope's 90 on the save-the-date; travel has no
-   envelope, but the value is kept the same across both pages.
-
-   Visual: a floating glass pill rather than a full-width bar, sized to
-   its own content and centred — the same silhouette the old sub-480px
-   fallback used, now the one nav at every width. The entrance pairs the
-   fade with a small rise + settle (translateY + scale) instead of a flat
-   opacity swap, so it reads as the pill arriving rather than switching on. */
-
-.site-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 70;
-  padding-top: var(--safe-t);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-10px) scale(.97);
-  transform-origin: top center;
-  transition: opacity .55s var(--ease-soft), transform .6s var(--ease-soft), visibility 0s linear .6s;
-}
-.site-nav.is-shown {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-  transition: opacity .55s var(--ease-soft), transform .6s var(--ease-soft), visibility 0s linear;
-}
-
-.site-nav-inner {
-  display: flex;
-  align-items: center;
-  width: max-content;
-  max-width: calc(100% - 2 * var(--gutter));
-  margin: .85rem auto 0;
-  padding: .65rem 1.4rem;
-  border-radius: 999px;
-  background: rgba(251, 247, 240, .8);
-  border: 1px solid rgba(120, 104, 80, .14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, .55),
-    0 22px 44px -26px rgba(93, 74, 44, .42),
-    0 4px 16px -10px rgba(93, 74, 44, .18);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-          backdrop-filter: blur(18px) saturate(160%);
-}
-
-.site-nav-word {
-  flex: none;
-  padding-right: 1.15rem;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: .01em;
-  color: var(--ink);
-  text-decoration: none;
-  transition: color .3s var(--ease-soft);
-}
-.site-nav-word:hover, .site-nav-word:focus-visible { color: var(--gold-text); }
-
-.site-nav-links {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  padding-left: 1.15rem;
-  border-left: 1px solid rgba(205, 188, 166, .55);
-}
-.site-nav-links li {
-  flex: none;
-  padding: 0 .95rem;
-}
-.site-nav-links li:first-child { padding-left: 0; }
-.site-nav-links li:last-child { padding-right: 0; }
-.site-nav-links li + li { border-left: 1px solid rgba(205, 188, 166, .55); }
-
-.site-nav-links a {
-  position: relative;
-  display: inline-block;
-  white-space: nowrap;
-  font-family: var(--font-text);
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .17em;
-  text-indent: .17em;
-  text-transform: uppercase;
-  color: var(--stone-text);
-  text-decoration: none;
-  padding: .5rem 0;                /* height toward the 44px tap floor */
-  transition: color .3s var(--ease-soft);
-}
-/* A hairline draws in from the centre on hover/focus instead of a flat
-   colour swap — the same "gesture, not a state change" idea as the flow
-   button (§2.4), scaled down to a link. Skipped on the current page,
-   which already carries its own chip below. */
-.site-nav-links a:not([aria-current])::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  right: 50%;
-  bottom: .16rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0;
-  transition: left .35s var(--ease-soft), right .35s var(--ease-soft), opacity .3s var(--ease-soft);
-}
-.site-nav-links a:hover, .site-nav-links a:focus-visible { color: var(--gold-text); }
-.site-nav-links a:hover::after, .site-nav-links a:focus-visible::after {
-  left: 0; right: 0; opacity: .55;
-}
-/* "page" marks the current page on the site-wide nav (A3); "true" marks
-   the active in-page section on the travel page's scroll-spy variant
-   (B.4) — same visual treatment either way: a quiet gold chip, the pill's
-   own echo of the flow button, rather than just a colour change. */
-.site-nav-links a[aria-current="page"],
-.site-nav-links a[aria-current="true"] {
-  color: var(--gold-text);
-  background: rgba(168, 131, 79, .14);
-  border-radius: 999px;
-  padding: .5rem 1rem;
-  margin: 0 -1rem;
-  transition: color .3s var(--ease-soft), background .3s var(--ease-soft);
-}
-
-/* Under 400px "Sarah & Spencer" plus its divider crowds two or three nav
-   words into too little pill — drop the wordmark and let the links carry
-   the pill alone, same call the old sub-480 fallback made. */
-@media (max-width: 400px) {
-  .site-nav-word,
-  .site-nav-links { border-left: none; padding-left: 0; }
-  .site-nav-word { display: none; }
-  .site-nav-inner { padding: .6rem 1.2rem; }
-  .site-nav-links li { padding: 0 .7rem; }
-}
-
-/* The two-item save-the-date pill ("Travel & Stay" / "Save the Date")
-   fits max-content at any phone width. The travel page's scroll-spy
-   variant carries three longer labels ("Where to Stay" / "The Weekend" /
-   "Questions") that don't — .site-nav-inner's own max-width was clamping
-   the pill to the viewport while the links inside kept trying to shrink,
-   wrapping each label onto two or three lines. Letting the link row
-   scroll horizontally instead keeps every label intact at any width;
-   the fade hints that there's more to swipe to. Harmless on the
-   two-item pill, which never needs to scroll far enough for it to show. */
-@media (max-width: 480px) {
-  .site-nav-inner { position: relative; }
-  .site-nav-links {
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .site-nav-links::-webkit-scrollbar { display: none; }
-  .site-nav-inner::after {
-    content: '';
-    position: absolute;
-    top: 1px; right: 1px; bottom: 1px;
-    width: 1.6rem;
-    border-radius: 0 999px 999px 0;
-    background: linear-gradient(to right, transparent, rgba(251, 247, 240, .9) 65%);
-    pointer-events: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .site-nav {
-    transform: none !important;
-    transition: opacity .2s linear !important;
-  }
-}
-
-
-/* ==========================================================================
-   1.6 · HERO NAV (index.html only)
-   Replaces the old hidden-until-scrolled pill on the save-the-date: a
-   hamburger (left) and an RSVP button (right), fixed to the top of the
-   viewport and visible from the very first frame, straight over the
-   painting. It stays on through the rest of the page too — there is
-   nothing to gate here, so it is simply always there.
+   1.5 · HERO NAV
+   One component, one markup partial, shared by both pages: a hamburger
+   (left) that opens a small glass menu, and an RSVP button (right) that
+   needs no script at all. Fixed to the top of the viewport and visible
+   from the very first frame, straight over each page's own artwork, and
+   stays on through the rest of the scroll too — there is nothing to gate
+   here, so it is simply always there. index.html wires the toggle up with
+   assets/js/hero-nav.js; travel/index.html has its own copy of the same
+   handful of lines in the "Hero nav" block of travel.js, so nothing about
+   either page depends on the other's script.
 
    It is never a plate over the artwork. Both controls sit on their own
-   soft ivory bloom — the same device .hero-cue already uses lower in the
-   painting (§2) — rather than a dark bar or a frosted rectangle, so the
-   hero itself is never dimmed or covered.
+   soft ivory bloom — the same device .hero-cue uses lower in the
+   save-the-date's painting (§2) — rather than a dark bar or a frosted
+   rectangle, so the image itself is never dimmed or covered.
 
-   z-index sits below the envelope's 90: while the envelope is up this is
-   fully covered, so it is only ever seen once the guest has already
-   opened it. #hero-nav-toggle and #hero-nav-menu are wired up by
-   assets/js/hero-nav.js. */
+   z-index sits below the save-the-date's envelope (90): while the
+   envelope is up this is fully covered, so it is only ever seen once the
+   guest has already opened it. travel/index.html has no envelope, but
+   keeps the same value for the one component shared between them. */
 
 .hero-nav {
   position: fixed;
@@ -546,6 +365,9 @@ html:not(.js) .env-scene { display: none; }
 .hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(2) { opacity: 0; }
 .hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(3) { top: 5.7px; transform: rotate(-45deg); }
 
+/* RSVP button and the dropdown menu below share one glass fill — the same
+   ivory-glass panel the old §1.5 pill used — so the two floating controls
+   read as one family instead of the button carrying its own gold tint. */
 .hero-nav-rsvp {
   display: inline-flex;
   align-items: center;
@@ -559,14 +381,16 @@ html:not(.js) .env-scene { display: none; }
   text-indent: .17em;
   text-transform: uppercase;
   color: var(--gold-text);
-  background: rgba(168, 131, 79, .16);
+  background: rgba(251, 247, 240, .92);
   border: 1px solid rgba(168, 131, 79, .32);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+          backdrop-filter: blur(18px) saturate(160%);
   text-decoration: none;
   transition: background .3s var(--ease-soft), color .3s var(--ease-soft), border-color .3s var(--ease-soft);
 }
 .hero-nav-rsvp:hover,
 .hero-nav-rsvp:focus-visible {
-  background: rgba(168, 131, 79, .28);
+  background: rgba(251, 247, 240, 1);
   border-color: rgba(168, 131, 79, .5);
 }
 
@@ -600,22 +424,6 @@ html:not(.js) .env-scene { display: none; }
   opacity: 1;
   transform: translateY(0) scale(1);
 }
-
-.hero-nav-menu-word {
-  display: block;
-  padding-bottom: .65rem;
-  margin-bottom: .65rem;
-  border-bottom: 1px solid rgba(205, 188, 166, .55);
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: .01em;
-  color: var(--ink);
-  text-decoration: none;
-  transition: color .3s var(--ease-soft);
-}
-.hero-nav-menu-word:hover,
-.hero-nav-menu-word:focus-visible { color: var(--gold-text); }
 
 .hero-nav-menu-links { list-style: none; }
 .hero-nav-menu-links li + li { margin-top: .3rem; }
@@ -1360,9 +1168,9 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 .celebrate-sheet {
   padding-top: clamp(4.5rem, 16vh, 9rem);
   padding-bottom: clamp(4rem, 14vh, 8rem);
-  /* The hero cue links here (#celebrate) and this nav can wrap to two
-     lines at narrow widths same as the travel page's — see --nav-h in
-     site-nav.js and the identical note on .travel-section. */
+  /* The hero cue links here (#celebrate) — cleared against the fixed
+     hero-nav's real rendered height rather than a guessed constant; see
+     --nav-h in hero-nav.js and the identical note on .travel-section. */
   scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t));
 }
 
@@ -2316,21 +2124,17 @@ html.book-nudge-open body { overflow-y: hidden; }
    this section is only what those pages need on top.
    ========================================================================== */
 
-/* Clearance for the fixed site nav (CSS §1.5), which occupies no layout
-   space of its own. On mobile the nav is a floating pill rather than a
-   full-width bar, but the clearance is kept anyway — the eyebrow above
-   the page title is exactly what the pill would otherwise sit over.
-
-   --nav-h is published by travel.js (this rule only ever applies to
-   .page-sub pages, i.e. travel/index.html) from the pill's real rendered
-   height — see the ResizeObserver there — not a guessed constant. That
-   nav's three links can wrap to two lines at narrow widths ("Where to
-   Stay", "The Weekend"), which used to grow the pill past a fixed 3.4rem
-   clearance sized for the one-line case; the pill itself is now capped to
-   the viewport instead of wrapping (§8), but --nav-h stays in place as
-   the general mechanism rather than a second constant to keep in sync
-   with it. The 100px fallback covers a generous worst case for the
-   moment before the script runs. */
+/* Clearance for the fixed hero nav (CSS §1.5), which occupies no layout
+   space of its own. travel/index.html is the only .page-sub page today,
+   and §11.1 zeroes this padding right back out there — its hero-nav sits
+   over that page's own full-bleed hero, the same as index.html, so there
+   is nothing to reserve room for. This stays in place as the generic
+   fallback for any future .page-sub page with no full-bleed hero of its
+   own, where the nav would otherwise sit directly over the page title.
+   --nav-h is published by that page's own copy of the hero-nav script
+   from the bar's real rendered height, not a guessed constant — see
+   travel.js and index.html's hero-nav.js. The 100px fallback covers a
+   generous worst case for the moment before the script runs. */
 .page-sub .paper { margin-top: 0; padding-top: calc(var(--nav-h, 100px) + .9rem + var(--safe-t)); }
 .page-sub .paper::before { inset: 0; }
 
@@ -2656,7 +2460,6 @@ html.book-nudge-open body { overflow-y: hidden; }
 
 @media print {
   .env-scene,
-  .site-nav,
   .hero-nav,
   .audio-toggle,
   .hero-cue,
@@ -2709,15 +2512,9 @@ html.book-nudge-open body { overflow-y: hidden; }
 /* ==========================================================================
    11 · TRAVEL PAGE
    /travel/ reuses every token and structural class above — .paper, .sheet,
-   .sheet-inner, .flow-btn, .site-nav — and adds only what those don't
+   .sheet-inner, .flow-btn, .hero-nav — and adds only what those don't
    cover. Grows a subsection at a time as the page does; see travel.js.
    ========================================================================== */
-
-/* Only travel/index.html sets this class, on the html element, from
-   travel.js — never touched by the save-the-date. The sitewide reduced-
-   motion rule (§9) already forces scroll-behavior:auto !important on *,
-   so this is automatically inert for anyone who asked for less motion. */
-html.smooth-scroll { scroll-behavior: smooth; }
 
 /* --- 11.1 · Page background ---
    This page reads white, not the site's tan --paper: the hero photo
@@ -2847,11 +2644,13 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
 /* Only the first section inherits enough top padding from .page-sub .paper
    (above) to already clear the fixed nav; the second and third sections'
    own padding-top is smaller and was never meant to carry that job alone.
-   scroll-margin-top is what actually matters here: it's what a click on
-   #the-weekend/#questions in the nav (or a hash link, or a restored scroll
-   position) lands against, not the padding used for the first paint. Measured
-   without it, the third section's own ~72px of top padding was 19px short of
-   a wrapped, 90px-tall nav pill — the section's eyebrow landed under it. */
+   scroll-margin-top is what actually matters here: it's what a hash link
+   or a restored scroll position to #where-to-stay/#the-weekend/#questions
+   lands against (none of the three is in the hero-nav's menu any more,
+   but all three ids are still real anchors other links and bookmarks can
+   still point at), not the padding used for the first paint. Measured
+   against the fixed nav's real rendered height via --nav-h, not a
+   hardcoded constant — see the note by .travel-section above. */
 .travel-section { scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t)); }
 
 /* --- 11.4 · Where to Stay (lodging gallery + lightbox) --- */

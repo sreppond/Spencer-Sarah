@@ -3,8 +3,9 @@
 
    Vanilla, no build step — see BUILDGUIDE §B.0 for why. This file grows a
    section at a time as the page does; today it drives the hero countdown
-   and the scroll-spy nav. assets/js/calendar.js (loaded alongside this)
-   wires every [data-calendar] link on its own; nothing here duplicates it.
+   and the hero nav's hamburger toggle. assets/js/calendar.js (loaded
+   alongside this) wires every [data-calendar] link on its own; nothing
+   here duplicates it.
    ========================================================================== */
 
 (function () {
@@ -85,11 +86,14 @@
      Default on, same as the save the date: autoplay is attempted on load
      unless the stored preference explicitly says "off". Nothing on this
      page holds a fresh user gesture the way the envelope tap does, so a
-     guest who lands here cold may still get an autoplay refusal from the
-     browser — that's fine, it just leaves the toggle sitting ready, same
-     as the save the date before its own tap. A guest arriving from the
-     save the date (same origin, already played audio there) typically
-     autoplays cleanly on the strength of that.
+     guest who lands here cold — every direct visit to /travel/ — gets a
+     silent autoplay refusal from the browser: it does not accept a
+     non-muted play() without a gesture behind it, no matter how quiet the
+     bed is. The retry below is what actually starts it: it waits for the
+     guest's real first interaction with the page and tries again then,
+     which the policy does accept. A guest arriving from the save the date
+     (same origin, already played audio there) typically autoplays cleanly
+     on the strength of that and never needs the retry at all.
      ------------------------------------------------------------------ */
   (function ambientAudio() {
     var audio = $('#ambient');
@@ -132,24 +136,45 @@
       setTimeout(function () { toggle.hidden = true; }, 400);
     }
 
+    function tryPlay(fadeMs) {
+      audio.volume = 0;
+      var p = audio.play();
+      if (p && p.then) {
+        p.then(function () {
+          fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, fadeMs);
+          setPressed(true);
+        }).catch(function () {
+          // Autoplay refused without a fresh gesture — leave the toggle
+          // showing "off". armRetry() below gets the next real one.
+          setPressed(false);
+        });
+      }
+    }
+
     audio.addEventListener('error', function () { hideToggle(); }, { once: true });
     audio.src = assetPath(media.ambientAudio);
     revealToggle();
 
     if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') {
-      audio.volume = 0;
-      var p = audio.play();
-      if (p && p.then) {
-        p.then(function () {
-          fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, opts.fadeInMs || 1200);
-          setPressed(true);
-        }).catch(function () {
-          // Autoplay refused without a fresh gesture — leave the toggle
-          // showing "off" so the guest can start it with one tap.
-          setPressed(false);
-        });
-      }
+      tryPlay(opts.fadeInMs || 1200);
     }
+
+    /* See the comment above this IIFE: a direct load never carries a
+       gesture, so the attempt above almost always gets refused. Retry on
+       the guest's actual first interaction with the page instead — a tap,
+       a key, a scroll — which the browser's policy does accept. Only
+       fires if audio isn't already playing and the guest hasn't turned it
+       off in the meantime; removes its own listeners once it runs. */
+    (function armRetry() {
+      var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+      function attempt() {
+        events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
+        if (audio.paused && store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') tryPlay(opts.fadeInMs || 1200);
+      }
+      events.forEach(function (evt) {
+        document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
+      });
+    }());
 
     toggle.addEventListener('click', function () {
       var on = toggle.getAttribute('aria-pressed') === 'true';
@@ -176,79 +201,76 @@
 
 
   /* ------------------------------------------------------------------
-     Site nav — same component and CSS as the save-the-date's (A3), a
-     different link set, gated off this page's own hero rather than the
-     save-the-date's. Deliberately does not reference site-nav.js or
-     .hero-viewport at all, so nothing here can ever touch the protected
-     element that script watches.
+     Hero nav — same component, CSS and behaviour as index.html's: a
+     hamburger that opens a small glass menu, an RSVP button that needs no
+     script at all. Always visible here (this page has no envelope to wait
+     for), so there is nothing to gate — just the open/close wiring.
      ------------------------------------------------------------------ */
-  (function nav() {
-    var nav = $('#site-nav');
-    var hero = $('#travel-hero');
-    if (!nav) return;
+  (function heroNav() {
+    var toggle = $('#hero-nav-toggle');
+    var menu = $('#hero-nav-menu');
+    if (!toggle || !menu) return;
 
-    if (!hero || !('IntersectionObserver' in window)) {
-      nav.classList.add('is-shown');
-    } else {
-      var io = new IntersectionObserver(function (entries) {
-        var entry = entries[entries.length - 1];
-        var cleared = !entry.isIntersecting && entry.boundingClientRect.bottom <= 0;
-        nav.classList.toggle('is-shown', cleared);
-      }, { threshold: 0 });
-      io.observe(hero);
+    var CLOSE_MS = 260;
+    var closeTimer = null;
+
+    function isOpen() { return menu.classList.contains('is-open'); }
+
+    function openMenu() {
+      clearTimeout(closeTimer);
+      menu.hidden = false;
+      void menu.offsetHeight;
+      menu.classList.add('is-open');
+      toggle.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
     }
 
-    // Smooth scroll for the in-page nav links, switched off under reduced
-    // motion by the sitewide *{scroll-behavior:auto!important} rule in
-    // CSS §9 — this class is the only thing that turns it on at all.
-    if (!reduced) document.documentElement.classList.add('smooth-scroll');
+    function closeMenu() {
+      if (!isOpen()) return;
+      menu.classList.remove('is-open');
+      toggle.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(function () { menu.hidden = true; }, CLOSE_MS);
+    }
 
-    // Publish the pill's real rendered height as --nav-h so CSS can size
-    // scroll-margin-top (and the sub-page top clearance) from the actual
-    // pill instead of a guessed constant. This nav's three links can wrap
-    // to two lines at narrow widths ("Where to Stay", "The Weekend"),
-    // which changes the pill's height by ~20px — a fixed clearance sized
-    // for the one-line case left anchor-scrolled sections landing under it.
-    var navInner = $('.site-nav-inner', nav);
-    if (navInner) {
+    // Publish this bar's real rendered height as --nav-h — the same token
+    // index.html's hero-nav.js publishes for its own bar (see the
+    // identical block there) — so anything on this page that needs to
+    // clear fixed nav chrome (.travel-section's scroll-margin-top,
+    // .page-sub .paper's top padding — CSS §5.5/§11) reads the actual
+    // height instead of a constant sized for a different nav.
+    var heroNavEl = $('#hero-nav');
+    if (heroNavEl) {
       var publishNavH = function () {
-        document.documentElement.style.setProperty('--nav-h', navInner.getBoundingClientRect().height + 'px');
+        document.documentElement.style.setProperty('--nav-h', heroNavEl.getBoundingClientRect().height + 'px');
       };
       publishNavH();
       if ('ResizeObserver' in window) {
-        new ResizeObserver(publishNavH).observe(navInner);
+        new ResizeObserver(publishNavH).observe(heroNavEl);
       } else {
         window.addEventListener('resize', publishNavH, { passive: true });
       }
     }
 
-    /* ---- scroll-spy: which section is "active" -----------------------
-       rootMargin shrinks the observed viewport to a thin band at 45-55%
-       of the screen, so the active link flips when a section crosses the
-       vertical middle rather than merely entering at the bottom edge —
-       the difference between highlighting what the guest is *reading*
-       versus what has merely started to appear below the fold. */
-    var links = $$('#travel-nav-links a[href^="#"]');
-    if (!links.length || !('IntersectionObserver' in window)) return;
+    toggle.addEventListener('click', function () {
+      if (isOpen()) { closeMenu(); } else { openMenu(); }
+    });
 
-    var sections = links
-      .map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); })
-      .filter(Boolean);
-    if (!sections.length) return;
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest('a')) closeMenu();
+    });
 
-    var byId = {};
-    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
 
-    var spy = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        links.forEach(function (a) { a.removeAttribute('aria-current'); });
-        var link = byId[entry.target.id];
-        if (link) link.setAttribute('aria-current', 'true');
-      });
-    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
-
-    sections.forEach(function (s) { spy.observe(s); });
+    document.addEventListener('click', function (e) {
+      if (isOpen() && !menu.contains(e.target) && !toggle.contains(e.target)) closeMenu();
+    });
   }());
 
 

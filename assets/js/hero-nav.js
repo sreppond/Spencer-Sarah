@@ -1,10 +1,12 @@
 /* ==========================================================================
    Sarah & Spencer — Hero nav
 
-   index.html only. Powers the hamburger button in #hero-nav: opens and
-   closes #hero-nav-menu, and closes it again on a link tap, an outside
-   click, or Escape. The RSVP button next to it is a plain anchor to
-   #details and needs no script at all.
+   index.html only — travel/index.html has its own copy of this same
+   handful of lines in the "Hero nav" block of travel.js, since neither
+   page's script loads on the other. Powers the hamburger button in
+   #hero-nav: opens and closes #hero-nav-menu, and closes it again on a
+   link tap, an outside click, or Escape. The RSVP button next to it is a
+   plain anchor to #details and needs no script at all.
 
    Superseded assets/js/site-nav.js (deleted), which existed only to keep
    the old pill nav off the hero until it had scrolled away — see the
