@@ -2453,47 +2453,77 @@ html.smooth-scroll { scroll-behavior: smooth; }
    fades into it directly (11.2), so anything less than true white would
    show a seam where the mask ends. Scoped to body.travel-page rather
    than touching --paper itself, which the save-the-date still needs at
-   its original tan. */
-body.travel-page .paper { background: #fff; }
+   its original tan.
+
+   .page-sub .paper's padding-top (§7) reserved clearance for a full-width
+   nav bar; the nav is a floating fixed pill now (it overlays instead of
+   sitting in flow), so that reserved space would just be a blank white
+   strip above the photo. Zeroed here, scoped to the travel page only —
+   any future .page-sub page without a full-bleed hero still gets the
+   original clearance. */
+body.travel-page .paper { background: #fff; padding-top: 0; }
 
 /* --- 11.2 · Hero ---
-   Opens full-bleed on the Glacier Image, masked so its foot dissolves
-   into the white page background below rather than cutting to a hard
-   edge. Quieter than the save-the-date's hero — no calendar action —
-   but keeps a live countdown, the one piece of urgency this page still
-   carries before it gets to Where to Stay. */
-.travel-hero { text-align: center; }
+   Opens full-bleed on the Glacier Image — right at the top of the
+   viewport, under the floating nav pill, with the peak itself as the
+   top edge of the frame (the source file is cropped to the summit; see
+   the note by .travel-hero-media below) — then masked so its foot
+   dissolves into the white page background rather than cutting to a
+   hard edge. Sized to one viewport tall, not an aspect-ratio box: a
+   guest shouldn't have to scroll to reach "Travel & Stay". Quieter than
+   the save-the-date's hero — no calendar action — but keeps a live
+   countdown, the one piece of urgency this page still carries before it
+   gets to Where to Stay. */
+.travel-hero {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  text-align: center;
+}
 
 /* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
    deliberately, the one element on this page that isn't gutter-padded.
-   The mask (not a solid overlay) is what makes the fade actually read as
-   the photo dissolving into paper rather than a rectangle laid over it;
-   it only works because the page behind it is the same white the mask
-   fades to (11.1). The source file itself already has its top ~20%
-   (mostly open sky) trimmed off, so the mountains and lake sit right at
-   the top edge on every breakpoint — object-position only needs to
-   center horizontally, since at both aspect ratios below the crop is
-   from the sides, never the top. */
+   flex: 1 makes it claim whatever the copy below doesn't need, so the
+   photo always fills the rest of that first viewport exactly rather
+   than an aspect-ratio guess that leaves a gap or overflows. The mask
+   (not a solid overlay) is what makes the fade actually read as the
+   photo dissolving into paper rather than a rectangle laid over it; it
+   only works because the page behind it is the same white the mask
+   fades to (11.1).
+
+   The source file itself is cropped to the summit — its top edge *is*
+   the mountain's highest point, no sky above it — so object-position is
+   pinned to top rather than centered: on any viewport short/wide enough
+   to force a vertical crop too (not just the usual side crop), the lake
+   and dock at the bottom give up the room first, never the peak. */
 .travel-hero-media {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
-  line-height: 0;
+  overflow: hidden;
 }
+/* Absolutely positioned against the flex item rather than a plain
+   height:100% — a percentage height on a replaced element doesn't
+   reliably resolve against a flex-grown ancestor (it can settle on the
+   image's own intrinsic aspect ratio instead of the grown box), which is
+   exactly the bug this sidesteps. */
 .travel-hero-media img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center top;
   -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
           mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
 }
-@media (min-width: 640px) {
-  .travel-hero-media img { aspect-ratio: 16 / 9; }
-}
 
 .travel-hero-inner {
+  flex: none;
   max-width: 34rem;
   margin: 0 auto;
-  padding: 0 var(--gutter) clamp(3rem, 9vh, 4.5rem);
+  padding: 1.4rem var(--gutter) clamp(3rem, 9vh, 4.5rem);
 }
 .travel-hero-title {
   margin-top: .6rem;
