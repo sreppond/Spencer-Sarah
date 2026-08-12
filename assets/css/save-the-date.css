@@ -696,33 +696,49 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
     transform     .18s var(--ease-soft);
 }
 
+/* The label and both arrows travel together as one centred group. Early on
+   this positioned the arrows against the outer button's own edges (a %
+   of its full width), which reads fine on an auto-width pill but strands
+   the arrow far from the label on a full-width variant like .btn-send,
+   where the label sits centred but the edges are hundreds of pixels away.
+   Anchoring both arrows to this tight wrapper instead — sized to the
+   label alone, since the arrows are position:absolute and don't add to
+   its flow width — keeps the arrow beside the label at any button width. */
+.flow-btn__content {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+}
+
 /* The label rides above the ink and steps right as the arrow arrives. */
 .flow-btn__label {
   position: relative;
-  z-index: 2;
   display: block;
   transform: translateX(-.55em);
   transition: transform .8s ease-out;
 }
 
 /* Both arrows are the same mark; only their resting position differs.
-   --in waits off the left edge, --out sits at the right edge, and on
-   engagement they both travel one button-width to the right, so the
-   pair reads as a single arrow passing through the button. */
+   --in waits just off the label's left edge, --out sits just past its
+   right edge, and on engagement they swap sides so the pair reads as a
+   single arrow passing through. Visibility is opacity-driven rather than
+   distance-driven — the content group can be centred anywhere inside a
+   button of any width, so there is no fixed "off the edge" to hide behind. */
 .flow-btn__arrow {
   position: absolute;
-  z-index: 2;
   width: 1em;
   height: 1em;
   stroke: currentColor;
   fill: none;
   transition:
-    left   .8s cubic-bezier(.34, 1.56, .64, 1),
-    right  .8s cubic-bezier(.34, 1.56, .64, 1),
-    stroke .6s cubic-bezier(.23, 1, .32, 1);
+    left    .8s cubic-bezier(.34, 1.56, .64, 1),
+    right   .8s cubic-bezier(.34, 1.56, .64, 1),
+    opacity .5s cubic-bezier(.23, 1, .32, 1),
+    stroke  .6s cubic-bezier(.23, 1, .32, 1);
 }
-.flow-btn__arrow--in  { left: -25%; }
-.flow-btn__arrow--out { right: 1.1em; }
+.flow-btn__arrow--in  { left: -2.4em; opacity: 0; }
+.flow-btn__arrow--out { right: -1.5em; opacity: 1; }
 
 /* The flood. A small circle scaled rather than a resized one: scale stays
    on the compositor, width/height would relayout on every frame of an
@@ -783,9 +799,9 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 .flow-btn:focus-visible .flow-btn__icon,
 .flow-btn:active .flow-btn__icon { color: var(--fb-on-ink); }
 .flow-btn:focus-visible .flow-btn__arrow--in,
-.flow-btn:active .flow-btn__arrow--in { left: 1.1em; }
+.flow-btn:active .flow-btn__arrow--in { left: -1.5em; opacity: 1; }
 .flow-btn:focus-visible .flow-btn__arrow--out,
-.flow-btn:active .flow-btn__arrow--out { right: -25%; }
+.flow-btn:active .flow-btn__arrow--out { right: -2.4em; opacity: 0; }
 
 @media (hover: hover) and (pointer: fine) {
   .flow-btn:hover {
@@ -800,8 +816,8 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   .flow-btn:hover .flow-btn__label,
   .flow-btn:hover .flow-btn__icon { transform: translateX(.55em); }
   .flow-btn:hover .flow-btn__icon { color: var(--fb-on-ink); }
-  .flow-btn:hover .flow-btn__arrow--in  { left: 1.1em; }
-  .flow-btn:hover .flow-btn__arrow--out { right: -25%; }
+  .flow-btn:hover .flow-btn__arrow--in  { left: -1.5em; opacity: 1; }
+  .flow-btn:hover .flow-btn__arrow--out { right: -2.4em; opacity: 0; }
 }
 
 .flow-btn:active { transform: scale(.96); }
