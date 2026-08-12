@@ -294,6 +294,34 @@ html:not(.js) .env-scene { display: none; }
 .env-scene.is-opening .env-hint,
 .env-scene.is-opening .env-skip { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 
+/* --- the whole envelope, on portrait/narrow screens ----------------------
+   The footage is a landscape 1126×618 studio shot (~1.82:1 — see
+   assets/video/README.md). `cover` scales it to fill the viewport by
+   height, so on anything narrower than that ratio the width crops hard —
+   on a typical phone portrait screen barely a quarter of the envelope's
+   width survives, reading as an unrecognisable close-up instead of an
+   envelope. Below 4:3 the crop is already severe, comfortably short of the
+   clip's own ratio, so switch to `contain` there: the whole envelope shows,
+   letterboxed on the scene's own paper tone (`.env-video`'s background,
+   already set above) — the same tone the clip's own tail fades to, so the
+   bars read as composed rather than broken. Landscape phones and anything
+   at or above 4:3 keep `cover`; height is what gets trimmed there, which
+   never loses more than the studio backdrop's own headroom. */
+@media (max-aspect-ratio: 4/3) {
+  .env-video { object-fit: contain; }
+
+  /* The hint and skip button are anchored to the bottom of the full-screen
+     scene, not to the video's own box — once the video is letterboxed
+     instead of full-bleed, that spot is flat paper, not footage. Near-white
+     type over cream is close to unreadable there, and the scrim built to
+     ground pale type on photography would just smudge a plain background.
+     Drop the scrim and use the page's own ink instead. */
+  .env-scrim { display: none; }
+  .env-hint { color: var(--ink-soft); }
+  .env-skip { color: var(--stone-text); }
+  .env-skip:hover, .env-skip:focus-visible { color: var(--ink); }
+}
+
 
 /* ==========================================================================
    1.5 · SITE NAV
