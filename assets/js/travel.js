@@ -1087,13 +1087,28 @@
       return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' });
     }
 
-    schedule.forEach(function (item) {
+    schedule.forEach(function (item, i) {
       var known = item.flag ? !!flags[item.flag] : !!(item.time || item.venue || item.blurb);
 
       var li = document.createElement('li');
       li.className = 'weekend-card';
 
+      // Purely decorative — the day name already carries the information;
+      // this just gives each card in the desktop 3-up grid (§11.5) a quiet
+      // typographic anchor, echoing the countdown's own big display
+      // numerals instead of leaving three text-only columns with nothing
+      // to tell them apart at a glance. Hidden from assistive tech since
+      // it's redundant with weekend-day.
+      var headWrap = document.createElement('div');
+      headWrap.className = 'weekend-card-head';
+      var num = document.createElement('span');
+      num.className = 'weekend-num';
+      num.setAttribute('aria-hidden', 'true');
+      num.textContent = ('0' + (i + 1)).slice(-2);
+      headWrap.appendChild(num);
+
       var head = document.createElement('p');
+      head.className = 'weekend-heading';
       var day = document.createElement('span');
       day.className = 'weekend-day';
       day.textContent = item.day;
@@ -1102,7 +1117,8 @@
       date.textContent = fmtDate(item.date);
       head.appendChild(day);
       head.appendChild(date);
-      li.appendChild(head);
+      headWrap.appendChild(head);
+      li.appendChild(headWrap);
 
       var title = document.createElement('p');
       title.className = 'weekend-title';

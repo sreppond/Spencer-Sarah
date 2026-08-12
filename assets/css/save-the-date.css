@@ -3258,8 +3258,23 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   .lodge-carousel-item { opacity: 1; transform: none; }
 }
 
-/* --- 11.5 · The Weekend --- */
+/* --- 11.5 · The Weekend ---
+   Three cards, a fixed count (Friday/Saturday/Sunday — see the note on
+   travel-data.js's schedule array), stacked on phones and tablets same
+   as before. At 768px+ — the same breakpoint the lodging carousel above
+   already switches on — they move into a 3-up row inside the section's
+   own sheet-inner--wide (see travel/index.html), instead of staying a
+   single ~36rem column stranded in the middle of a desktop viewport
+   with the wide lodging gallery directly above it for comparison. */
 .weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
+@media (min-width: 768px) {
+  .weekend-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+}
 /* Frosted-glass treatment: a warm, translucent card over the plain white
    .paper background rather than a flat fill — a soft gradient tint,
    a hairline gold-tinted border, backdrop blur (so anything that ever
@@ -3289,11 +3304,35 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
     box-shadow .45s var(--ease-soft),
     border-color .45s var(--ease-soft);
 }
+@media (min-width: 768px) {
+  /* The grid's own gap replaces the stacked list's margin-bottom; align-
+     items: stretch (the grid default) then gives all three cards the
+     same height regardless of which have real copy yet and which are
+     still the "details coming" placeholder — no card reads as the odd
+     one out just because its neighbor's sentence is longer. */
+  .weekend-card { margin-bottom: 0; height: 100%; }
+}
 .weekend-card.is-revealed { opacity: 1; transform: none; }
 .weekend-card:hover {
   transform: translateY(-3px);
   border-color: rgba(196,159,108,.42);
   box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.5);
+}
+/* A quiet display-face numeral (01/02/03), the same idea as the
+   countdown's own big Cormorant digits (§11.2b) — it gives each card in
+   the 3-up row a typographic anchor to differentiate it at a glance,
+   rather than three identical-looking text blocks whose only difference
+   is a small uppercase day label. Decorative only (aria-hidden — see
+   travel.js), so it never duplicates weekend-day for a screen reader. */
+.weekend-card-head { display: flex; align-items: baseline; gap: .6rem; }
+.weekend-num {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--gold);
+  opacity: .6;
 }
 .weekend-day {
   font-size: var(--t-micro);
@@ -3304,7 +3343,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 }
 .weekend-date { margin-left: .5em; color: var(--stone-text); font-weight: 400; letter-spacing: normal; text-transform: none; }
 .weekend-title {
-  margin-top: .35rem;
+  margin-top: .5rem;
   font-family: var(--font-display);
   font-size: 1.3rem;
   font-weight: 600;
