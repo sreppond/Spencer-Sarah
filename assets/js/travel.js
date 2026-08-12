@@ -893,34 +893,68 @@
 
 
   /* ------------------------------------------------------------------
-     Questions — FAQ accordion (native <details>, no JS required for the
-     interaction itself) plus the contact card with Sarah and Spencer's
-     own numbers.
+     Questions — category tabs plus the FAQ accordion (native <details>,
+     no JS required for the interaction itself) plus the contact card
+     with Sarah and Spencer's own numbers.
      ------------------------------------------------------------------ */
   (function questions() {
     var faq = $('#faq');
-    if (faq) {
+    var tabsWrap = $('#faq-tabs');
+    var categories = TRAVEL.faqCategories || [];
+
+    if (faq && categories.length) {
       var flags = TRAVEL.flags || {};
-      (TRAVEL.faq || []).forEach(function (item) {
-        var known = item.flag ? !!flags[item.flag] : !!item.a;
+      var selected = categories[0].key;
 
-        var details = document.createElement('details');
-        details.className = 'faq-item';
-        var summary = document.createElement('summary');
-        summary.textContent = item.q;
-        details.appendChild(summary);
+      var renderItems = function (key) {
+        var cat = categories.filter(function (c) { return c.key === key; })[0];
+        faq.innerHTML = '';
+        (cat ? cat.items : []).forEach(function (item) {
+          var known = item.flag ? !!flags[item.flag] : !!item.a;
 
-        var answer = document.createElement('div');
-        answer.className = 'faq-answer';
-        if (known && item.a) {
-          answer.textContent = item.a;
-        } else {
-          answer.classList.add('is-todo');
-          answer.textContent = 'Answer coming.';
-        }
-        details.appendChild(answer);
-        faq.appendChild(details);
-      });
+          var details = document.createElement('details');
+          details.className = 'faq-item';
+          var summary = document.createElement('summary');
+          summary.textContent = item.q;
+          details.appendChild(summary);
+
+          var answer = document.createElement('div');
+          answer.className = 'faq-answer';
+          if (known && item.a) {
+            answer.textContent = item.a;
+          } else {
+            answer.classList.add('is-todo');
+            answer.textContent = 'Answer coming.';
+          }
+          details.appendChild(answer);
+          faq.appendChild(details);
+        });
+      };
+
+      if (tabsWrap && categories.length > 1) {
+        categories.forEach(function (cat) {
+          var tab = document.createElement('button');
+          tab.type = 'button';
+          tab.className = 'faq-tab' + (cat.key === selected ? ' is-active' : '');
+          tab.textContent = cat.label;
+          tab.setAttribute('role', 'tab');
+          tab.setAttribute('aria-selected', cat.key === selected ? 'true' : 'false');
+          tab.addEventListener('click', function () {
+            if (cat.key === selected) return;
+            selected = cat.key;
+            $$('.faq-tab', tabsWrap).forEach(function (t) {
+              t.classList.remove('is-active');
+              t.setAttribute('aria-selected', 'false');
+            });
+            tab.classList.add('is-active');
+            tab.setAttribute('aria-selected', 'true');
+            renderItems(selected);
+          });
+          tabsWrap.appendChild(tab);
+        });
+      }
+
+      renderItems(selected);
     }
 
     var contacts = TRAVEL.contacts || {};

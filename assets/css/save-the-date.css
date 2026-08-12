@@ -3121,7 +3121,32 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 }
 
 /* --- 11.6 · Questions (FAQ + local contact) --- */
-.faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
+.faq-tabs {
+  margin-top: clamp(1.6rem, 5vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .55rem;
+}
+.faq-tab {
+  padding: .5rem 1.15rem;
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  background: transparent;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .3s var(--ease-soft), border-color .3s var(--ease-soft), background-color .3s var(--ease-soft);
+}
+.faq-tab:hover { color: var(--gold-text); border-color: var(--gold-deep); }
+.faq-tab.is-active {
+  border-color: var(--gold-deep);
+  background: var(--gold-deep);
+  color: #fbf7f0;
+}
+.faq { margin-top: clamp(1.4rem, 4vw, 1.8rem); }
 .faq-item {
   border-bottom: 1px solid var(--rule);
 }
