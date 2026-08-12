@@ -14,6 +14,7 @@ index.html                     the whole public experience
 assets/js/config.js            ← names, date, place, asset paths, form endpoint
 assets/js/save-the-date.js     envelope, hero, audio, mosaic, form
 assets/css/save-the-date.css
+backend/google-sheets-form/    guest-form database (Google Sheet) + setup steps
 assets/typography/             the hero lettering (see its README)
 assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card — a still
                                of the closed envelope, see assets/video/README.md
