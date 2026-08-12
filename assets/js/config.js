@@ -172,7 +172,7 @@ window.SAVE_THE_DATE = {
      the same way — paste its /exec URL instead. Both are happier
      with 'formdata' than with JSON, which is why that is the
      default now. */
-  FORM_ENDPOINT: '',
+  FORM_ENDPOINT: 'https://script.google.com/macros/s/AKfycbx7VIhiQfyfdhTAFwrMFEXqIBf_wbSR32mnMfTgQJk8RZOzZmmmjU22qSpNSL4Wy1ZfzQ/exec',
   form: {
     method: 'POST',
     // 'json' posts application/json; 'formdata' posts multipart —
