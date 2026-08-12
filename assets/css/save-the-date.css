@@ -740,26 +740,28 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 .flow-btn__arrow--in  { left: -2.4em; opacity: 0; }
 .flow-btn__arrow--out { right: -1.5em; opacity: 1; }
 
-/* The flood. A small circle scaled rather than a resized one: scale stays
-   on the compositor, width/height would relayout on every frame of an
-   800ms transition. 32× (512px) is deliberately oversized rather than
-   tuned to today's longest label ("Add to your calendar", 356px
-   diagonal) — a tight fit here breaks the moment any button's copy
-   grows, leaving pale unfilled slivers at both ends on hover. */
+/* The flood. This used to be a small circle scaled up ~32× on the
+   compositor rather than resized, so nothing relayouts mid-transition.
+   That works everywhere except one place: on a wide flow-btn (.btn-send
+   spans 500px+), Chromium fails to clip a child scaled that far past its
+   own box to the button's rounded corners — the corners render dead
+   square for the life of the hover, border-radius: 12px or not. Reproduced
+   in isolation with nothing but overflow:hidden + border-radius on the
+   parent and transform: scale(32) on an absolutely-positioned child, so
+   it is not fixable by touching stacking context or layer hints.
+   clip-path doesn't share that bug: the circle here is drawn at full
+   size from the start and simply revealed, so there is no oversized
+   layer for the corner clip to fail on. 75% is comfortably past the
+   ~70.7% a clip-path circle needs to reach every corner of any box,
+   per the spec's diagonal-based percentage resolution — verified
+   full-bleed at 75% on the widest button on the site. */
 .flow-btn__ink {
   position: absolute;
   z-index: 1;
-  top: 50%;
-  left: 50%;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
+  inset: 0;
   background: var(--fb-ink);
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  transition:
-    transform .8s cubic-bezier(.19, 1, .22, 1),
-    opacity   .5s cubic-bezier(.19, 1, .22, 1);
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path .8s cubic-bezier(.19, 1, .22, 1);
 }
 
 /* Any leading icon a variant supplies sits with the label. */
@@ -787,8 +789,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
 }
 .flow-btn:focus-visible .flow-btn__ink,
 .flow-btn:active .flow-btn__ink {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(32);
+  clip-path: circle(75% at 50% 50%);
 }
 .flow-btn:focus-visible .flow-btn__label,
 .flow-btn:active .flow-btn__label,
@@ -810,8 +811,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
     color: var(--fb-on-ink);
   }
   .flow-btn:hover .flow-btn__ink {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(32);
+    clip-path: circle(75% at 50% 50%);
   }
   .flow-btn:hover .flow-btn__label,
   .flow-btn:hover .flow-btn__icon { transform: translateX(.55em); }
@@ -874,7 +874,7 @@ html.is-sealed .page { opacity: 0; transform: scale(1.035); }
   transition: left .2s var(--ease-out), right .2s var(--ease-out), stroke .16s var(--ease-out);
 }
 .btn-send .flow-btn__ink {
-  transition: transform .2s var(--ease-out), opacity .16s var(--ease-out);
+  transition: clip-path .2s var(--ease-out);
 }
 
 
