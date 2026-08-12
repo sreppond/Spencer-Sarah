@@ -2384,7 +2384,7 @@ html.book-nudge-open body { overflow-y: hidden; }
   /* The lodging gallery and its lightbox have no job on paper — the
      static no-JS fallback list is the whole answer, and it prints even
      though html.js's is-superseded rule (§11.4) has hidden it on screen. */
-  .lodge-gallery, .lodge-lightbox { display: none !important; }
+  .lodge-carousel, .lodge-lightbox { display: none !important; }
   .lodge-fallback { display: block !important; }
 }
 
@@ -2522,141 +2522,294 @@ html.smooth-scroll { scroll-behavior: smooth; }
 }
 .lodge-urgency:empty { display: none; }
 
-/* Fixed 6-card gallery, not a filtered/reflowing list — 1 / 2 / 3
-   columns by breakpoint, one consistent 4:3 photo per card. */
-.lodge-gallery {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.4rem;
+/* Expand-on-select carousel, not a filtered/reflowing grid — one row of
+   six panels on tablet+, stacked into one column on phones (the site's
+   own mobile-first rule from the file header applies here too). One
+   panel is active at a time; travel.js drives which. */
+.lodge-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  height: clamp(30rem, 118vw, 36rem);
   margin-top: clamp(2rem, 6vw, 2.6rem);
   list-style: none;
 }
-@media (min-width: 640px) {
-  .lodge-gallery { grid-template-columns: repeat(2, 1fr); }
-}
-@media (min-width: 1024px) {
-  .lodge-gallery { grid-template-columns: repeat(3, 1fr); }
+@media (min-width: 768px) {
+  .lodge-carousel {
+    flex-direction: row;
+    height: clamp(21rem, 32vw, 27rem);
+    gap: .55rem;
+  }
 }
 
 /* Same fade + rise as .weekend-card — travel.js toggles .is-revealed
-   per card, staggered slightly, the first time each scrolls into view. */
-.lodge-gallery-item {
+   per panel, staggered slightly, the first time each scrolls into view.
+   flex-grow lives HERE, on the <li>, not on the button inside it — the
+   <li> is the direct child of the flex row/column in .lodge-carousel, so
+   it's the only element whose flex-grow actually reflows its siblings.
+   Split into longhand so travel.js can stagger just the reveal (opacity,
+   transform) without also delaying every hover-triggered expand by the
+   same stagger — flex-grow always transitions with zero delay. */
+.lodge-carousel-item {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  min-width: 0;
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+  transition-property: opacity, transform, flex-grow;
+  transition-duration: .6s, .6s, .6s;
+  transition-timing-function: var(--ease-out), var(--ease-out), var(--ease-soft);
 }
-.lodge-gallery-item.is-revealed { opacity: 1; transform: none; }
+.lodge-carousel-item.is-revealed { opacity: 1; transform: none; }
+/* The hover/focus preview is desktop-only — see the (hover: hover) note
+   below on the photo zoom. Below 768px, panels are a fixed-height
+   column: two panels independently satisfying "expand" at once (one
+   hovered, one is-active from a prior tap) would each claim a share of
+   that fixed height and cramp both. Gating hover out down there leaves
+   .is-active — always exactly one panel, set by travel.js — as the only
+   thing that expands a panel on touch. */
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover,
+  .lodge-carousel-item:focus-within { flex-grow: 5; }
+}
+.lodge-carousel-item.is-active { flex-grow: 5; }
 
-.lodge-gallery-card {
+.lodge-carousel-panel {
   position: relative;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   width: 100%;
+  min-height: 3.6rem;
   padding: 0;
   border: 1px solid var(--rule);
-  border-radius: 1rem;
+  border-radius: .9rem;
   background: var(--card);
   overflow: hidden;
   font: inherit;
   text-align: left;
   color: inherit;
   cursor: pointer;
-  transition: transform .3s var(--ease-soft), box-shadow .3s var(--ease-soft);
+  transition: box-shadow .3s var(--ease-soft), border-color .3s var(--ease-soft);
 }
-.lodge-gallery-card:hover,
-.lodge-gallery-card:focus-visible {
-  transform: translateY(-3px);
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-panel,
+  .lodge-carousel-item:focus-within .lodge-carousel-panel {
+    box-shadow: 0 18px 34px -22px rgba(93,74,44,.4);
+    border-color: var(--gold);
+  }
+}
+.lodge-carousel-item.is-active .lodge-carousel-panel {
   box-shadow: 0 18px 34px -22px rgba(93,74,44,.4);
+  border-color: var(--gold);
 }
-.lodge-gallery-card:focus-visible { outline: 2.5px solid var(--gold-text); outline-offset: 3px; }
+.lodge-carousel-panel:focus-visible { outline: 2.5px solid var(--gold-text); outline-offset: 3px; }
 
-.lodge-gallery-photo {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
+.lodge-carousel-media {
+  position: absolute;
+  inset: 0;
   /* Same gradient as the mosaic's "photograph to come" card — one
      placeholder language, not two. */
   background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
 }
-.lodge-gallery-photo img {
+.lodge-carousel-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform .5s var(--ease-out);
+  transition: transform .6s var(--ease-out);
 }
 /* Hover zoom is desktop-only — (hover: hover) keeps a lingering touch
    from leaving the image scaled on a phone with no way to "unhover" it. */
-@media (hover: hover) and (pointer: fine) {
-  .lodge-gallery-card:hover .lodge-gallery-photo img,
-  .lodge-gallery-card:focus-visible .lodge-gallery-photo img { transform: scale(1.06); }
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-media img,
+  .lodge-carousel-item:focus-within .lodge-carousel-media img { transform: scale(1.05); }
 }
+.lodge-carousel-item.is-active .lodge-carousel-media img { transform: scale(1.05); }
+
 /* A bare icon centered in a lot of empty space reads as "nothing
    loaded" rather than a considered placeholder — the soft vignette and
    medallion ring below give it enough presence to read as intentional,
-   without turning six identical cards into six competing focal points. */
-.lodge-gallery-photo.is-empty {
+   without turning six identical panels into six competing focal points. */
+.lodge-carousel-media.is-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .65rem;
+  gap: .5rem;
   background-image:
     radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 62%),
     linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
 }
-.lodge-gallery-photo .m-empty-mark {
+.lodge-carousel-media.is-empty .m-empty-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(52px, 11vw, 72px);
-  height: clamp(52px, 11vw, 72px);
-  padding: clamp(13px, 3vw, 18px);
+  width: clamp(34px, 8vw, 52px);
+  height: clamp(34px, 8vw, 52px);
+  padding: clamp(9px, 2vw, 13px);
   border: 1px solid rgba(158,156,132,.38);
   border-radius: 50%;
   color: var(--leaf);
   opacity: .85;
 }
-.lodge-gallery-photo .m-empty-mark svg { width: 100%; height: 100%; }
-.lodge-gallery-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
-
-/* Tap affordance for touch, which has no hover to signal "clickable."
-   Always in the DOM; CSS decides which input method sees it. */
-.lodge-gallery-expand {
-  position: absolute;
-  right: .6rem;
-  bottom: .6rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background: rgba(37,29,18,.55);
-  color: #fff8ec;
+.lodge-carousel-media.is-empty .m-empty-mark svg { width: 100%; height: 100%; }
+.lodge-carousel-media.is-empty .m-empty-note {
+  font-size: var(--t-micro);
+  font-style: italic;
+  color: var(--stone-text);
   opacity: 0;
-  transition: opacity .25s var(--ease-soft);
+  transition: opacity .35s var(--ease-soft);
 }
-.lodge-gallery-expand svg { width: 60%; height: 60%; }
-@media (hover: none) {
-  .lodge-gallery-expand { opacity: 1; }
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-media.is-empty .m-empty-note,
+  .lodge-carousel-item:focus-within .lodge-carousel-media.is-empty .m-empty-note { opacity: 1; }
 }
-@media (hover: hover) and (pointer: fine) {
-  .lodge-gallery-card:hover .lodge-gallery-expand,
-  .lodge-gallery-card:focus-visible .lodge-gallery-expand { opacity: 1; }
-}
+.lodge-carousel-item.is-active .lodge-carousel-media.is-empty .m-empty-note { opacity: 1; }
 
+/* The shaded scrim the name/tagline sit on — always present, low and
+   soft when collapsed, deeper once the panel is active/hovered so the
+   full label stays readable over a bright photo. */
+.lodge-carousel-shadow {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 55%;
+  background: linear-gradient(to top, rgba(35,27,16,.72), rgba(35,27,16,0));
+  pointer-events: none;
+  opacity: .7;
+  transition: opacity .4s var(--ease-soft);
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-shadow,
+  .lodge-carousel-item:focus-within .lodge-carousel-shadow { opacity: 1; }
+}
+.lodge-carousel-item.is-active .lodge-carousel-shadow { opacity: 1; }
+
+/* Badges pin over the photo regardless of where they fall in panel's
+   own document flow — position: absolute lifts them into the same
+   painted-after-static-content layer as .lodge-carousel-media, with a
+   higher z-index so they land above it rather than under it. */
 .lodge-gallery-badges {
   position: absolute;
-  top: .7rem;
-  left: .7rem;
-  right: .7rem;
-  z-index: 1;
+  top: .6rem;
+  left: .6rem;
+  right: .6rem;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: .5rem;
+  /* Collapsed panels in the mobile column are short enough that a
+     top-pinned badge and the bottom-pinned .lodge-carousel-spine name
+     would overlap (see the note on that element) — so on phones, badges
+     only show once a panel is active. Desktop's collapsed panels are
+     narrow-but-tall columns with room for both, so badges stay shown
+     there unconditionally, as they always have. */
+  opacity: 0;
+  transition: opacity .3s var(--ease-soft);
 }
+.lodge-carousel-item.is-active .lodge-gallery-badges { opacity: 1; }
+@media (min-width: 768px) {
+  .lodge-gallery-badges { opacity: 1; }
+}
+
+/* Collapsed name — always visible so a guest can tell the six
+   properties apart before expanding any of them. A vertical spine on
+   the desktop row (where a collapsed panel is narrow and tall); a small
+   horizontal bar on the phone column (where a collapsed panel is wide
+   and short) — same element, the breakpoint just changes its axis.
+   Fades out the moment .lodge-carousel-label takes over. */
+.lodge-carousel-spine {
+  position: absolute;
+  left: .8rem;
+  bottom: .6rem;
+  z-index: 1;
+  max-width: calc(100% - 1.6rem);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff8ec;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transition: opacity .35s var(--ease-soft);
+}
+@media (min-width: 768px) {
+  .lodge-carousel-spine {
+    left: .6rem;
+    top: .8rem;
+    bottom: .8rem;
+    max-width: none;
+    max-height: calc(100% - 1.6rem);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-overflow: clip;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-spine,
+  .lodge-carousel-item:focus-within .lodge-carousel-spine { opacity: 0; }
+}
+.lodge-carousel-item.is-active .lodge-carousel-spine { opacity: 0; }
+
+/* The full label — name, tagline, price — that replaces the spine the
+   moment a panel is hovered, focused, or made active. This is the part
+   that changes as you move between panels: it fades and slides in on
+   whichever one is expanded, and back out the instant it isn't. */
+.lodge-carousel-label {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: .6rem;
+  width: 100%;
+  padding: .8rem .9rem;
+}
+.lodge-carousel-text {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(14px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-text,
+  .lodge-carousel-item:focus-within .lodge-carousel-text { opacity: 1; transform: none; }
+}
+.lodge-carousel-item.is-active .lodge-carousel-text { opacity: 1; transform: none; }
+.lodge-carousel-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: #fff8ec;
+}
+.lodge-carousel-sub {
+  font-size: var(--t-small);
+  line-height: 1.35;
+  color: rgba(255,248,236,.84);
+}
+.lodge-carousel-price {
+  flex: none;
+  font-size: var(--t-small);
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: #fff8ec;
+  opacity: 0;
+  transition: opacity .5s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .lodge-carousel-item:hover .lodge-carousel-price,
+  .lodge-carousel-item:focus-within .lodge-carousel-price { opacity: .92; }
+}
+.lodge-carousel-item.is-active .lodge-carousel-price { opacity: .92; }
+
 .lodge-gallery-badge {
   display: inline-flex;
   align-items: center;
@@ -2678,23 +2831,6 @@ html.smooth-scroll { scroll-behavior: smooth; }
   letter-spacing: .04em;
   text-transform: none;
 }
-
-.lodge-gallery-body {
-  display: flex;
-  flex-direction: column;
-  gap: .3rem;
-  padding: 1rem 1.2rem 1.3rem;
-}
-.lodge-gallery-top { display: flex; align-items: baseline; justify-content: space-between; gap: .6rem; }
-.lodge-gallery-name {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.lodge-gallery-price { flex: none; font-size: var(--t-small); color: var(--gold-text); font-weight: 600; letter-spacing: .05em; }
-.lodge-gallery-oneliner { font-size: var(--t-small); color: var(--stone-text); }
-.lodge-gallery-proximity { font-size: var(--t-micro); color: var(--ink-soft); }
 
 .lodge-fallback { margin-top: clamp(1.6rem, 5vw, 2.2rem); list-style: none; }
 .lodge-fallback li {
@@ -2962,8 +3098,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 .lodge-detail-directions:focus-visible { text-decoration-color: currentColor; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lodge-gallery-card:hover { transform: none; }
-  .lodge-gallery-item { opacity: 1; transform: none; }
+  .lodge-carousel-item { opacity: 1; transform: none; }
 }
 
 /* --- 11.5 · The Weekend --- */
