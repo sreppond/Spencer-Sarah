@@ -980,7 +980,8 @@
 
   /* ------------------------------------------------------------------
      Questions — FAQ accordion (native <details>, no JS required for the
-     interaction itself) plus the local-contact and couple-contact cards.
+     interaction itself) plus the contact card with Sarah and Spencer's
+     own numbers.
      ------------------------------------------------------------------ */
   (function questions() {
     var faq = $('#faq');
@@ -1010,28 +1011,16 @@
 
     var contacts = TRAVEL.contacts || {};
 
+    var line = $('#local-contact-line');
+    if (line && contacts.intro) line.textContent = 'Questions before then? ' + contacts.intro;
+
     var localMeta = $('#local-contact-meta');
     if (localMeta) {
-      var local = contacts.local || {};
-      var bits = [];
-      if (local.phone) bits.push(local.phone); else bits.push('<span class="is-todo">phone coming</span>');
-      if (local.email) bits.push(local.email); else bits.push('<span class="is-todo">email coming</span>');
-      localMeta.innerHTML = bits.join(' &middot; ');
-
-      var line = $('#local-contact-line');
-      if (line && local.name) {
-        line.textContent = 'Questions before then? ' + local.name + ' (' +
-          (local.relation || "Spencer's family") + ') has scouted Whitefish lodging in person and is glad to help.';
-      }
-    }
-
-    var coupleEl = $('#couple-contact');
-    if (coupleEl) {
-      var email = (contacts.couple || {}).email || (window.SAVE_THE_DATE || {}).contact && window.SAVE_THE_DATE.contact.email;
-      if (email) {
-        coupleEl.innerHTML = 'Or email us directly at <a href="mailto:' + email + '">' + email + '</a>.';
-      } else {
-        coupleEl.innerHTML = '<span class="is-todo">Couple\'s contact email coming.</span>';
+      var people = contacts.people || [];
+      if (people.length) {
+        localMeta.innerHTML = people.map(function (p) {
+          return p.name + (p.phone ? ' – ' + p.phone : ' – <span class="is-todo">phone coming</span>');
+        }).join('<br>');
       }
     }
   }());

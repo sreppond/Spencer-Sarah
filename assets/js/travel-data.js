@@ -335,7 +335,10 @@ window.TRAVEL = {
 
 
   contacts: {
-    couple: { email: '' },   // TODO — mirrors config.contact.email in config.js
-    local: { name: '', relation: 'Spencer’s mom', phone: '', email: '' }  // TODO
+    intro: 'Drop either of us a message, we’re happy to help!',
+    people: [
+      { name: 'Sarah', phone: '(901) 359-5143' },
+      { name: 'Spencer', phone: '(206) 399-7024' }
+    ]
   }
 };
