@@ -21,6 +21,24 @@
   var menu = document.getElementById('hero-nav-menu');
   if (!toggle || !menu) return;
 
+  // Publish this bar's real rendered height as --nav-h — the same token
+  // travel.js publishes for its own nav pill (see the identical block
+  // there) — so anything that needs to clear fixed nav chrome (the
+  // #celebrate/#details scroll-margin-top in CSS §3.5/§4) reads the
+  // actual height instead of a constant sized for a different nav.
+  var heroNav = document.getElementById('hero-nav');
+  if (heroNav) {
+    var publishNavH = function () {
+      document.documentElement.style.setProperty('--nav-h', heroNav.getBoundingClientRect().height + 'px');
+    };
+    publishNavH();
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(publishNavH).observe(heroNav);
+    } else {
+      window.addEventListener('resize', publishNavH, { passive: true });
+    }
+  }
+
   var CLOSE_MS = 260;
   var closeTimer = null;
 
