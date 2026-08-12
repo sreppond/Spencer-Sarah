@@ -82,12 +82,14 @@
      key (std:audio) and the same file, read from config.js's `media`
      block, which this page already loads.
 
-     The save the date is allowed to autoplay because the envelope tap
-     that opens it IS the gesture; nothing on this page plays that role,
-     so autoplay here only fires when the stored preference already says
-     "on" — a guest who turned the sound on earlier in this browser gets
-     it back without a second tap, and everyone else just sees a toggle
-     sitting ready, exactly like the save the date before its own tap.
+     Default on, same as the save the date: autoplay is attempted on load
+     unless the stored preference explicitly says "off". Nothing on this
+     page holds a fresh user gesture the way the envelope tap does, so a
+     guest who lands here cold may still get an autoplay refusal from the
+     browser — that's fine, it just leaves the toggle sitting ready, same
+     as the save the date before its own tap. A guest arriving from the
+     save the date (same origin, already played audio there) typically
+     autoplays cleanly on the strength of that.
      ------------------------------------------------------------------ */
   (function ambientAudio() {
     var audio = $('#ambient');
@@ -134,7 +136,7 @@
     audio.src = assetPath(media.ambientAudio);
     revealToggle();
 
-    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === 'on') {
+    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') {
       audio.volume = 0;
       var p = audio.play();
       if (p && p.then) {
