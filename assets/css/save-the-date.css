@@ -2423,7 +2423,11 @@ body.travel-page .paper { background: #fff; }
    The mask (not a solid overlay) is what makes the fade actually read as
    the photo dissolving into paper rather than a rectangle laid over it;
    it only works because the page behind it is the same white the mask
-   fades to (11.1). */
+   fades to (11.1). The source file itself already has its top ~20%
+   (mostly open sky) trimmed off, so the mountains and lake sit right at
+   the top edge on every breakpoint — object-position only needs to
+   center horizontally, since at both aspect ratios below the crop is
+   from the sides, never the top. */
 .travel-hero-media {
   width: 100%;
   line-height: 0;
@@ -2432,7 +2436,7 @@ body.travel-page .paper { background: #fff; }
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center;
   -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
           mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
 }
