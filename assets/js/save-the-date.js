@@ -446,20 +446,9 @@
       // A full-screen gate with exactly one accepted interaction is the
       // page's largest liability if that interaction is missed entirely —
       // so if nothing has happened in 2.8s, open it for them. Anyone who
-      // has already acted (tap, Enter/Space, Escape, skip) has flipped
-      // `opened` to true by then, at which point this is a no-op.
+      // has already acted (tap, Enter/Space, Escape) has flipped `opened`
+      // to true by then, at which point this is a no-op.
       setTimeout(openEnvelope, 2800);
-
-      var skip = $('#env-skip');
-      if (skip) {
-        skip.addEventListener('click', function () {
-          rememberOpened();
-          bypassEnvelope();
-          page.setAttribute('tabindex', '-1');
-          page.focus({ preventScroll: true });
-          page.removeAttribute('tabindex');
-        });
-      }
 
       // Escape is what people press when a full-screen overlay has them.
       document.addEventListener('keydown', function (e) {

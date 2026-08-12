@@ -239,85 +239,6 @@ html:not(.js) .env-scene { display: none; }
   background: var(--paper-deep);
 }
 
-/* A quiet floor of shadow for the hint and skip link to sit on. The old
-   charcoal envelope gave pale type a dark ground for free; this footage is
-   ivory top to bottom, so the ground has to be built — a gradient low
-   enough that it never reaches the card or its text in the upper frame. */
-.env-scrim {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 20%;
-  background: linear-gradient(to top, rgba(28, 25, 19, .34), rgba(28, 25, 19, 0));
-  pointer-events: none;
-}
-
-/* -- hint --
-   This is the only instruction on a full-screen blocker, so it has to be
-   readable at the dimmest point of its own breathing animation, not the
-   brightest. */
-.env-hint {
-  position: absolute;
-  left: 50%;
-  bottom: calc(3.6rem + var(--safe-b));
-  transform: translateX(-50%);
-  margin: 0;
-  font-family: var(--font-text);
-  font-size: clamp(.82rem, 3.2vw, .95rem);
-  font-weight: 500;
-  /* Was .38em — nearly double any other tracked value on the site, and
-     wide tracking reads worst on lowercase (no uppercase forms to counter
-     the run of gaps). Brought in line with the site's other tracked-caps
-     labels at a comparable size. */
-  letter-spacing: .18em;
-  text-indent: .18em;
-  text-transform: lowercase;
-  color: rgba(250, 246, 238, .95);
-  pointer-events: none;
-  animation: hint-breathe 3.6s ease-in-out infinite;
-}
-@keyframes hint-breathe {
-  0%, 100% { opacity: .72; }
-  50%      { opacity: 1; }
-}
-
-/* An escape hatch out of the ceremony. A full-screen gate with exactly one
-   accepted interaction and no stated alternative is the single largest UX
-   liability on the page: anyone who does not read "tap to open" as a
-   literal instruction is simply stuck watching a video. */
-.env-skip {
-  position: absolute;
-  left: 50%;
-  bottom: calc(1.3rem + var(--safe-b));
-  transform: translateX(-50%);
-  border: 0;
-  /* padding alone left this ~37px tall; min-height + flex centering gets
-     it to the 44px tap floor without changing the visible label size. */
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  padding: .7rem 1.1rem;
-  background: none;
-  font-family: var(--font-text);
-  font-size: var(--t-micro);
-  font-weight: 500;
-  letter-spacing: .22em;
-  text-indent: .22em;
-  text-transform: uppercase;
-  color: rgba(240, 233, 219, .68);
-  text-decoration: underline;
-  text-underline-offset: .35em;
-  text-decoration-thickness: 1px;
-  cursor: pointer;
-  transition: color .35s var(--ease-soft);
-}
-.env-skip:hover, .env-skip:focus-visible { color: rgba(255, 251, 244, .98); }
-
-/* --- opening sequence ---------------------------------------------------
-   The choreography now lives in the footage itself. All CSS has to do is
-   clear the hint and skip link off the card as it comes into frame. */
-.env-scene.is-opening .env-hint,
-.env-scene.is-opening .env-skip { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
-
 /* --- the whole envelope, whichever clip ends up on screen ---------------
    Two clips, two native shapes: the landscape studio shot is ~1.82:1 (see
    assets/video/README.md), the portrait take save-the-date.js prefers on
@@ -334,24 +255,12 @@ html:not(.js) .env-scene { display: none; }
    that actually crops it. Both switch to `contain`, letterboxed on the
    scene's own paper tone (`.env-video`'s background, already set above)
    — the same tone the clip's own tail fades to, so the bars read as
-   composed rather than broken — and both re-ground the hint/skip text in
-   ink rather than the near-white built for photography, since that spot
-   is flat paper instead of footage whenever `contain` is what fired. */
+   composed rather than broken. */
 @media (max-aspect-ratio: 4/3) {
   .env-scene:not(.is-mobile-cut) .env-video { object-fit: contain; }
-  .env-scene:not(.is-mobile-cut) .env-scrim { display: none; }
-  .env-scene:not(.is-mobile-cut) .env-hint { color: var(--ink-soft); }
-  .env-scene:not(.is-mobile-cut) .env-skip { color: var(--stone-text); }
-  .env-scene:not(.is-mobile-cut) .env-skip:hover,
-  .env-scene:not(.is-mobile-cut) .env-skip:focus-visible { color: var(--ink); }
 }
 @media (orientation: landscape) {
   .env-scene.is-mobile-cut .env-video { object-fit: contain; }
-  .env-scene.is-mobile-cut .env-scrim { display: none; }
-  .env-scene.is-mobile-cut .env-hint { color: var(--ink-soft); }
-  .env-scene.is-mobile-cut .env-skip { color: var(--stone-text); }
-  .env-scene.is-mobile-cut .env-skip:hover,
-  .env-scene.is-mobile-cut .env-skip:focus-visible { color: var(--ink); }
 }
 
 
@@ -2671,7 +2580,6 @@ html.book-nudge-open body { overflow-y: hidden; }
      costs nothing. */
   .env-scene { transition: opacity .5s linear !important; }
   .env { transition: opacity .45s linear !important; }
-  .env-hint { animation: none; opacity: .8; }
 
   .page { transition: opacity .5s linear !important; }
   html.is-sealed .page { transform: none; }
