@@ -64,6 +64,27 @@
   --ease-soft:   cubic-bezier(.25, .8, .28, 1);
   /* the reveal easing: a long, slow settle with no overshoot */
   --ease-reveal: cubic-bezier(.22, 1, .36, 1);
+  /* the hero-nav's own curve: a light overshoot past the resting point.
+     Drives the hamburger's fold into an X and the dropdown's arrival, so
+     the two read as one gesture rather than two unrelated transitions.
+     --ease-bounce-strong is the same shape pushed further, reserved for
+     the hamburger's middle bar (it has the least distance to travel and
+     reads as inert next to the outer two without the extra snap). */
+  --ease-bounce:        cubic-bezier(.5, .85, .25, 1.1);
+  --ease-bounce-strong: cubic-bezier(.5, .85, .25, 1.8);
+
+  /* --- hero nav ---
+     One thin border standing in for both controls' former glow — see
+     §1.5 — so the hamburger and RSVP read as one family. */
+  --nav-border: rgba(255, 255, 255, .45);
+
+  /* --- RSVP pill ---
+     The warm taupe/khaki fill for the RSVP button (§1.5), darkened just
+     enough below its reference swatch that white text on it still clears
+     4.5:1. */
+  --rsvp-light: #9c8863;
+  --rsvp:       #7d6a4e;
+  --rsvp-deep:  #5f4e38;
 
   /* How far down the hero the painting starts dissolving into paper. One
      value in every configuration now — there is no scroll hand-off to hold
@@ -367,10 +388,13 @@ html:not(.js) .env-scene { display: none; }
    handful of lines in the "Hero nav" block of travel.js, so nothing about
    either page depends on the other's script.
 
-   It is never a plate over the artwork. Both controls sit on their own
-   soft ivory bloom — the same device .hero-cue uses lower in the
-   save-the-date's painting (§2) — rather than a dark bar or a frosted
-   rectangle, so the image itself is never dimmed or covered.
+   Neither control is a plate over the artwork, but they no longer lean on
+   a soft glow to prove it either — a large radial halo read as cheap once
+   the rest of the page settled on hard, deliberate edges. Both now carry
+   their own contained fill (frosted glass on the hamburger, a solid taupe
+   gradient on RSVP) plus one thin --nav-border hairline, so the separation
+   from whatever passage of sky, peak or paper sits behind them comes from
+   the control itself, not a bloom bleeding past its own bounds.
 
    z-index sits below the save-the-date's envelope (90): while the
    envelope is up this is fully covered, so it is only ever seen once the
@@ -398,40 +422,29 @@ html:not(.js) .env-scene { display: none; }
   pointer-events: auto;
 }
 
-/* Shared bloom: a soft ivory halo behind each control, generous enough to
-   clear whatever passage of sky, peak or paper sits behind it. No hard
-   edge, so it never reads as a panel. */
-.hero-nav-toggle::before,
-.hero-nav-rsvp::before {
-  content: '';
-  position: absolute;
-  inset: -.9rem;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(ellipse 68% 68% at 50% 50%,
-      rgba(250,246,238,.88) 0%,
-      rgba(250,246,238,.66) 46%,
-      rgba(250,246,238,.3)  72%,
-      rgba(250,246,238,0)   100%);
-}
-
 .hero-nav-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: none;
   border-radius: 50%;
-  background: transparent;
+  border: 1px solid var(--nav-border);
+  background: rgba(251, 247, 240, .58);
+  box-shadow: 0 1px 3px rgba(46, 38, 26, .16);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+          backdrop-filter: blur(14px) saturate(160%);
   cursor: pointer;
   color: var(--ink);
-  transition: color .3s var(--ease-soft);
+  transition: color .3s var(--ease-soft), background .3s var(--ease-soft), border-color .3s var(--ease-soft);
 }
 .hero-nav-toggle:hover,
 .hero-nav-toggle:focus-visible,
-.hero-nav-toggle.is-open { color: var(--gold-text); }
+.hero-nav-toggle.is-open {
+  color: var(--gold-text);
+  background: rgba(251, 247, 240, .84);
+  border-color: rgba(255, 255, 255, .7);
+}
 
 .hero-nav-toggle-bars {
   position: relative;
@@ -446,22 +459,38 @@ html:not(.js) .env-scene { display: none; }
   height: 1.6px;
   border-radius: 1px;
   background: currentColor;
-  transition: transform .32s var(--ease-soft), opacity .2s var(--ease-soft), top .32s var(--ease-soft);
 }
-.hero-nav-toggle-bars span:nth-child(1) { top: 0; }
-.hero-nav-toggle-bars span:nth-child(2) { top: 5.7px; }
-.hero-nav-toggle-bars span:nth-child(3) { top: 11.4px; }
-/* Bars fold into an X once open, the standard hamburger-to-close tell. */
-.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(1) { top: 5.7px; transform: rotate(45deg); }
-.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(2) { opacity: 0; }
-.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(3) { top: 5.7px; transform: rotate(-45deg); }
+.hero-nav-toggle-bars span:nth-child(1) {
+  top: 0;
+  transition: top .3s var(--ease-bounce), transform .3s var(--ease-bounce);
+}
+.hero-nav-toggle-bars span:nth-child(2) {
+  top: 5.7px;
+  transition: opacity .2s var(--ease-bounce-strong), transform .3s var(--ease-bounce-strong);
+}
+.hero-nav-toggle-bars span:nth-child(3) {
+  top: 11.4px;
+  transition: top .3s var(--ease-bounce), transform .3s var(--ease-bounce);
+}
+/* Bars fold into an X once open, the standard hamburger-to-close tell.
+   The full 315deg/135deg turns (rather than the shorter -45deg/135deg
+   path) are deliberate: paired with the overshoot easings above, the
+   extra travel is what makes the fold read as a snap instead of a slide. */
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(1) { top: 5.7px; transform: rotate(315deg); }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(2) { opacity: 0; transform: rotate(45deg); }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(3) { top: 5.7px; transform: rotate(135deg); }
 
-/* RSVP button and the dropdown menu below share one glass fill — the same
-   ivory-glass panel the old §1.5 pill used — so the two floating controls
-   read as one family instead of the button carrying its own gold tint. */
+/* RSVP: a solid taupe pill (see --rsvp tokens) rather than the glass fill
+   the hamburger and dropdown share — it is the page's one call to action,
+   so it is allowed its own color instead of blending into the family.
+   The label fades and the trailing chip expands into a full-width "go"
+   affordance on hover/focus, the same slide-reveal as the site's other
+   flow-btn pills (§9), just packaged for this pill's own shape. */
 .hero-nav-rsvp {
   display: inline-flex;
   align-items: center;
+  overflow: hidden;
+  min-width: 8.25rem;
   height: 44px;
   padding: 0 1.35rem;
   border-radius: 999px;
@@ -471,24 +500,48 @@ html:not(.js) .env-scene { display: none; }
   letter-spacing: .17em;
   text-indent: .17em;
   text-transform: uppercase;
-  color: var(--gold-text);
-  background: rgba(251, 247, 240, .92);
-  border: 1px solid rgba(168, 131, 79, .32);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-          backdrop-filter: blur(18px) saturate(160%);
+  color: var(--card);
+  background: linear-gradient(135deg, var(--rsvp-light) 0%, var(--rsvp) 55%, var(--rsvp-deep) 100%);
+  border: 1px solid var(--nav-border);
+  box-shadow: 0 1px 3px rgba(46, 38, 26, .22), inset 0 1px 0 rgba(255, 255, 255, .22);
   text-decoration: none;
-  transition: background .3s var(--ease-soft), color .3s var(--ease-soft), border-color .3s var(--ease-soft);
+  transition: border-color .3s var(--ease-soft), transform .2s var(--ease-bounce);
 }
 .hero-nav-rsvp:hover,
-.hero-nav-rsvp:focus-visible {
-  background: rgba(251, 247, 240, 1);
-  border-color: rgba(168, 131, 79, .5);
+.hero-nav-rsvp:focus-visible { border-color: rgba(255, 255, 255, .7); }
+.hero-nav-rsvp:active { transform: scale(.96); }
+
+.hero-nav-rsvp-label {
+  margin-right: 1.7rem;
+  transition: opacity .35s var(--ease-soft);
 }
+.hero-nav-rsvp:hover .hero-nav-rsvp-label,
+.hero-nav-rsvp:focus-visible .hero-nav-rsvp-label { opacity: 0; }
+
+.hero-nav-rsvp-icon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: grid;
+  width: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .2);
+  color: var(--card);
+  transition: width .4s var(--ease-bounce);
+}
+.hero-nav-rsvp-icon svg { width: 15px; height: 15px; }
+.hero-nav-rsvp:hover .hero-nav-rsvp-icon,
+.hero-nav-rsvp:focus-visible .hero-nav-rsvp-icon { width: calc(100% - 8px); }
 
 /* The dropdown menu is allowed to read as a solid card once open — unlike
    the two controls above, it is a brief, guest-triggered interaction, not
    something permanently laid over the painting. Same glass-pill treatment
-   the old §1.5 nav used, so the two still feel like one family. */
+   the old §1.5 nav used, so the two still feel like one family. The
+   overshoot easing is shared with the hamburger's own fold (see
+   --ease-bounce above), so opening the menu and folding the icon that
+   opened it read as the same gesture rather than two unrelated ones. */
 .hero-nav-menu {
   position: absolute;
   top: calc(var(--safe-t) + 3.55rem);
@@ -507,9 +560,9 @@ html:not(.js) .env-scene { display: none; }
           backdrop-filter: blur(18px) saturate(160%);
   pointer-events: auto;
   opacity: 0;
-  transform: translateY(-8px) scale(.97);
+  transform: translateY(-10px) scale(.94);
   transform-origin: top left;
-  transition: opacity .3s var(--ease-soft), transform .32s var(--ease-soft);
+  transition: opacity .3s var(--ease-bounce), transform .34s var(--ease-bounce);
 }
 .hero-nav-menu.is-open {
   opacity: 1;
@@ -536,7 +589,9 @@ html:not(.js) .env-scene { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-nav-menu,
-  .hero-nav-toggle-bars span { transition: none !important; }
+  .hero-nav-toggle-bars span,
+  .hero-nav-rsvp-label,
+  .hero-nav-rsvp-icon { transition: none !important; }
 }
 
 
