@@ -578,11 +578,13 @@
           book.rel = 'noopener noreferrer';
           book.innerHTML =
             '<span class="flow-btn__ink" aria-hidden="true"></span>' +
+            '<span class="flow-btn__content">' +
             '<svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
             '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
             '<span class="flow-btn__label">Book</span>' +
             '<svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
-            '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '</span>';
           actionsEl.appendChild(book);
         }
         // No bookingUrl: no button at all — a dead link on a card someone
