@@ -162,14 +162,23 @@
 
 
   /* ------------------------------------------------------------------
-     Where to Stay — the page's centerpiece: a photo gallery of the six
-     properties with a lightbox for the full detail on each. Built
-     entirely from travel-data.js, so a price, a photo or the whole
-     recommended order (see the note on Grouse Mountain / Hotel
+     Where to Stay — the page's centerpiece: an expand-on-select image
+     carousel of the six properties with a lightbox for the full detail
+     on each. Built entirely from travel-data.js, so a price, a photo or
+     the whole recommended order (see the note on Grouse Mountain / Hotel
      Whitefish in travel-data.js) is a data change, never a template
      change — drop real photos into an entry's `photos` array and flip
-     its status and the card/lightbox pick it up with no code change.
-     ------------------------------------------------------------------ */
+     its status and the panel/lightbox pick it up with no code change.
+
+     One panel is "active" at a time (index 0 to start, matching the
+     recommended order): its name and tagline fade in over the photo,
+     and its neighbors give it most of the row's width. Hover or keyboard
+     focus previews a panel without changing that state. Selecting
+     (click/tap/Enter) a hover-capable panel opens the lightbox directly,
+     since hovering already served as the preview; on touch, where there
+     is no hover to preview with, the first select makes a panel active
+     and a second select on that same, now-active panel opens the
+     lightbox — see canHover below. */
   (function lodgeGallery() {
     var gallery = $('#lodge-gallery');
     var fallback = $('#lodge-fallback');
@@ -179,6 +188,9 @@
     if (!list.length) return;   // leave the static fallback as the whole answer
 
     var flags = TRAVEL.flags || {};
+    var canHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    var items = [];
+    var panels = [];
 
     var urgency = $('#lodge-urgency');
     if (urgency) urgency.textContent = (TRAVEL.lodgingBookBy || {}).text || '';
@@ -224,11 +236,11 @@
       return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address);
     }
 
-    /* ---- gallery cards ---------------------------------------------- */
+    /* ---- carousel panels ---------------------------------------------- */
 
-    function buildPhoto(entry) {
+    function buildMedia(entry) {
       var wrap = document.createElement('span');
-      wrap.className = 'lodge-gallery-photo';
+      wrap.className = 'lodge-carousel-media';
       var photos = entry.photos || [];
 
       if (!photos.length) {
@@ -247,36 +259,45 @@
         wrap.appendChild(img);
       }
 
-      // Mobile/touch has no hover to reveal intent, so the tap affordance
-      // is always in the DOM — CSS decides whether hover or this icon is
-      // what shows, via the same (hover: hover) query flow-btn's ink
-      // flood uses elsewhere on the site.
-      var expand = document.createElement('span');
-      expand.className = 'lodge-gallery-expand';
-      expand.setAttribute('aria-hidden', 'true');
-      expand.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
-        'stroke-linecap="round" stroke-linejoin="round" focusable="false">' +
-        '<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>';
-      wrap.appendChild(expand);
-
       return wrap;
     }
 
-    function buildCard(entry, index) {
-      var li = document.createElement('li');
-      li.className = 'lodge-gallery-item';
+    // Sets which panel is "active" — the one a touch select will open the
+    // lightbox for, and the one whose full label (name + tagline + price)
+    // stays shown even without hover/focus. Every other panel falls back
+    // to its collapsed name-only spine — see .lodge-carousel-spine in
+    // save-the-date.css for how that swap is animated. .is-active lives
+    // on the <li>, not the button: that's the flex item the carousel row
+    // actually grows, so that's what the CSS expand rules key off.
+    function setActive(index) {
+      items.forEach(function (item, i) {
+        item.classList.toggle('is-active', i === index);
+      });
+      panels.forEach(function (panel, i) {
+        panel.setAttribute('aria-pressed', String(i === index));
+      });
+    }
 
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'lodge-gallery-card';
-      card.setAttribute('aria-haspopup', 'dialog');
-      var status = bookingStatus(entry);
+    function buildPanel(entry, index) {
+      var li = document.createElement('li');
+      li.className = 'lodge-carousel-item';
+
+      var panel = document.createElement('button');
+      panel.type = 'button';
+      panel.className = 'lodge-carousel-panel';
+      panel.setAttribute('aria-haspopup', 'dialog');
+      panel.setAttribute('aria-pressed', 'false');
       var labelBits = [entry.name];
       if (entry.priceTier) labelBits.push(entry.priceTier);
       labelBits.push('view details');
-      card.setAttribute('aria-label', labelBits.join(', '));
+      panel.setAttribute('aria-label', labelBits.join(', '));
 
-      card.appendChild(buildPhoto(entry));
+      panel.appendChild(buildMedia(entry));
+
+      var shadow = document.createElement('span');
+      shadow.className = 'lodge-carousel-shadow';
+      shadow.setAttribute('aria-hidden', 'true');
+      panel.appendChild(shadow);
 
       var badges = document.createElement('span');
       badges.className = 'lodge-gallery-badges';
@@ -293,54 +314,82 @@
         pending.textContent = 'Details coming';
         badges.appendChild(pending);
       }
-      card.appendChild(badges);
+      panel.appendChild(badges);
 
-      var body = document.createElement('span');
-      body.className = 'lodge-gallery-body';
+      // Always-visible collapsed name — vertical on the desktop row
+      // layout, a small horizontal bar on the mobile column layout (see
+      // the breakpoint in .lodge-carousel-spine) — so a guest can tell
+      // the six properties apart before expanding any of them. Fades out
+      // in favor of .lodge-carousel-label the moment this panel is
+      // hovered, focused, or made active.
+      var spine = document.createElement('span');
+      spine.className = 'lodge-carousel-spine';
+      spine.setAttribute('aria-hidden', 'true');
+      spine.textContent = entry.name;
+      panel.appendChild(spine);
 
-      var top = document.createElement('span');
-      top.className = 'lodge-gallery-top';
+      var label = document.createElement('span');
+      label.className = 'lodge-carousel-label';
+
+      var text = document.createElement('span');
+      text.className = 'lodge-carousel-text';
       var name = document.createElement('span');
-      name.className = 'lodge-gallery-name';
+      name.className = 'lodge-carousel-name';
       name.textContent = entry.name;
-      top.appendChild(name);
+      text.appendChild(name);
+      var sub = document.createElement('span');
+      sub.className = 'lodge-carousel-sub';
+      sub.textContent = entry.tagline || entry.bestFor || '';
+      text.appendChild(sub);
+      label.appendChild(text);
+
       if (entry.priceTier) {
         var price = document.createElement('span');
-        price.className = 'lodge-gallery-price';
+        price.className = 'lodge-carousel-price';
         price.textContent = entry.priceTier;
-        top.appendChild(price);
+        label.appendChild(price);
       }
-      body.appendChild(top);
+      panel.appendChild(label);
 
-      var oneLiner = document.createElement('span');
-      oneLiner.className = 'lodge-gallery-oneliner';
-      oneLiner.textContent = entry.tagline || entry.bestFor || '';
-      body.appendChild(oneLiner);
+      li.appendChild(panel);
+      items.push(li);
+      panels.push(panel);
 
-      var prox = proximityText(entry);
-      if (prox) {
-        var proxEl = document.createElement('span');
-        proxEl.className = 'lodge-gallery-proximity';
-        proxEl.textContent = prox;
-        body.appendChild(proxEl);
-      }
-
-      card.appendChild(body);
-      li.appendChild(card);
-
-      card.addEventListener('click', function () { lightbox.open(index, card); });
+      // Hover-capable pointers already got their preview from :hover —
+      // selecting opens the lightbox straight away, same as the old card
+      // grid. Touch has no hover, so the first select previews (makes the
+      // panel active) and only a second select, on that same now-active
+      // panel, opens the lightbox.
+      panel.addEventListener('click', function () {
+        if (canHover || li.classList.contains('is-active')) {
+          lightbox.open(index, panel);
+        } else {
+          setActive(index);
+        }
+      });
 
       return li;
     }
 
     list.forEach(function (entry, index) {
-      var item = buildCard(entry, index);
-      // A small per-card stagger on top of the shared reveal transition
+      var item = buildPanel(entry, index);
+      // A small per-panel stagger on top of the shared reveal transition
       // below — capped low enough that even all six in view at once (a
-      // wide desktop viewport) finish inside half a second.
-      item.style.transitionDelay = Math.min(index * 0.06, 0.3) + 's';
+      // wide desktop viewport) finish inside half a second. Written as
+      // an explicit list matching .lodge-carousel-item's transition-
+      // property order (opacity, transform, flex-grow) in save-the-
+      // date.css — a bare single value would apply to all three,
+      // including flex-grow, and every hover-expand after the initial
+      // reveal would inherit this same stagger as a startup lag.
+      var revealDelay = Math.min(index * 0.06, 0.3) + 's';
+      item.style.transitionDelay = revealDelay + ', ' + revealDelay + ', 0s';
       gallery.appendChild(item);
     });
+
+    // One panel reads as active from the first paint — otherwise the row
+    // looks like six unlabeled photos until something is hovered or
+    // tapped. Index 0 is the recommended property (see travel-data.js).
+    setActive(0);
 
     gallery.hidden = false;
     if (fallback) fallback.classList.add('is-superseded');
@@ -359,7 +408,7 @@
     // one motion language for "content arriving on scroll" across the
     // page, not a bespoke one just for this section.
     if (reduced || !('IntersectionObserver' in window)) {
-      $$('.lodge-gallery-item', gallery).forEach(function (li) { li.classList.add('is-revealed'); });
+      $$('.lodge-carousel-item', gallery).forEach(function (li) { li.classList.add('is-revealed'); });
     } else {
       var revealIo = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
@@ -369,7 +418,7 @@
           }
         });
       }, { threshold: .2 });
-      $$('.lodge-gallery-item', gallery).forEach(function (li) { revealIo.observe(li); });
+      $$('.lodge-carousel-item', gallery).forEach(function (li) { revealIo.observe(li); });
     }
 
     /* ---- lightbox ------------------------------------------------------

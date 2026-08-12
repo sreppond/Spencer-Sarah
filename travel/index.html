@@ -132,13 +132,15 @@
   </header>
 
   <!-- ---------- WHERE TO STAY ----------
-       The centerpiece — a photo gallery, not an accordion. Cards are
-       built entirely from travel-data.js by travel.js, so a price, a
-       photo or the whole card order can change there without touching
-       this markup — see the note on reordering in travel-data.js if the
-       Grouse Mountain / Hotel Whitefish situation changes the recommended
-       hierarchy. Clicking a card opens the lightbox below with the full
-       detail for that property. -->
+       The centerpiece — an expand-on-select image carousel, not a static
+       grid of cards. Panels are built entirely from travel-data.js by
+       travel.js, so a price, a photo or the whole panel order can change
+       there without touching this markup — see the note on reordering in
+       travel-data.js if the Grouse Mountain / Hotel Whitefish situation
+       changes the recommended hierarchy. One panel is expanded at a time,
+       its name and tagline fading in as it becomes active; selecting the
+       already-active panel opens the lightbox below with the full detail
+       for that property. -->
   <section class="sheet travel-section" id="where-to-stay" aria-labelledby="where-to-stay-heading">
     <div class="sheet-inner sheet-inner--wide">
       <p class="eyebrow">Where to Stay</p>
@@ -150,7 +152,7 @@
            confirming before June 2027. -->
       <p class="lodge-urgency" id="lodge-urgency"></p>
 
-      <ul class="lodge-gallery" id="lodge-gallery" hidden aria-label="Lodging options — select a card for full details"></ul>
+      <ul class="lodge-carousel" id="lodge-gallery" hidden aria-label="Lodging options — select a hotel to preview it, select again for full details"></ul>
 
       <!-- No-JS fallback: a plain list, always accurate, always in the
            DOM. travel.js hides it once the interactive gallery above is
