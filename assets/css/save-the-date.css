@@ -2496,7 +2496,11 @@ body.travel-page .paper { background: #fff; }
   margin-top: clamp(1rem, 4vw, 1.4rem);
   padding: .7em 1.2em;
   border-radius: .7rem;
-  background: var(--paper-warm);
+  background: linear-gradient(168deg, rgba(253,250,244,.88) 0%, rgba(244,236,221,.72) 100%);
+  border: 1px solid rgba(196,159,108,.24);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 12px 26px -22px rgba(93,74,44,.4);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
   font-size: var(--t-small);
   font-weight: 500;
   line-height: 1.5;
@@ -3086,18 +3090,41 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 /* --- 11.5 · The Weekend --- */
 .weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
+/* Frosted-glass treatment: a warm, translucent card over the plain white
+   .paper background rather than a flat fill — a soft gradient tint,
+   a hairline gold-tinted border, backdrop blur (so anything that ever
+   scrolls beneath, e.g. a future photo, reads through softly), and a
+   deep, diffuse shadow instead of a hard one. Hover lifts the card and
+   warms the border/shadow, giving the same quiet "alive" feedback as
+   the rest of the site's interactive elements — this content isn't
+   clickable, but it isn't inert either. */
 .weekend-card {
   position: relative;
-  padding: 1.4rem 1.5rem 1.5rem;
+  padding: 1.5rem 1.6rem 1.6rem;
   margin-bottom: 1.2rem;
-  border-left: 3px solid var(--rule);
-  border-radius: 0 .8rem .8rem 0;
-  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 1rem 1rem 0;
+  background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
+  border-top: 1px solid rgba(196,159,108,.2);
+  border-right: 1px solid rgba(196,159,108,.2);
+  border-bottom: 1px solid rgba(196,159,108,.2);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 16px 34px -26px rgba(93,74,44,.4);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+  transition:
+    opacity .6s var(--ease-out),
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
 }
 .weekend-card.is-revealed { opacity: 1; transform: none; }
+.weekend-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.5);
+}
 .weekend-day {
   font-size: var(--t-micro);
   font-weight: 600;
@@ -3118,15 +3145,36 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .weekend-card { opacity: 1; transform: none; }
+  .weekend-card:hover { transform: none; }
 }
 
-/* --- 11.6 · Questions (FAQ + local contact) --- */
-.faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
+/* --- 11.6 · Questions (FAQ + local contact) ---
+   Same frosted-glass family as .weekend-card: each question becomes its
+   own translucent card (gap between them replaces the old border-bottom
+   dividers) with a hairline gold border, backdrop blur and a soft deep
+   shadow. Hovering — or opening — lifts the card and warms its border,
+   so the row reads as "alive" before a guest even taps it. */
+.faq { margin-top: clamp(2rem, 6vw, 2.6rem); display: flex; flex-direction: column; gap: .8rem; }
 .faq-item {
-  border-bottom: 1px solid var(--rule);
+  border-radius: 1rem;
+  background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
+  border: 1px solid rgba(196,159,108,.2);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 14px 30px -26px rgba(93,74,44,.38);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+  transition:
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
+}
+.faq-item:hover,
+.faq-item[open] {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 24px 46px -26px rgba(93,74,44,.48);
 }
 .faq-item summary {
-  padding: 1rem 1.6rem 1rem 0;
+  padding: 1.1rem 1.7rem;
   position: relative;
   font-family: var(--font-text);
   font-size: var(--t-body);
@@ -3144,23 +3192,42 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 .faq-item summary::after {
   content: '+';
   position: absolute;
-  right: 0;
-  top: 1rem;
+  right: 1.7rem;
+  top: 1.1rem;
   font-size: 1.3rem;
   color: var(--gold-text);
   transition: transform .25s var(--ease-out);
 }
 .faq-item[open] summary::after { transform: rotate(45deg); }
-.faq-answer { padding: 0 1.6rem 1.2rem 0; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.faq-answer { padding: 0 1.7rem 1.3rem; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
 .faq-answer.is-todo { font-style: italic; color: var(--stone-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item:hover, .faq-item[open] { transform: none; }
+}
 
 .local-contact {
   margin-top: clamp(2.4rem, 7vw, 3rem);
   padding: 1.6rem 1.5rem;
   border-radius: 1rem;
   text-align: center;
-  background: linear-gradient(168deg, #fdfaf4 0%, var(--card) 60%, #f4ecdd 100%);
+  background: linear-gradient(168deg, rgba(253,250,244,.92) 0%, rgba(251,247,240,.85) 60%, rgba(244,236,221,.85) 100%);
+  border: 1px solid rgba(196,159,108,.22);
   box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 18px 40px -28px rgba(93,74,44,.5);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+  transition:
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
+}
+.local-contact:hover {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.58);
+}
+@media (prefers-reduced-motion: reduce) {
+  .local-contact:hover { transform: none; }
 }
 .local-contact-mark { display: inline-block; width: 2.2rem; color: var(--gold-deep); opacity: .8; }
 .local-contact-mark svg { width: 100%; height: auto; }
