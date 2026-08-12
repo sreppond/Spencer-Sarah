@@ -82,12 +82,14 @@
      key (std:audio) and the same file, read from config.js's `media`
      block, which this page already loads.
 
-     The save the date is allowed to autoplay because the envelope tap
-     that opens it IS the gesture; nothing on this page plays that role,
-     so autoplay here only fires when the stored preference already says
-     "on" — a guest who turned the sound on earlier in this browser gets
-     it back without a second tap, and everyone else just sees a toggle
-     sitting ready, exactly like the save the date before its own tap.
+     Default on, same as the save the date: autoplay is attempted on load
+     unless the stored preference explicitly says "off". Nothing on this
+     page holds a fresh user gesture the way the envelope tap does, so a
+     guest who lands here cold may still get an autoplay refusal from the
+     browser — that's fine, it just leaves the toggle sitting ready, same
+     as the save the date before its own tap. A guest arriving from the
+     save the date (same origin, already played audio there) typically
+     autoplays cleanly on the strength of that.
      ------------------------------------------------------------------ */
   (function ambientAudio() {
     var audio = $('#ambient');
@@ -134,7 +136,7 @@
     audio.src = assetPath(media.ambientAudio);
     revealToggle();
 
-    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === 'on') {
+    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') {
       audio.volume = 0;
       var p = audio.play();
       if (p && p.then) {
@@ -893,34 +895,68 @@
 
 
   /* ------------------------------------------------------------------
-     Questions — FAQ accordion (native <details>, no JS required for the
-     interaction itself) plus the contact card with Sarah and Spencer's
-     own numbers.
+     Questions — category tabs plus the FAQ accordion (native <details>,
+     no JS required for the interaction itself) plus the contact card
+     with Sarah and Spencer's own numbers.
      ------------------------------------------------------------------ */
   (function questions() {
     var faq = $('#faq');
-    if (faq) {
+    var tabsWrap = $('#faq-tabs');
+    var categories = TRAVEL.faqCategories || [];
+
+    if (faq && categories.length) {
       var flags = TRAVEL.flags || {};
-      (TRAVEL.faq || []).forEach(function (item) {
-        var known = item.flag ? !!flags[item.flag] : !!item.a;
+      var selected = categories[0].key;
 
-        var details = document.createElement('details');
-        details.className = 'faq-item';
-        var summary = document.createElement('summary');
-        summary.textContent = item.q;
-        details.appendChild(summary);
+      var renderItems = function (key) {
+        var cat = categories.filter(function (c) { return c.key === key; })[0];
+        faq.innerHTML = '';
+        (cat ? cat.items : []).forEach(function (item) {
+          var known = item.flag ? !!flags[item.flag] : !!item.a;
 
-        var answer = document.createElement('div');
-        answer.className = 'faq-answer';
-        if (known && item.a) {
-          answer.textContent = item.a;
-        } else {
-          answer.classList.add('is-todo');
-          answer.textContent = 'Answer coming.';
-        }
-        details.appendChild(answer);
-        faq.appendChild(details);
-      });
+          var details = document.createElement('details');
+          details.className = 'faq-item';
+          var summary = document.createElement('summary');
+          summary.textContent = item.q;
+          details.appendChild(summary);
+
+          var answer = document.createElement('div');
+          answer.className = 'faq-answer';
+          if (known && item.a) {
+            answer.textContent = item.a;
+          } else {
+            answer.classList.add('is-todo');
+            answer.textContent = 'Answer coming.';
+          }
+          details.appendChild(answer);
+          faq.appendChild(details);
+        });
+      };
+
+      if (tabsWrap && categories.length > 1) {
+        categories.forEach(function (cat) {
+          var tab = document.createElement('button');
+          tab.type = 'button';
+          tab.className = 'faq-tab' + (cat.key === selected ? ' is-active' : '');
+          tab.textContent = cat.label;
+          tab.setAttribute('role', 'tab');
+          tab.setAttribute('aria-selected', cat.key === selected ? 'true' : 'false');
+          tab.addEventListener('click', function () {
+            if (cat.key === selected) return;
+            selected = cat.key;
+            $$('.faq-tab', tabsWrap).forEach(function (t) {
+              t.classList.remove('is-active');
+              t.setAttribute('aria-selected', 'false');
+            });
+            tab.classList.add('is-active');
+            tab.setAttribute('aria-selected', 'true');
+            renderItems(selected);
+          });
+          tabsWrap.appendChild(tab);
+        });
+      }
+
+      renderItems(selected);
     }
 
     var contacts = TRAVEL.contacts || {};

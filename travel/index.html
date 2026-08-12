@@ -48,13 +48,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260811n">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812a">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260811g"></script>
+<script defer src="../assets/js/config.js?v=20260812a"></script>
 <script defer src="../assets/js/travel-data.js?v=20260811i"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260811l"></script>
+<script defer src="../assets/js/travel.js?v=20260812a"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -216,7 +216,9 @@
       <p class="eyebrow">Questions</p>
       <h2 class="sheet-title" id="questions-heading">If you're wondering</h2>
 
-      <div class="faq" id="faq"></div>
+      <div class="faq-tabs" id="faq-tabs" role="tablist" aria-label="FAQ categories"></div>
+
+      <div class="faq" id="faq" role="tabpanel" aria-live="polite"></div>
 
       <div class="local-contact" id="local-contact">
         <span class="local-contact-mark" aria-hidden="true">
