@@ -15,6 +15,162 @@
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+  /* Every root-relative path in config.js/travel-data.js (photos, audio)
+     is written for index.html at the site root; this page always lives
+     one level down at /travel/, so every one of those strings needs the
+     same '../' every hand-written asset reference in this page's own
+     markup already gets. An already-relative ('../…') or absolute
+     ('https://…') path is left alone. */
+  function assetPath(path) {
+    if (!path) return path;
+    return (/^(\.\.\/|https?:|\/)/).test(path) ? path : '../' + path;
+  }
+
+  /* Same {v,t}-record localStorage wrapper as save-the-date.js, kept
+     separate rather than shared as a third file — see BUILDGUIDE §B.0's
+     "no build step" — but byte-for-byte the same behavior, because the
+     ambient-audio module below reads the exact key (std:audio) that one
+     writes. */
+  var store = (function () {
+    var ls = (function () {
+      try {
+        var area = window.localStorage;
+        area.setItem('std:probe', '1');
+        area.removeItem('std:probe');
+        return area;
+      } catch (e) { return null; }
+    }());
+
+    function clear(key) {
+      if (!ls) return;
+      try { ls.removeItem(key); } catch (e) {}
+    }
+
+    return {
+      clear: clear,
+
+      get: function (key, maxAgeDays) {
+        if (!ls) return null;
+        var raw;
+        try { raw = ls.getItem(key); } catch (e) { return null; }
+        if (!raw) return null;
+
+        var rec;
+        try { rec = JSON.parse(raw); } catch (e) { clear(key); return null; }
+        if (!rec || typeof rec.t !== 'number') { clear(key); return null; }
+
+        if (maxAgeDays && Date.now() - rec.t > maxAgeDays * 864e5) {
+          clear(key);
+          return null;
+        }
+        return rec.v;
+      },
+
+      set: function (key, value) {
+        if (!ls) return;
+        try { ls.setItem(key, JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
+      }
+    };
+  }());
+
+
+  /* ------------------------------------------------------------------
+     Ambient audio — carries a guest's choice over from the save the
+     date rather than starting silent or re-asking. Same localStorage
+     key (std:audio) and the same file, read from config.js's `media`
+     block, which this page already loads.
+
+     The save the date is allowed to autoplay because the envelope tap
+     that opens it IS the gesture; nothing on this page plays that role,
+     so autoplay here only fires when the stored preference already says
+     "on" — a guest who turned the sound on earlier in this browser gets
+     it back without a second tap, and everyone else just sees a toggle
+     sitting ready, exactly like the save the date before its own tap.
+     ------------------------------------------------------------------ */
+  (function ambientAudio() {
+    var audio = $('#ambient');
+    var toggle = $('#audio-toggle');
+    var CFG = window.SAVE_THE_DATE || {};
+    var media = CFG.media || {};
+    var opts = CFG.audio || {};
+    if (!audio || !toggle || !media.ambientAudio) return;
+
+    var AUDIO_KEY = 'std:audio';
+    var AUDIO_TTL_DAYS = 400;
+    var failed = false;
+    var fadeTimer = null;
+
+    function fadeTo(target, ms) {
+      clearInterval(fadeTimer);
+      var from = audio.volume;
+      var t0 = performance.now();
+      fadeTimer = setInterval(function () {
+        var k = clamp((performance.now() - t0) / ms, 0, 1);
+        audio.volume = clamp(from + (target - from) * k, 0, 1);
+        if (k === 1) clearInterval(fadeTimer);
+      }, 40);
+    }
+
+    function setPressed(on) {
+      toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      toggle.setAttribute('aria-label', on ? 'Turn off ambient sound' : 'Turn on ambient sound');
+    }
+
+    function revealToggle() {
+      if (failed) return;
+      toggle.hidden = false;
+      requestAnimationFrame(function () { toggle.classList.add('is-shown'); });
+    }
+
+    function hideToggle() {
+      failed = true;
+      toggle.classList.remove('is-shown');
+      setTimeout(function () { toggle.hidden = true; }, 400);
+    }
+
+    audio.addEventListener('error', function () { hideToggle(); }, { once: true });
+    audio.src = assetPath(media.ambientAudio);
+    revealToggle();
+
+    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === 'on') {
+      audio.volume = 0;
+      var p = audio.play();
+      if (p && p.then) {
+        p.then(function () {
+          fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, opts.fadeInMs || 1200);
+          setPressed(true);
+        }).catch(function () {
+          // Autoplay refused without a fresh gesture — leave the toggle
+          // showing "off" so the guest can start it with one tap.
+          setPressed(false);
+        });
+      }
+    }
+
+    toggle.addEventListener('click', function () {
+      var on = toggle.getAttribute('aria-pressed') === 'true';
+      if (on) {
+        fadeTo(0, 500);
+        setTimeout(function () { audio.pause(); }, 520);
+        setPressed(false);
+        store.set(AUDIO_KEY, 'off');
+      } else {
+        store.set(AUDIO_KEY, 'on');
+        audio.volume = 0;
+        var p = audio.play();
+        if (p && p.then) {
+          p.then(function () {
+            fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, 1200);
+            setPressed(true);
+          }).catch(hideToggle);
+        } else {
+          setPressed(true);
+        }
+      }
+    });
+  }());
 
 
   /* ------------------------------------------------------------------
@@ -255,7 +411,7 @@
           wrap.classList.add('is-empty');
           wrap.innerHTML = EMPTY_MARK + '<span class="m-empty-note">photograph to come</span>';
         }, { once: true });
-        img.src = photos[0];
+        img.src = assetPath(photos[0]);
         wrap.appendChild(img);
       }
 
@@ -471,7 +627,7 @@
           img.loading = 'lazy';
           img.decoding = 'async';
           img.alt = '';
-          img.src = src;
+          img.src = assetPath(src);
           track.appendChild(img);
         });
         mediaEl.appendChild(track);
@@ -556,16 +712,22 @@
           metaEl.appendChild(amenities);
         }
 
-        var contact = document.createElement('p');
-        contact.className = 'lodge-lightbox-contact';
-        [todoOrText(entry.address, 'Address'), todoOrText(entry.phone, 'Phone')].forEach(function (p, i) {
-          if (i > 0) contact.appendChild(document.createElement('br'));
-          var span = document.createElement('span');
-          if (p.todo) span.className = 'is-todo';
-          span.textContent = p.text;
-          contact.appendChild(span);
-        });
-        metaEl.appendChild(contact);
+        // noFixedAddress (e.g. "Vacation rentals") is a category, not one
+        // property — it will never get a single street address or phone
+        // number, so "Address – details coming" would be a promise this
+        // entry can't keep. Skip the contact block entirely for it.
+        if (!entry.noFixedAddress) {
+          var contact = document.createElement('p');
+          contact.className = 'lodge-lightbox-contact';
+          [todoOrText(entry.address, 'Address'), todoOrText(entry.phone, 'Phone')].forEach(function (p, i) {
+            if (i > 0) contact.appendChild(document.createElement('br'));
+            var span = document.createElement('span');
+            if (p.todo) span.className = 'is-todo';
+            span.textContent = p.text;
+            contact.appendChild(span);
+          });
+          metaEl.appendChild(contact);
+        }
       }
 
       function buildActions(entry) {
@@ -617,6 +779,15 @@
           pendingNote.className = 'lodge-detail-meta is-todo';
           pendingNote.textContent = 'Room block details coming.';
           actionsEl.appendChild(pendingNote);
+
+          // Nothing to book yet, so point at the mechanism the site
+          // already has instead of leaving this a dead end: the same
+          // guest-info form the save the date collects addresses through.
+          var followUp = document.createElement('a');
+          followUp.className = 'lodge-detail-directions';
+          followUp.href = '../#details';
+          followUp.textContent = 'Leave your info and we’ll email you the moment this confirms';
+          actionsEl.appendChild(followUp);
         }
 
         if (entry.bookingUrl) {

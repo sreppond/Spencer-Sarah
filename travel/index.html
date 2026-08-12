@@ -54,7 +54,7 @@
 <script defer src="../assets/js/config.js?v=20260811g"></script>
 <script defer src="../assets/js/travel-data.js?v=20260811h"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260811j"></script>
+<script defer src="../assets/js/travel.js?v=20260811k"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -265,24 +265,37 @@
     </div>
   </section>
 
+  <!-- Just the divider — same call as the save-the-date's own footer.
+       Nothing below the last content section but the botanical mark the
+       page closes every section with elsewhere; the way back home is
+       already the wordmark at the top of the nav. -->
   <footer class="sheet end-sheet">
     <img class="end-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
-    <p class="end-names">Sarah &amp; Spencer</p>
-    <p class="end-meta">
-      <span>June 12, 2027</span>
-      <span class="end-dot" aria-hidden="true">·</span>
-      <span>Whitefish, Montana</span>
-    </p>
-    <p class="end-cal">
-      <a class="end-link" href="../assets/sarah-and-spencer.ics"
-         download="sarah-and-spencer.ics" data-calendar="ics">Add June 12 to your calendar</a>
-    </p>
-    <nav class="end-nav" aria-label="More">
-      <a href="../">Save the Date</a>
-    </nav>
   </footer>
 
 </main>
+
+<!-- Ambient audio — carries a guest's on/off choice over from the save
+     the date (same std:audio localStorage key, same file). No envelope
+     gesture happens on this page, so it only resumes automatically when
+     that choice was already "on"; otherwise the toggle just sits ready,
+     same as the save-the-date's before its own envelope tap. -->
+<audio id="ambient" loop preload="none" playsinline></audio>
+<button type="button" id="audio-toggle" class="audio-toggle" hidden
+        aria-pressed="false" aria-label="Turn on ambient sound">
+  <svg class="ico-on" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
+      <path d="M13.6 8.2a4 4 0 0 1 0 5.6M16.1 5.8a7.4 7.4 0 0 1 0 10.4"/>
+    </g>
+  </svg>
+  <svg class="ico-off" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
+      <path d="M13.8 8.8l4.4 4.4M18.2 8.8l-4.4 4.4"/>
+    </g>
+  </svg>
+</button>
 
 </body>
 </html>
