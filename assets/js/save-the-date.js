@@ -10,6 +10,12 @@
 
   var CFG = window.SAVE_THE_DATE || {};
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Same phone test as envIsPhone below (§ envelope source selection) and
+  // travel.js's own copy — width alone can't tell a phone from a narrow or
+  // zoomed desktop window, so both have to agree. A snapshot at load, not
+  // tracked live across a resize, same as `reduced` above.
+  var isPhone = window.matchMedia('(max-width: 767px)').matches &&
+    window.matchMedia('(pointer: coarse)').matches;
   var root = document.documentElement;
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
@@ -707,6 +713,15 @@
     }, 40);
   }
 
+  // A phone speaker reads louder than a laptop's at the same numeric
+  // volume — see isPhone above and targetVolumeMobile's own comment in
+  // config.js — so every fadeTo() target reads through this instead of
+  // opts.targetVolume directly.
+  function targetVolume(opts) {
+    if (isPhone && opts.targetVolumeMobile != null) return opts.targetVolumeMobile;
+    return opts.targetVolume != null ? opts.targetVolume : 0.16;
+  }
+
   function startAmbient() {
     var media = CFG.media || {};
     var opts = CFG.audio || {};
@@ -720,7 +735,7 @@
 
     if (p && p.then) {
       p.then(function () {
-        fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, opts.fadeInMs || 4000);
+        fadeTo(targetVolume(opts), opts.fadeInMs || 4000);
         setPressed(true);
       }).catch(function () {
         // Autoplay refused: keep offering it, and arm the gesture retry
@@ -772,7 +787,7 @@
         var p = audio.play();
         if (p && p.then) {
           p.then(function () {
-            fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, 1200);
+            fadeTo(targetVolume(opts), 1200);
             setPressed(true);
           }).catch(hideAudioToggle);
         } else {

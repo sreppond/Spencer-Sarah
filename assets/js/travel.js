@@ -13,6 +13,13 @@
 
   var TRAVEL = window.TRAVEL || {};
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Same phone test save-the-date.js uses for its own audio — a phone
+  // speaker reads louder than a laptop's at the same numeric volume, so
+  // the ambient bed's target is halved there. Width alone can't tell a
+  // phone from a narrow or zoomed desktop window, hence the pointer check
+  // alongside it.
+  var isPhone = window.matchMedia('(max-width: 767px)').matches &&
+    window.matchMedia('(pointer: coarse)').matches;
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -119,6 +126,12 @@
       }, 40);
     }
 
+    // See isPhone above and targetVolumeMobile's own comment in config.js.
+    function targetVolume() {
+      if (isPhone && opts.targetVolumeMobile != null) return opts.targetVolumeMobile;
+      return opts.targetVolume != null ? opts.targetVolume : 0.16;
+    }
+
     function setPressed(on) {
       toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
       toggle.setAttribute('aria-label', on ? 'Turn off ambient sound' : 'Turn on ambient sound');
@@ -141,7 +154,7 @@
       var p = audio.play();
       if (p && p.then) {
         p.then(function () {
-          fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, fadeMs);
+          fadeTo(targetVolume(), fadeMs);
           setPressed(true);
         }).catch(function () {
           // Autoplay refused without a fresh gesture — leave the toggle
@@ -189,7 +202,7 @@
         var p = audio.play();
         if (p && p.then) {
           p.then(function () {
-            fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, 1200);
+            fadeTo(targetVolume(), 1200);
             setPressed(true);
           }).catch(hideToggle);
         } else {
