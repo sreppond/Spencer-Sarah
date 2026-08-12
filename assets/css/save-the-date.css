@@ -2510,15 +2510,25 @@ html.smooth-scroll { scroll-behavior: smooth; }
    fades into it directly (11.2), so anything less than true white would
    show a seam where the mask ends. Scoped to body.travel-page rather
    than touching --paper itself, which the save-the-date still needs at
-   its original tan. */
-body.travel-page .paper { background: #fff; }
+   its original tan.
+
+   .page-sub .paper's padding-top (§7) reserved clearance for a full-width
+   nav bar; the nav is a floating fixed pill now (it overlays instead of
+   sitting in flow), so that reserved space would just be a blank white
+   strip above the photo. Zeroed here, scoped to the travel page only —
+   any future .page-sub page without a full-bleed hero still gets the
+   original clearance. */
+body.travel-page .paper { background: #fff; padding-top: 0; }
 
 /* --- 11.2 · Hero ---
-   Opens full-bleed on the Glacier Image, masked so its foot dissolves
-   into the white page background below rather than cutting to a hard
-   edge. Quieter than the save-the-date's hero — no countdown, no
-   calendar action — because the only job left here is getting a guest
-   from the photo straight into Where to Stay. */
+   Opens full-bleed on the Glacier Image — right at the top of the
+   viewport, under the floating nav pill, with the peak itself as the
+   top edge of the frame (the source file is cropped to the summit; see
+   the note by .travel-hero-media below) — then masked so its foot
+   dissolves into the white page background rather than cutting to a
+   hard edge. Quieter than the save-the-date's hero — no calendar action
+   — but keeps a live countdown, the one piece of urgency this page
+   still carries before it gets to Where to Stay. */
 .travel-hero { text-align: center; }
 
 /* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
@@ -2526,27 +2536,28 @@ body.travel-page .paper { background: #fff; }
    The mask (not a solid overlay) is what makes the fade actually read as
    the photo dissolving into paper rather than a rectangle laid over it;
    it only works because the page behind it is the same white the mask
-   fades to (11.1). */
-.travel-hero-media {
-  width: 100%;
-  line-height: 0;
-}
+   fades to (11.1).
+
+   aspect-ratio is set to the source file's own ratio (1537:760), not a
+   round design number — with the box shaped exactly like the image,
+   object-fit: cover has nothing left to crop, at any viewport width.
+   An earlier version filled the viewport height with flex-grow, which
+   forced a vertical crop on short/wide windows and ate the boat at the
+   bottom of the frame; matching the ratio exactly is what guarantees
+   the whole photo — summit to boat — is always in frame. */
+.travel-hero-media { width: 100%; line-height: 0; }
 .travel-hero-media img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1537 / 760;
   object-fit: cover;
-  object-position: center 42%;
   -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
           mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
-}
-@media (min-width: 640px) {
-  .travel-hero-media img { aspect-ratio: 16 / 9; }
 }
 
 .travel-hero-inner {
   max-width: 34rem;
   margin: 0 auto;
-  padding: 0 var(--gutter) clamp(3rem, 9vh, 4.5rem);
+  padding: 1.4rem var(--gutter) clamp(3rem, 9vh, 4.5rem);
 }
 .travel-hero-title {
   margin-top: .6rem;
@@ -2567,30 +2578,51 @@ body.travel-page .paper { background: #fff; }
   text-wrap: pretty;
 }
 
-/* A quiet line, not a button — two small text links standing in for the
-   flight-finder and map sections the August 2026 redesign cut. Kept
-   deliberately low-visual-weight so it reads as a utility, not a peer
-   of the page's other calls to action. */
-.travel-hero-utility {
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
+/* --- 11.2b · Countdown --- */
+.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
+.countdown-passed {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
+  font-weight: 600;
+  color: var(--ink);
 }
-.travel-hero-utility a {
-  /* Bare inline text otherwise sits at ~17px tall with its neighbour one
-     word away — padding brings each link to the 44px tap floor and adds
-     real separation between the two on the narrow widths where they wrap
-     to their own lines. */
-  display: inline-block;
-  padding: .68rem .2rem;
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+}
+.countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.6rem;
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--gold-text);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color .25s var(--ease-soft);
 }
-.travel-hero-utility a:hover,
-.travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
-.travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
+.countdown-unit {
+  margin-top: .35rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+/* A quick flip on the number that actually changed, not a jittery
+   ticker — one keyframe, retriggered by travel.js removing and
+   re-adding this class. Neutralized by the sitewide reduced-motion
+   animation-duration clamp (§9), same as every other animation here. */
+.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
+@keyframes countdown-flip {
+  0%   { opacity: .35; transform: translateY(-.3em); }
+  100% { opacity: 1;   transform: none; }
+}
 
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
