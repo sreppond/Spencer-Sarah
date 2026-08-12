@@ -217,6 +217,18 @@
   function alreadyOpened() {
     return store.get(SEEN_KEY, SEEN_TTL_DAYS) === true;
   }
+
+  /* Hoisted up from the ambient-audio block below (§ "Ambient audio") so
+     that audioPreference() reads a real key/TTL rather than the
+     pre-assignment `undefined` a `var` carries until its own line runs —
+     the envelope init below calls it synchronously, before that block
+     would otherwise have executed. */
+  var AUDIO_KEY = 'std:audio';
+  var AUDIO_TTL_DAYS = 400;
+
+  function audioPreference() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS); }
+  function setAudioPreference(on) { store.set(AUDIO_KEY, on ? 'on' : 'off'); }
+
   function rememberOpened() {
     store.set(SEEN_KEY, true);
   }
@@ -237,6 +249,7 @@
     startHeroVideo();
     revealHero();
     revealAudioToggle();
+    if (audioPreference() !== 'off') startAmbient();
   }
 
   function seal() {
@@ -355,6 +368,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
+      if (audioPreference() !== 'off') startAmbient();
     // Seen it already inside the last 30 days? Never seal the page at all.
     } else if (alreadyOpened()) {
       scene.style.display = 'none';
@@ -363,6 +377,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
+      if (audioPreference() !== 'off') startAmbient();
     } else {
       seal();
 
@@ -585,20 +600,17 @@
      Ambient audio
 
      Default on. The bed is genuinely quiet — mastered to -18 LUFS, played
-     at 0.16 gain, around -34 LUFS in the room — and it starts the moment
-     the envelope tap gives the page a gesture to start it with, same as
-     the video itself. The toggle at the hand-off is how a guest turns it
-     back off, and that choice — off only, never on, since on is already
-     the default — is what gets remembered for a returning visit.
+     at config.audio.targetVolume gain. It starts on every path onto the
+     page that can supply a gesture (the envelope tap), and is at least
+     attempted on the paths that can't (a remembered return visit, the
+     skip link, reduced-motion) — see the audioPreference() calls above,
+     in openEnvelope(), bypassEnvelope() and the reduced/alreadyOpened
+     branches. The toggle at the hand-off is how a guest turns it back
+     off, and that choice — off only, never on, since on is already the
+     default — is what gets remembered for a returning visit.
      ------------------------------------------------------------------ */
   var audioFailed = false;
   var fadeTimer = null;
-
-  var AUDIO_KEY = 'std:audio';
-  var AUDIO_TTL_DAYS = 400;
-
-  function audioPreference() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS); }
-  function setAudioPreference(on) { store.set(AUDIO_KEY, on ? 'on' : 'off'); }
 
   function fadeTo(target, ms) {
     if (!audio) return;

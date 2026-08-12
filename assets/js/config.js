@@ -108,7 +108,7 @@ window.SAVE_THE_DATE = {
 
   /* ---- Ambient audio --------------------------------------- */
   audio: {
-    targetVolume: 0.08,   // half of the already-quiet 0.16 it shipped at
+    targetVolume: 0.048,   // 0.08 cut by another 40%
     fadeInMs: 4000
   },
 

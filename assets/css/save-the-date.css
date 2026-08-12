@@ -313,7 +313,12 @@ html:not(.js) .env-scene { display: none; }
    viewport. Pages with no hero reveal it immediately.
    z-index sits below the envelope's 90: by the time the nav could ever
    show, the envelope is long gone, but the ordering stays honest anyway.
-   ========================================================================== */
+
+   Visual: a floating glass pill rather than a full-width bar, sized to
+   its own content and centred — the same silhouette the old sub-480px
+   fallback used, now the one nav at every width. The entrance pairs the
+   fade with a small rise + settle (translateY + scale) instead of a flat
+   opacity swap, so it reads as the pill arriving rather than switching on. */
 
 .site-nav {
   position: fixed;
@@ -322,118 +327,162 @@ html:not(.js) .env-scene { display: none; }
   right: 0;
   z-index: 70;
   padding-top: var(--safe-t);
-  background: var(--paper);
-  border-bottom: 1px solid var(--rule);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity .5s var(--ease-out), visibility 0s linear .5s;
+  transform: translateY(-10px) scale(.97);
+  transform-origin: top center;
+  transition: opacity .55s var(--ease-soft), transform .6s var(--ease-soft), visibility 0s linear .6s;
 }
 .site-nav.is-shown {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition: opacity .5s var(--ease-out), visibility 0s linear;
+  transform: translateY(0) scale(1);
+  transition: opacity .55s var(--ease-soft), transform .6s var(--ease-soft), visibility 0s linear;
 }
 
 .site-nav-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.2rem;
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: .75rem var(--gutter);
+  width: max-content;
+  max-width: calc(100% - 2 * var(--gutter));
+  margin: .85rem auto 0;
+  padding: .65rem 1.4rem;
+  border-radius: 999px;
+  background: rgba(251, 247, 240, .8);
+  border: 1px solid rgba(120, 104, 80, .14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .55),
+    0 22px 44px -26px rgba(93, 74, 44, .42),
+    0 4px 16px -10px rgba(93, 74, 44, .18);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+          backdrop-filter: blur(18px) saturate(160%);
 }
 
 .site-nav-word {
   flex: none;
+  padding-right: 1.15rem;
   font-family: var(--font-display);
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: .01em;
   color: var(--ink);
   text-decoration: none;
+  transition: color .3s var(--ease-soft);
 }
 .site-nav-word:hover, .site-nav-word:focus-visible { color: var(--gold-text); }
 
 .site-nav-links {
   display: flex;
   align-items: center;
-  gap: 1.4rem;
   list-style: none;
+  padding-left: 1.15rem;
+  border-left: 1px solid rgba(205, 188, 166, .55);
 }
+.site-nav-links li {
+  flex: none;
+  padding: 0 .95rem;
+}
+.site-nav-links li:first-child { padding-left: 0; }
+.site-nav-links li:last-child { padding-right: 0; }
+.site-nav-links li + li { border-left: 1px solid rgba(205, 188, 166, .55); }
+
 .site-nav-links a {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
   font-family: var(--font-text);
   font-size: var(--t-micro);
   font-weight: 600;
-  letter-spacing: .16em;
-  text-indent: .16em;
+  letter-spacing: .17em;
+  text-indent: .17em;
   text-transform: uppercase;
   color: var(--stone-text);
   text-decoration: none;
-  padding: .4rem 0;                /* height toward the 44px tap floor */
+  padding: .5rem 0;                /* height toward the 44px tap floor */
+  transition: color .3s var(--ease-soft);
+}
+/* A hairline draws in from the centre on hover/focus instead of a flat
+   colour swap — the same "gesture, not a state change" idea as the flow
+   button (§2.4), scaled down to a link. Skipped on the current page,
+   which already carries its own chip below. */
+.site-nav-links a:not([aria-current])::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: .16rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transition: left .35s var(--ease-soft), right .35s var(--ease-soft), opacity .3s var(--ease-soft);
 }
 .site-nav-links a:hover, .site-nav-links a:focus-visible { color: var(--gold-text); }
+.site-nav-links a:hover::after, .site-nav-links a:focus-visible::after {
+  left: 0; right: 0; opacity: .55;
+}
 /* "page" marks the current page on the site-wide nav (A3); "true" marks
    the active in-page section on the travel page's scroll-spy variant
-   (B.4) — same visual treatment either way. */
+   (B.4) — same visual treatment either way: a quiet gold chip, the pill's
+   own echo of the flow button, rather than just a colour change. */
 .site-nav-links a[aria-current="page"],
-.site-nav-links a[aria-current="true"] { color: var(--gold-text); }
+.site-nav-links a[aria-current="true"] {
+  color: var(--gold-text);
+  background: rgba(168, 131, 79, .14);
+  border-radius: 999px;
+  padding: .5rem 1rem;
+  margin: 0 -1rem;
+  transition: color .3s var(--ease-soft), background .3s var(--ease-soft);
+}
 
-/* Under 480px the hairline bar collapses into a floating pill, closer to
-   an app's tab bar than a website header — full-width chrome felt heavy
-   at that size, and the pill keeps the same four destinations reachable
-   in far less vertical space. */
+/* Under 400px "Sarah & Spencer" plus its divider crowds two or three nav
+   words into too little pill — drop the wordmark and let the links carry
+   the pill alone, same call the old sub-480 fallback made. */
+@media (max-width: 400px) {
+  .site-nav-word,
+  .site-nav-links { border-left: none; padding-left: 0; }
+  .site-nav-word { display: none; }
+  .site-nav-inner { padding: .6rem 1.2rem; }
+  .site-nav-links li { padding: 0 .7rem; }
+}
+
+/* The two-item save-the-date pill ("Travel & Stay" / "Save the Date")
+   fits max-content at any phone width. The travel page's scroll-spy
+   variant carries three longer labels ("Where to Stay" / "The Weekend" /
+   "Questions") that don't — .site-nav-inner's own max-width was clamping
+   the pill to the viewport while the links inside kept trying to shrink,
+   wrapping each label onto two or three lines. Letting the link row
+   scroll horizontally instead keeps every label intact at any width;
+   the fade hints that there's more to swipe to. Harmless on the
+   two-item pill, which never needs to scroll far enough for it to show. */
 @media (max-width: 480px) {
-  .site-nav { background: transparent; border-bottom: none; }
-  .site-nav-inner {
-    position: relative;
-    /* max-content alone sized this off the two-item save-the-date pill.
-       The travel page reuses the same component with three destinations
-       ("Where to Stay" / "The Weekend" / "Questions"), which doesn't fit
-       in that width on a 320–375px phone: the flex items were shrinking
-       below their own text width and wrapping each label onto two lines
-       inside the pill. Capping to the viewport and letting the links
-       scroll (below) keeps every label on one line at any phone width. */
-    max-width: min(max-content, calc(100vw - 2.4rem));
-    margin: calc(.5rem + var(--safe-t)) auto 0;
-    padding: .6rem 1.1rem;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    background: rgba(251, 247, 240, .92);
-    -webkit-backdrop-filter: blur(8px);
-            backdrop-filter: blur(8px);
-    box-shadow: 0 8px 24px -16px rgba(93, 74, 44, .35);
-  }
-  .site-nav-word { display: none; }   /* the pill is a nav, not a masthead */
+  .site-nav-inner { position: relative; }
   .site-nav-links {
-    gap: 1rem;
     max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
   .site-nav-links::-webkit-scrollbar { display: none; }
-  .site-nav-links a { flex: none; white-space: nowrap; }
-  /* A soft hint that the pill scrolls, for the three-item travel nav —
-     harmless on the two-item save-the-date pill, which never scrolls far
-     enough for this sliver to show. Purely decorative: pointer-events:none
-     so it never steals the swipe. */
   .site-nav-inner::after {
     content: '';
     position: absolute;
     top: 1px; right: 1px; bottom: 1px;
-    width: 1.4rem;
+    width: 1.6rem;
     border-radius: 0 999px 999px 0;
-    background: linear-gradient(to right, transparent, rgba(251, 247, 240, .92) 65%);
+    background: linear-gradient(to right, transparent, rgba(251, 247, 240, .9) 65%);
     pointer-events: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-nav { transition: opacity .2s linear !important; }
+  .site-nav {
+    transform: none !important;
+    transition: opacity .2s linear !important;
+  }
 }
 
 
@@ -2444,19 +2493,49 @@ html.book-nudge-open body { overflow-y: hidden; }
    so this is automatically inert for anyone who asked for less motion. */
 html.smooth-scroll { scroll-behavior: smooth; }
 
-/* --- 11.1 · Hero ---
-   Quieter than the save-the-date's — no painting, no envelope, no
-   traced artwork — because this page's hero has a job the other one
-   doesn't: the countdown and the calendar action. Deliberately not
-   full-viewport; the guest should see there is more below immediately. */
-.travel-hero {
-  /* .page-sub .paper already reserves clearance for the fixed nav
-     (padding-top including --safe-t) — this is breathing room on top of
-     that, not a second nav offset. */
-  padding: clamp(1.2rem, 5vh, 2.5rem) var(--gutter) clamp(3rem, 9vh, 4.5rem);
-  text-align: center;
+/* --- 11.1 · Page background ---
+   This page reads white, not the site's tan --paper: the hero photo
+   fades into it directly (11.2), so anything less than true white would
+   show a seam where the mask ends. Scoped to body.travel-page rather
+   than touching --paper itself, which the save-the-date still needs at
+   its original tan. */
+body.travel-page .paper { background: #fff; }
+
+/* --- 11.2 · Hero ---
+   Opens full-bleed on the Glacier Image, masked so its foot dissolves
+   into the white page background below rather than cutting to a hard
+   edge. Quieter than the save-the-date's hero — no countdown, no
+   calendar action — because the only job left here is getting a guest
+   from the photo straight into Where to Stay. */
+.travel-hero { text-align: center; }
+
+/* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
+   deliberately, the one element on this page that isn't gutter-padded.
+   The mask (not a solid overlay) is what makes the fade actually read as
+   the photo dissolving into paper rather than a rectangle laid over it;
+   it only works because the page behind it is the same white the mask
+   fades to (11.1). */
+.travel-hero-media {
+  width: 100%;
+  line-height: 0;
 }
-.travel-hero-inner { max-width: 34rem; margin: 0 auto; }
+.travel-hero-media img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 42%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
+          mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
+}
+@media (min-width: 640px) {
+  .travel-hero-media img { aspect-ratio: 16 / 9; }
+}
+
+.travel-hero-inner {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(3rem, 9vh, 4.5rem);
+}
 .travel-hero-title {
   margin-top: .6rem;
   font-family: var(--font-display);
@@ -2475,14 +2554,13 @@ html.smooth-scroll { scroll-behavior: smooth; }
   color: var(--ink-body);
   text-wrap: pretty;
 }
-.travel-hero-cal { margin: clamp(2rem, 7vw, 2.6rem) auto 0; max-width: 22rem; }
 
 /* A quiet line, not a button — two small text links standing in for the
    flight-finder and map sections the August 2026 redesign cut. Kept
    deliberately low-visual-weight so it reads as a utility, not a peer
-   of the calendar CTA above it. */
+   of the page's other calls to action. */
 .travel-hero-utility {
-  margin-top: clamp(1.1rem, 4vw, 1.5rem);
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
   font-size: var(--t-small);
   color: var(--ink-soft);
 }
@@ -2502,52 +2580,6 @@ html.smooth-scroll { scroll-behavior: smooth; }
 .travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
 .travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
 
-/* --- 11.2 · Countdown --- */
-.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
-.countdown-passed {
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
-  font-weight: 600;
-  color: var(--ink);
-}
-.countdown-grid {
-  display: flex;
-  justify-content: center;
-  gap: clamp(1rem, 5vw, 2rem);
-}
-.countdown-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 3.6rem;
-}
-.countdown-num {
-  font-family: var(--font-display);
-  font-size: clamp(2.1rem, 8vw, 2.8rem);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: var(--gold-text);
-}
-.countdown-unit {
-  margin-top: .35rem;
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-indent: .16em;
-  text-transform: uppercase;
-  color: var(--stone-text);
-}
-/* A quick flip on the number that actually changed, not a jittery
-   ticker — one keyframe, retriggered by travel.js removing and
-   re-adding this class. Neutralized by the sitewide reduced-motion
-   animation-duration clamp (§9), same as every other animation here. */
-.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
-@keyframes countdown-flip {
-  0%   { opacity: .35; transform: translateY(-.3em); }
-  100% { opacity: 1;   transform: none; }
-}
-
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
 .travel-section + .travel-section { padding-top: clamp(3rem, 9vh, 4.5rem); }
@@ -2561,7 +2593,11 @@ html.smooth-scroll { scroll-behavior: smooth; }
   margin-top: clamp(1rem, 4vw, 1.4rem);
   padding: .7em 1.2em;
   border-radius: .7rem;
-  background: var(--paper-warm);
+  background: linear-gradient(168deg, rgba(253,250,244,.88) 0%, rgba(244,236,221,.72) 100%);
+  border: 1px solid rgba(196,159,108,.24);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 12px 26px -22px rgba(93,74,44,.4);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
   font-size: var(--t-small);
   font-weight: 500;
   line-height: 1.5;
@@ -3151,18 +3187,41 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 /* --- 11.5 · The Weekend --- */
 .weekend-list { margin-top: clamp(2rem, 6vw, 2.6rem); list-style: none; }
+/* Frosted-glass treatment: a warm, translucent card over the plain white
+   .paper background rather than a flat fill — a soft gradient tint,
+   a hairline gold-tinted border, backdrop blur (so anything that ever
+   scrolls beneath, e.g. a future photo, reads through softly), and a
+   deep, diffuse shadow instead of a hard one. Hover lifts the card and
+   warms the border/shadow, giving the same quiet "alive" feedback as
+   the rest of the site's interactive elements — this content isn't
+   clickable, but it isn't inert either. */
 .weekend-card {
   position: relative;
-  padding: 1.4rem 1.5rem 1.5rem;
+  padding: 1.5rem 1.6rem 1.6rem;
   margin-bottom: 1.2rem;
-  border-left: 3px solid var(--rule);
-  border-radius: 0 .8rem .8rem 0;
-  background: var(--card);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 1rem 1rem 0;
+  background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
+  border-top: 1px solid rgba(196,159,108,.2);
+  border-right: 1px solid rgba(196,159,108,.2);
+  border-bottom: 1px solid rgba(196,159,108,.2);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 16px 34px -26px rgba(93,74,44,.4);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+  transition:
+    opacity .6s var(--ease-out),
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
 }
 .weekend-card.is-revealed { opacity: 1; transform: none; }
+.weekend-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.5);
+}
 .weekend-day {
   font-size: var(--t-micro);
   font-weight: 600;
@@ -3183,15 +3242,36 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .weekend-card { opacity: 1; transform: none; }
+  .weekend-card:hover { transform: none; }
 }
 
-/* --- 11.6 · Questions (FAQ + local contact) --- */
-.faq { margin-top: clamp(2rem, 6vw, 2.6rem); }
+/* --- 11.6 · Questions (FAQ + local contact) ---
+   Same frosted-glass family as .weekend-card: each question becomes its
+   own translucent card (gap between them replaces the old border-bottom
+   dividers) with a hairline gold border, backdrop blur and a soft deep
+   shadow. Hovering — or opening — lifts the card and warms its border,
+   so the row reads as "alive" before a guest even taps it. */
+.faq { margin-top: clamp(2rem, 6vw, 2.6rem); display: flex; flex-direction: column; gap: .8rem; }
 .faq-item {
-  border-bottom: 1px solid var(--rule);
+  border-radius: 1rem;
+  background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
+  border: 1px solid rgba(196,159,108,.2);
+  box-shadow: 0 1px 2px rgba(93,74,44,.04), 0 14px 30px -26px rgba(93,74,44,.38);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+  transition:
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
+}
+.faq-item:hover,
+.faq-item[open] {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 24px 46px -26px rgba(93,74,44,.48);
 }
 .faq-item summary {
-  padding: 1rem 1.6rem 1rem 0;
+  padding: 1.1rem 1.7rem;
   position: relative;
   font-family: var(--font-text);
   font-size: var(--t-body);
@@ -3209,23 +3289,42 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 .faq-item summary::after {
   content: '+';
   position: absolute;
-  right: 0;
-  top: 1rem;
+  right: 1.7rem;
+  top: 1.1rem;
   font-size: 1.3rem;
   color: var(--gold-text);
   transition: transform .25s var(--ease-out);
 }
 .faq-item[open] summary::after { transform: rotate(45deg); }
-.faq-answer { padding: 0 1.6rem 1.2rem 0; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.faq-answer { padding: 0 1.7rem 1.3rem; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
 .faq-answer.is-todo { font-style: italic; color: var(--stone-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item:hover, .faq-item[open] { transform: none; }
+}
 
 .local-contact {
   margin-top: clamp(2.4rem, 7vw, 3rem);
   padding: 1.6rem 1.5rem;
   border-radius: 1rem;
   text-align: center;
-  background: linear-gradient(168deg, #fdfaf4 0%, var(--card) 60%, #f4ecdd 100%);
+  background: linear-gradient(168deg, rgba(253,250,244,.92) 0%, rgba(251,247,240,.85) 60%, rgba(244,236,221,.85) 100%);
+  border: 1px solid rgba(196,159,108,.22);
   box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 18px 40px -28px rgba(93,74,44,.5);
+  -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+  transition:
+    transform .45s var(--ease-soft),
+    box-shadow .45s var(--ease-soft),
+    border-color .45s var(--ease-soft);
+}
+.local-contact:hover {
+  transform: translateY(-3px);
+  border-color: rgba(196,159,108,.42);
+  box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.58);
+}
+@media (prefers-reduced-motion: reduce) {
+  .local-contact:hover { transform: none; }
 }
 .local-contact-mark { display: inline-block; width: 2.2rem; color: var(--gold-deep); opacity: .8; }
 .local-contact-mark svg { width: 100%; height: auto; }
