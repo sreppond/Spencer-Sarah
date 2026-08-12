@@ -128,6 +128,15 @@ there), the same way `startHeroVideo` picks the hero's own mobile/desktop
 source — not on a live resize, so rotating the device after the page has
 already decided does not re-trigger the choice.
 
+The pick is `max-width: 767px` **and** `pointer: coarse`, not width alone.
+A desktop browser window that is not maximised, or a page zoomed in for
+readability, can report a CSS viewport under 767px while still being
+mouse-driven — width alone handed those guests the portrait clip meant
+for a phone. `pointer: coarse` is true only when the primary input is
+touch, which is what actually tells a phone apart from a narrow or
+zoomed desktop window; a real phone has no other kind of primary pointer,
+so this costs nothing for an actual mobile guest.
+
 ### A dedicated portrait cut for phones
 
 `envelope-open-mobile.mp4` is not a crop of the landscape clip — it is a
