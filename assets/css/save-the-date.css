@@ -1469,15 +1469,24 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
    boundary, a warm fill that separates them from the paper, and a 3.4rem
    floor so every one of them clears the 44px touch minimum. The engraved
    feel survives in the fill and the hairline; only the affordance changed. */
+/* Same frosted-glass family as the Travel & Lodging cards: a translucent
+   warm gradient over backdrop blur and a soft ambient shadow, layered on
+   top of the well's own inset shadow rather than replacing it — the
+   "engraved" affordance above still needs its real boundary, this just
+   makes the fill read as glass instead of flat paint. Hover and focus
+   both brighten the border and deepen the glow, the same feedback
+   language as the rest of the site's frosted surfaces. */
 .field input,
 .field textarea {
   width: 100%;
   min-height: 3.4rem;
   padding: .85rem 1rem;
-  border: 1px solid var(--rule);
-  border-radius: .5rem;
-  background: rgba(255,255,255,.5);
-  box-shadow: inset 0 1px 2px rgba(93,74,44,.045);
+  border: 1px solid rgba(196,159,108,.28);
+  border-radius: .7rem;
+  background: linear-gradient(168deg, rgba(255,255,255,.62) 0%, rgba(251,247,240,.4) 100%);
+  box-shadow: inset 0 1px 2px rgba(93,74,44,.05), 0 10px 24px -20px rgba(93,74,44,.35);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
   font-family: var(--font-text);
   font-size: 1.12rem;          /* >=16px: stops iOS zooming on focus */
   font-weight: 400;
@@ -1494,12 +1503,15 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
 .field input::placeholder,
 .field textarea::placeholder { color: var(--stone-text); opacity: .7; }
 
-.field input:hover, .field textarea:hover { border-color: var(--stone); }
+.field input:hover, .field textarea:hover {
+  border-color: rgba(196,159,108,.5);
+  box-shadow: inset 0 1px 2px rgba(93,74,44,.05), 0 14px 30px -20px rgba(93,74,44,.42);
+}
 .field input:focus, .field textarea:focus {
   outline: none;
   border-color: var(--gold-deep);
-  background: #fffdf9;
-  box-shadow: 0 0 0 3px rgba(196,159,108,.2);
+  background: linear-gradient(168deg, rgba(255,253,249,.95) 0%, rgba(255,250,240,.85) 100%);
+  box-shadow: inset 0 1px 2px rgba(93,74,44,.04), 0 0 0 3px rgba(196,159,108,.2), 0 16px 34px -20px rgba(93,74,44,.4);
 }
 /* Keyboard focus gets a real ring on top of the soft treatment — the fill
    change alone is too quiet to navigate by, and the ring only ever shows
@@ -3261,7 +3273,32 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
    dividers) with a hairline gold border, backdrop blur and a soft deep
    shadow. Hovering — or opening — lifts the card and warms its border,
    so the row reads as "alive" before a guest even taps it. */
-.faq { margin-top: clamp(2rem, 6vw, 2.6rem); display: flex; flex-direction: column; gap: .8rem; }
+.faq-tabs {
+  margin-top: clamp(1.6rem, 5vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .55rem;
+}
+.faq-tab {
+  padding: .5rem 1.15rem;
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  background: transparent;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .3s var(--ease-soft), border-color .3s var(--ease-soft), background-color .3s var(--ease-soft);
+}
+.faq-tab:hover { color: var(--gold-text); border-color: var(--gold-deep); }
+.faq-tab.is-active {
+  border-color: var(--gold-deep);
+  background: var(--gold-deep);
+  color: #fbf7f0;
+}
+.faq { margin-top: clamp(1.4rem, 4vw, 1.8rem); display: flex; flex-direction: column; gap: .8rem; }
 .faq-item {
   border-radius: 1rem;
   background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
