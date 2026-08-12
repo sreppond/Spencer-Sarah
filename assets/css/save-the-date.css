@@ -290,6 +290,11 @@ html:not(.js) .env-scene { display: none; }
   bottom: calc(1.3rem + var(--safe-b));
   transform: translateX(-50%);
   border: 0;
+  /* padding alone left this ~37px tall; min-height + flex centering gets
+     it to the 44px tap floor without changing the visible label size. */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: .7rem 1.1rem;
   background: none;
   font-family: var(--font-text);
@@ -313,20 +318,55 @@ html:not(.js) .env-scene { display: none; }
 .env-scene.is-opening .env-hint,
 .env-scene.is-opening .env-skip { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 
+/* --- the whole envelope, whichever clip ends up on screen ---------------
+   Two clips, two native shapes: the landscape studio shot is ~1.82:1 (see
+   assets/video/README.md), the portrait take save-the-date.js prefers on
+   phones is 9:16. `cover` crops brutally whenever the screen's own shape
+   runs the opposite way of whichever clip is loaded — on a phone showing
+   the landscape clip barely a quarter of the width survives; on the rare
+   screen showing the portrait clip sideways (a landscape phone under the
+   767px mobile threshold, or a fallback after the portrait file itself
+   fails — see setEnvelopeSource/onError in save-the-date.js) most of the
+   height goes the same way. `.is-mobile-cut` on `.env-scene` is JS's own
+   record of which clip is actually loaded (not just screen width, so the
+   fallback path gets this right too — see setEnvelopeSource), and each
+   rule below only fires for the clip it actually applies to, on the axis
+   that actually crops it. Both switch to `contain`, letterboxed on the
+   scene's own paper tone (`.env-video`'s background, already set above)
+   — the same tone the clip's own tail fades to, so the bars read as
+   composed rather than broken — and both re-ground the hint/skip text in
+   ink rather than the near-white built for photography, since that spot
+   is flat paper instead of footage whenever `contain` is what fired. */
+@media (max-aspect-ratio: 4/3) {
+  .env-scene:not(.is-mobile-cut) .env-video { object-fit: contain; }
+  .env-scene:not(.is-mobile-cut) .env-scrim { display: none; }
+  .env-scene:not(.is-mobile-cut) .env-hint { color: var(--ink-soft); }
+  .env-scene:not(.is-mobile-cut) .env-skip { color: var(--stone-text); }
+  .env-scene:not(.is-mobile-cut) .env-skip:hover,
+  .env-scene:not(.is-mobile-cut) .env-skip:focus-visible { color: var(--ink); }
+}
+@media (orientation: landscape) {
+  .env-scene.is-mobile-cut .env-video { object-fit: contain; }
+  .env-scene.is-mobile-cut .env-scrim { display: none; }
+  .env-scene.is-mobile-cut .env-hint { color: var(--ink-soft); }
+  .env-scene.is-mobile-cut .env-skip { color: var(--stone-text); }
+  .env-scene.is-mobile-cut .env-skip:hover,
+  .env-scene.is-mobile-cut .env-skip:focus-visible { color: var(--ink); }
+}
+
 
 /* ==========================================================================
    1.5 · SITE NAV
-   One component, pasted as a markup partial into index.html and
-   travel/index.html — the only two pages left. index.html gates it with
-   site-nav.js; travel/index.html has its own hero and its own copy of the
-   same logic in travel.js instead.
+   travel/index.html only now. index.html has its own hero-top bar instead
+   (below) — this pill remains exactly as it was for the travel page, which
+   still gates it behind its own hero with the copy of this logic in
+   travel.js.
 
-   🔒 On the save-the-date this must never appear over the hero — not at
-   low opacity, not as a scrim, not on scroll-up. It ships hidden and
-   site-nav.js only reveals it once .hero-viewport has fully cleared the
-   viewport. Pages with no hero reveal it immediately.
-   z-index sits below the envelope's 90: by the time the nav could ever
-   show, the envelope is long gone, but the ordering stays honest anyway.
+   🔒 On the travel page this must never appear over the hero — not at
+   low opacity, not as a scrim, not on scroll-up. It ships hidden and is
+   revealed only once its hero has fully cleared the viewport.
+   z-index sits below the envelope's 90 on the save-the-date; travel has no
+   envelope, but the value is kept the same across both pages.
 
    Visual: a floating glass pill rather than a full-width bar, sized to
    its own content and centred — the same silhouette the old sub-480px
@@ -395,6 +435,7 @@ html:not(.js) .env-scene { display: none; }
   border-left: 1px solid rgba(205, 188, 166, .55);
 }
 .site-nav-links li {
+  flex: none;
   padding: 0 .95rem;
 }
 .site-nav-links li:first-child { padding-left: 0; }
@@ -404,6 +445,7 @@ html:not(.js) .env-scene { display: none; }
 .site-nav-links a {
   position: relative;
   display: inline-block;
+  white-space: nowrap;
   font-family: var(--font-text);
   font-size: var(--t-micro);
   font-weight: 600;
@@ -459,11 +501,234 @@ html:not(.js) .env-scene { display: none; }
   .site-nav-links li { padding: 0 .7rem; }
 }
 
+/* The two-item save-the-date pill ("Travel & Stay" / "Save the Date")
+   fits max-content at any phone width. The travel page's scroll-spy
+   variant carries three longer labels ("Where to Stay" / "The Weekend" /
+   "Questions") that don't — .site-nav-inner's own max-width was clamping
+   the pill to the viewport while the links inside kept trying to shrink,
+   wrapping each label onto two or three lines. Letting the link row
+   scroll horizontally instead keeps every label intact at any width;
+   the fade hints that there's more to swipe to. Harmless on the
+   two-item pill, which never needs to scroll far enough for it to show. */
+@media (max-width: 480px) {
+  .site-nav-inner { position: relative; }
+  .site-nav-links {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .site-nav-links::-webkit-scrollbar { display: none; }
+  .site-nav-inner::after {
+    content: '';
+    position: absolute;
+    top: 1px; right: 1px; bottom: 1px;
+    width: 1.6rem;
+    border-radius: 0 999px 999px 0;
+    background: linear-gradient(to right, transparent, rgba(251, 247, 240, .9) 65%);
+    pointer-events: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-nav {
     transform: none !important;
     transition: opacity .2s linear !important;
   }
+}
+
+
+/* ==========================================================================
+   1.6 · HERO NAV (index.html only)
+   Replaces the old hidden-until-scrolled pill on the save-the-date: a
+   hamburger (left) and an RSVP button (right), fixed to the top of the
+   viewport and visible from the very first frame, straight over the
+   painting. It stays on through the rest of the page too — there is
+   nothing to gate here, so it is simply always there.
+
+   It is never a plate over the artwork. Both controls sit on their own
+   soft ivory bloom — the same device .hero-cue already uses lower in the
+   painting (§2) — rather than a dark bar or a frosted rectangle, so the
+   hero itself is never dimmed or covered.
+
+   z-index sits below the envelope's 90: while the envelope is up this is
+   fully covered, so it is only ever seen once the guest has already
+   opened it. #hero-nav-toggle and #hero-nav-menu are wired up by
+   assets/js/hero-nav.js. */
+
+.hero-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: calc(var(--safe-t) + .85rem)
+           calc(var(--gutter) - .35rem + var(--safe-r)) 0
+           calc(var(--gutter) - .35rem + var(--safe-l));
+  pointer-events: none;
+}
+
+.hero-nav-toggle,
+.hero-nav-rsvp {
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Shared bloom: a soft ivory halo behind each control, generous enough to
+   clear whatever passage of sky, peak or paper sits behind it. No hard
+   edge, so it never reads as a panel. */
+.hero-nav-toggle::before,
+.hero-nav-rsvp::before {
+  content: '';
+  position: absolute;
+  inset: -.9rem;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 68% 68% at 50% 50%,
+      rgba(250,246,238,.88) 0%,
+      rgba(250,246,238,.66) 46%,
+      rgba(250,246,238,.3)  72%,
+      rgba(250,246,238,0)   100%);
+}
+
+.hero-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink);
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-toggle:hover,
+.hero-nav-toggle:focus-visible,
+.hero-nav-toggle.is-open { color: var(--gold-text); }
+
+.hero-nav-toggle-bars {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 13px;
+}
+.hero-nav-toggle-bars span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.6px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform .32s var(--ease-soft), opacity .2s var(--ease-soft), top .32s var(--ease-soft);
+}
+.hero-nav-toggle-bars span:nth-child(1) { top: 0; }
+.hero-nav-toggle-bars span:nth-child(2) { top: 5.7px; }
+.hero-nav-toggle-bars span:nth-child(3) { top: 11.4px; }
+/* Bars fold into an X once open, the standard hamburger-to-close tell. */
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(1) { top: 5.7px; transform: rotate(45deg); }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(2) { opacity: 0; }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(3) { top: 5.7px; transform: rotate(-45deg); }
+
+.hero-nav-rsvp {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 1.35rem;
+  border-radius: 999px;
+  font-family: var(--font-text);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-indent: .17em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  background: rgba(168, 131, 79, .16);
+  border: 1px solid rgba(168, 131, 79, .32);
+  text-decoration: none;
+  transition: background .3s var(--ease-soft), color .3s var(--ease-soft), border-color .3s var(--ease-soft);
+}
+.hero-nav-rsvp:hover,
+.hero-nav-rsvp:focus-visible {
+  background: rgba(168, 131, 79, .28);
+  border-color: rgba(168, 131, 79, .5);
+}
+
+/* The dropdown menu is allowed to read as a solid card once open — unlike
+   the two controls above, it is a brief, guest-triggered interaction, not
+   something permanently laid over the painting. Same glass-pill treatment
+   the old §1.5 nav used, so the two still feel like one family. */
+.hero-nav-menu {
+  position: absolute;
+  top: calc(var(--safe-t) + 3.55rem);
+  left: calc(var(--gutter) - .35rem + var(--safe-l));
+  width: max-content;
+  max-width: calc(100vw - 2 * (var(--gutter) - .35rem) - var(--safe-l) - var(--safe-r));
+  padding: 1rem 1.35rem;
+  border-radius: 1rem;
+  background: rgba(251, 247, 240, .92);
+  border: 1px solid rgba(120, 104, 80, .14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .55),
+    0 22px 44px -26px rgba(93, 74, 44, .42),
+    0 4px 16px -10px rgba(93, 74, 44, .18);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+          backdrop-filter: blur(18px) saturate(160%);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-8px) scale(.97);
+  transform-origin: top left;
+  transition: opacity .3s var(--ease-soft), transform .32s var(--ease-soft);
+}
+.hero-nav-menu.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.hero-nav-menu-word {
+  display: block;
+  padding-bottom: .65rem;
+  margin-bottom: .65rem;
+  border-bottom: 1px solid rgba(205, 188, 166, .55);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-menu-word:hover,
+.hero-nav-menu-word:focus-visible { color: var(--gold-text); }
+
+.hero-nav-menu-links { list-style: none; }
+.hero-nav-menu-links li + li { margin-top: .3rem; }
+.hero-nav-menu-links a {
+  display: block;
+  padding: .5rem 0;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--stone-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-menu-links a:hover,
+.hero-nav-menu-links a:focus-visible { color: var(--gold-text); }
+.hero-nav-menu-links a[aria-current="page"] { color: var(--gold-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-nav-menu,
+  .hero-nav-toggle-bars span { transition: none !important; }
 }
 
 
@@ -1229,9 +1494,12 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
    between two equal things, which it is not — almost everyone wants the
    file. This is the escape hatch for the people who do not. */
 .date-alt {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 1.1rem;
-  padding: .5rem .4rem;          /* keeps the tap target at 44px tall */
+  min-height: 44px;              /* the padding alone landed at ~41px */
+  padding: .5rem .4rem;
   font-size: var(--t-small);
   color: var(--stone-text);
   text-decoration: underline;
@@ -1407,16 +1675,18 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   box-shadow: 0 10px 38px rgba(70,58,42,.16);
 }
 
-/* .m-tl/.m-tr sit under the floating site nav once it's shown, and the
-   nav is a fixed pill spanning most of the width at phone sizes — not
-   just a corner element — so both top corners can end up under it, not
-   only the one nearer the pill's edge. Measured in a real render: when
-   this page's own 2-link nav wraps to two lines (≤360px), the pill
-   overlapped .m-tl by 13px and .m-tr by 7px. --nav-h (published by
-   site-nav.js/travel.js — see CSS §5.5) is the pill's actual rendered
-   height; margin-top only engages once that height grows past a
-   one-line pill, so nothing shifts on the far more common case where
-   the nav fits on one line. */
+/* .m-tl/.m-tr sit under the fixed hero-nav bar, which spans the width at
+   phone sizes with a control in each corner — not just one corner — so
+   both top cards can end up under it, not only the one nearer either
+   control. Measured before hero-nav replaced the old floating pill: that
+   pill could wrap to two lines on some phone widths and overlap .m-tl by
+   13px, .m-tr by 7px. hero-nav's height doesn't vary with content the way
+   the old pill did, but --nav-h (published by hero-nav.js — see CSS §5.5)
+   still reads its real rendered height rather than a hardcoded one, so
+   this stays correct if that ever changes (a taller safe-area inset, a
+   larger touch target). margin-top only engages past a single-line pill's
+   worth of height, so this is a small constant buffer today, not a
+   response to active wrapping. */
 .m-tl, .m-tr { margin-top: max(0px, calc(var(--nav-h, 57px) - 45px)); }
 
 .m-tl { top:  3%; left:  1%; width: 22%; height: 46%; --m-fx: -130%; --m-fy:  -80%; }
@@ -1685,13 +1955,15 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.3rem;
-  height: 2.3rem;
+  /* 2.75rem = 44px: the tap-target floor, not just the visible size —
+     was 2.3rem (36.8px), under it on every phone. */
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--rule);
   border-radius: 50%;
   background: rgba(255,255,255,.5);
   font-family: var(--font-text);
-  font-size: .9rem;
+  font-size: 1rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--stone-text);
@@ -2140,14 +2412,16 @@ html.book-nudge-open body { overflow-y: hidden; }
    full-width bar, but the clearance is kept anyway — the eyebrow above
    the page title is exactly what the pill would otherwise sit over.
 
-   --nav-h is published by site-nav.js/travel.js from the pill's real
-   rendered height (see the ResizeObserver there) — not a guessed
-   constant. The travel nav's three links can wrap to two lines at narrow
-   widths ("Where to Stay", "The Weekend"), growing the pill from ~57px to
-   as much as ~97px; a fixed 3.4rem clearance sized for the one-line case
-   left this top padding shorter than the pill it was meant to clear. The
-   100px fallback covers the worst measured case for the moment before
-   the script runs. */
+   --nav-h is published by travel.js (this rule only ever applies to
+   .page-sub pages, i.e. travel/index.html) from the pill's real rendered
+   height — see the ResizeObserver there — not a guessed constant. That
+   nav's three links can wrap to two lines at narrow widths ("Where to
+   Stay", "The Weekend"), which used to grow the pill past a fixed 3.4rem
+   clearance sized for the one-line case; the pill itself is now capped to
+   the viewport instead of wrapping (§8), but --nav-h stays in place as
+   the general mechanism rather than a second constant to keep in sync
+   with it. The 100px fallback covers a generous worst case for the
+   moment before the script runs. */
 .page-sub .paper { margin-top: 0; padding-top: calc(var(--nav-h, 100px) + .9rem + var(--safe-t)); }
 .page-sub .paper::before { inset: 0; }
 
@@ -2350,7 +2624,9 @@ html.book-nudge-open body { overflow-y: hidden; }
 @media (max-width: 380px) {
   .stepper-dots { gap: .4rem; }
   .stepper-dots li { gap: .4rem; }
-  .step-dot { width: 2.1rem; height: 2.1rem; font-size: .84rem; }
+  /* Used to shrink the dot itself below the 44px floor to fit narrow
+     phones — four dots at the full 2.75rem plus the connectors between
+     them still fit inside 320px, so only the gap needs to tighten. */
   .flow-btn { padding: .95em 1.5em; letter-spacing: .12em; text-indent: .12em; }
 }
 
@@ -2473,6 +2749,7 @@ html.book-nudge-open body { overflow-y: hidden; }
 @media print {
   .env-scene,
   .site-nav,
+  .hero-nav,
   .audio-toggle,
   .hero-cue,
   .skip-link { display: none !important; }
@@ -2539,15 +2816,25 @@ html.smooth-scroll { scroll-behavior: smooth; }
    fades into it directly (11.2), so anything less than true white would
    show a seam where the mask ends. Scoped to body.travel-page rather
    than touching --paper itself, which the save-the-date still needs at
-   its original tan. */
-body.travel-page .paper { background: #fff; }
+   its original tan.
+
+   .page-sub .paper's padding-top (§7) reserved clearance for a full-width
+   nav bar; the nav is a floating fixed pill now (it overlays instead of
+   sitting in flow), so that reserved space would just be a blank white
+   strip above the photo. Zeroed here, scoped to the travel page only —
+   any future .page-sub page without a full-bleed hero still gets the
+   original clearance. */
+body.travel-page .paper { background: #fff; padding-top: 0; }
 
 /* --- 11.2 · Hero ---
-   Opens full-bleed on the Glacier Image, masked so its foot dissolves
-   into the white page background below rather than cutting to a hard
-   edge. Quieter than the save-the-date's hero — no countdown, no
-   calendar action — because the only job left here is getting a guest
-   from the photo straight into Where to Stay. */
+   Opens full-bleed on the Glacier Image — right at the top of the
+   viewport, under the floating nav pill, with the peak itself as the
+   top edge of the frame (the source file is cropped to the summit; see
+   the note by .travel-hero-media below) — then masked so its foot
+   dissolves into the white page background rather than cutting to a
+   hard edge. Quieter than the save-the-date's hero — no calendar action
+   — but keeps a live countdown, the one piece of urgency this page
+   still carries before it gets to Where to Stay. */
 .travel-hero { text-align: center; }
 
 /* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
@@ -2555,27 +2842,28 @@ body.travel-page .paper { background: #fff; }
    The mask (not a solid overlay) is what makes the fade actually read as
    the photo dissolving into paper rather than a rectangle laid over it;
    it only works because the page behind it is the same white the mask
-   fades to (11.1). */
-.travel-hero-media {
-  width: 100%;
-  line-height: 0;
-}
+   fades to (11.1).
+
+   aspect-ratio is set to the source file's own ratio (1537:760), not a
+   round design number — with the box shaped exactly like the image,
+   object-fit: cover has nothing left to crop, at any viewport width.
+   An earlier version filled the viewport height with flex-grow, which
+   forced a vertical crop on short/wide windows and ate the boat at the
+   bottom of the frame; matching the ratio exactly is what guarantees
+   the whole photo — summit to boat — is always in frame. */
+.travel-hero-media { width: 100%; line-height: 0; }
 .travel-hero-media img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1537 / 760;
   object-fit: cover;
-  object-position: center 42%;
   -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
           mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
-}
-@media (min-width: 640px) {
-  .travel-hero-media img { aspect-ratio: 16 / 9; }
 }
 
 .travel-hero-inner {
   max-width: 34rem;
   margin: 0 auto;
-  padding: 0 var(--gutter) clamp(3rem, 9vh, 4.5rem);
+  padding: 1.4rem var(--gutter) clamp(3rem, 9vh, 4.5rem);
 }
 .travel-hero-title {
   margin-top: .6rem;
@@ -2599,24 +2887,51 @@ body.travel-page .paper { background: #fff; }
   text-wrap: pretty;
 }
 
-/* A quiet line, not a button — two small text links standing in for the
-   flight-finder and map sections the August 2026 redesign cut. Kept
-   deliberately low-visual-weight so it reads as a utility, not a peer
-   of the page's other calls to action. */
-.travel-hero-utility {
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
+/* --- 11.2b · Countdown --- */
+.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
+.countdown-passed {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
+  font-weight: 600;
+  color: var(--ink);
 }
-.travel-hero-utility a {
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+}
+.countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.6rem;
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--gold-text);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color .25s var(--ease-soft);
 }
-.travel-hero-utility a:hover,
-.travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
-.travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
+.countdown-unit {
+  margin-top: .35rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+/* A quick flip on the number that actually changed, not a jittery
+   ticker — one keyframe, retriggered by travel.js removing and
+   re-adding this class. Neutralized by the sitewide reduced-motion
+   animation-duration clamp (§9), same as every other animation here. */
+.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
+@keyframes countdown-flip {
+  0%   { opacity: .35; transform: translateY(-.3em); }
+  100% { opacity: 1;   transform: none; }
+}
 
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
@@ -3310,6 +3625,9 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   gap: .55rem;
 }
 .faq-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;              /* the padding alone landed at ~36px */
   padding: .5rem 1.15rem;
   border: 1px solid var(--rule);
   border-radius: 100px;

@@ -48,11 +48,11 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812b">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812e">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260812a"></script>
-<script defer src="../assets/js/travel-data.js?v=20260811i"></script>
+<script defer src="../assets/js/config.js?v=20260812b"></script>
+<script defer src="../assets/js/travel-data.js?v=20260812a"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
 <script defer src="../assets/js/travel.js?v=20260812b"></script>
 </head>
@@ -82,9 +82,8 @@
        Opens on the Glacier Image (full-bleed), masked so its foot
        dissolves straight into the white page background rather than
        cutting to a hard edge — see .travel-hero-media in CSS §11.2. No
-       countdown, no calendar action: this page's only job now is getting
-       a guest from "where are we" to "where do I stay," so the copy
-       leads straight into Where to Stay below. -->
+       calendar action: the copy leads straight from the photo into a
+       live countdown, then Where to Stay below. -->
   <header class="travel-hero" id="travel-hero">
     <div class="travel-hero-media">
       <img src="../images/Glacier Image.png" alt="Glacier-fed peaks above Whitefish, Montana" decoding="async" fetchpriority="high">
@@ -95,17 +94,19 @@
       <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
 
-      <!-- Quiet utility row, not a section: the flight-finder, the
-           three-column airline list and the address-list map all lived
-           here as full sections before the August 2026 redesign narrowed
-           this page to one job (get guests to book a room). Both links
-           below are sensible defaults, not confirmed with Spencer yet —
-           see the open questions called out in the redesign notes. -->
-      <p class="travel-hero-utility">
-        <a href="https://www.google.com/search?q=flights+to+Glacier+Park+International+Airport+FCA" target="_blank" rel="noopener">Nearest airport: Glacier Park Intl (FCA)</a>
-        <span class="travel-hero-utility-dot" aria-hidden="true">·</span>
-        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=1380+Wisconsin+Ave%2C+Whitefish%2C+MT+59937" target="_blank" rel="noopener">Directions to the venue</a>
-      </p>
+      <!-- Days / hours / minutes only — seconds are frantic and burn
+           battery for nothing. travel.js swaps this to a single line
+           once the date has passed, and it is a plain updating number
+           under prefers-reduced-motion rather than a digit-roll. -->
+      <div class="countdown" id="countdown" aria-live="off">
+        <p class="countdown-passed" id="countdown-passed" hidden>Married in Whitefish, June 12, 2027</p>
+        <div class="countdown-grid" id="countdown-grid">
+          <div class="countdown-cell"><span class="countdown-num" id="cd-days">–</span><span class="countdown-unit">days</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-hours">–</span><span class="countdown-unit">hours</span></div>
+          <div class="countdown-cell"><span class="countdown-num" id="cd-mins">–</span><span class="countdown-unit">minutes</span></div>
+        </div>
+        <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
+      </div>
     </div>
   </header>
 

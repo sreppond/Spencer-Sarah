@@ -113,14 +113,68 @@ nothing.
 
 | File | Status | Notes |
 | --- | --- | --- |
-| `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 48fps, H.264 High, no audio track, `+faststart`. ~910 KB. Cut from a 10s, 24fps, 1280×720 source. |
-| `envelope-open-poster.jpg` | **shipped** | The clip's own frame 0 — see below. |
+| `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 48fps, H.264 High, no audio track, `+faststart`. ~910 KB. Cut from a 10s, 24fps, 1280×720 source. Served on anything 768px and wider, and as the fallback everywhere if the portrait file below ever fails. |
+| `envelope-open-poster.jpg` | **shipped** | The landscape clip's own frame 0 — see below. |
+| `envelope-open-mobile.mp4` | **shipped** | 720×1280 (9:16), ~8.3s, 24fps, H.264 High, no audio track, `+faststart`. ~1.8 MB. Trimmed and re-encoded from a 720×1280, 10s source shot and framed for a phone screen — see "A dedicated portrait cut for phones" below. Served below 768px. |
+| `envelope-open-mobile-poster.jpg` | **shipped** | The portrait clip's own frame 0. |
 
 This is what plays when a guest taps the envelope, in place of the old
 CSS/SVG 3D fold. `save-the-date.js` plays it on tap and waits for its
 `ended` event to hand off to the hero — see the "Envelope" section there —
 rather than a fixed timer, so the hand-off can never drift out of sync
-with what is actually on screen.
+with what is actually on screen. `save-the-date.js` picks between the two
+files above once, at load (`setEnvelopeSource` in the "Envelope" section
+there), the same way `startHeroVideo` picks the hero's own mobile/desktop
+source — not on a live resize, so rotating the device after the page has
+already decided does not re-trigger the choice.
+
+### A dedicated portrait cut for phones
+
+`envelope-open-mobile.mp4` is not a crop of the landscape clip — it is a
+separate take, shot and framed in portrait to begin with, so `object-fit:
+cover` needs only a mild vertical crop on a real phone screen (well under
+20% on most devices) instead of the landscape clip's ~75% width crop. The
+source file supplied for it (also 720×1280, 10s, 24fps, with a −62 dB
+noise-floor audio track — the same non-signal the landscape clip's own
+source carried) was the full uncut take: envelope opens, card rises and
+the last line of text ("Whitefish, MT / 06.12.2027") settles into place
+by ~7.7s, then holds on the fully-revealed card with no fade for the
+remaining ~2.3s. That hold and the raw audio track needed the same fix
+the landscape clip got, done the same way — trim the static tail, add a
+fade to a held white frame so `.env-scene`'s own opacity transition (CSS
+§1) has a plain field to fade from, and drop the audio:
+
+```
+ffmpeg -i master.mp4 \
+  -vf "trim=0:8.3,setpts=PTS-STARTPTS,fade=t=out:st=7.8:d=0.5:color=white" \
+  -an -c:v libx264 -crf 19 -preset slow -profile:v high -level 4.0 \
+  -pix_fmt yuv420p -g 48 -movflags +faststart envelope-open-mobile.mp4
+```
+
+Unlike the landscape clip, this pass does not retime the footage —
+`setpts=PTS-STARTPTS` only re-zeroes timestamps after the trim, it does
+not change their spacing. The source's own pace was left alone rather
+than matched to the landscape clip's brisker 1.75×, since retiming is a
+creative call on someone else's footage that trimming a dead hold is not.
+One consequence: this clip runs longer (~8.3s) than the landscape one
+(~4.9s), so the flat safety timeout in `playEnvelopeVideo()` that hands
+off to the hero if a browser's `error`/`ended` events never fire had to
+move from 6.5s to 9.8s to stay comfortably past *either* clip's own
+runtime — see the comment at that `setTimeout` call.
+
+`envelope-open-mobile-poster.jpg` follows the same rule as the landscape
+poster below: it is frame 0 of the *processed* file, not the raw upload,
+exported the same way —
+
+```
+ffmpeg -i envelope-open-mobile.mp4 -frames:v 1 -update 1 -q:v 3 envelope-open-mobile-poster.jpg
+```
+
+If this clip is ever re-shot or re-cut, re-check where the text settles
+(sample frames every ~0.1s through the back third of the clip — a static
+contact sheet is the fastest way to see it) rather than assuming ~7.8s
+still holds, and re-export the poster from whatever the new file's own
+frame 0 actually is.
 
 ### The source ran long and needed cropping in
 
@@ -260,7 +314,19 @@ forever, with no `error` event and no rejected promise. A guest on a real
 but similarly decoder-less browser would be stuck on a frame that never
 moves, watching a screen with no stated way past it. `playEnvelopeVideo()`
 in `save-the-date.js` covers this with a flat timeout — comfortably past
-the clip's own runtime — that hands off to the hero the same way a
+either clip's own runtime — that hands off to the hero the same way a
 missing file or a genuine decode error would, on top of the `error` and
 rejected-`play()` handlers that catch the failures a browser actually
 reports.
+
+An `error` a browser *does* report gets one more chance before that
+hand-off: `onError` inside `playEnvelopeVideo()` steps to the next entry
+in `envSources` — on a phone that means falling from the portrait clip to
+the landscape one — and tries again, so a guest whose portrait file 404s
+or fails to decode still sees an envelope instead of a dead frame. Only
+the last source's own failure reaches the hero. CSS §1 of
+`save-the-date.css` keys its `object-fit` off the same fallback (the
+`is-mobile-cut` class `setEnvelopeSource` toggles on `#envelope-scene`),
+so a guest who falls back this way gets the landscape clip letterboxed
+rather than cropped to a sliver, not the raw crop the desktop-only version
+of this page once shipped.
