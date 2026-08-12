@@ -954,6 +954,65 @@
       done.appendChild(again);
     }
 
+    /* ---- booking nudge popup ------------------------------------------
+       The one deliberately-timed, unmissable moment on the page: it opens
+       itself right after a fresh "send our details," on top of the done
+       screen, because the booking-deadline note used to live as a
+       footnote under the hand-off button and was too easy to skim past.
+       Never triggered on a remembered return visit — only from the fetch
+       success handler below. Same open/close/focus-trap shape as the
+       lodging lightbox in travel.js, minus the media panel. */
+    var nudge = $('#book-nudge');
+    var openNudge = function () {};
+    if (nudge) {
+      var nudgeBackdrop = $('#book-nudge-backdrop', nudge);
+      var nudgeDialog = $('#book-nudge-dialog', nudge);
+      var nudgeClose = $('#book-nudge-close', nudge);
+      var nudgeDismiss = $('#book-nudge-dismiss', nudge);
+      var nudgeTrigger = null;
+
+      var nudgeFocusable = function () {
+        return $$('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])', nudgeDialog)
+          .filter(function (el) { return el.offsetParent !== null; });
+      };
+
+      var closeNudge = function () {
+        nudge.classList.remove('is-open');
+        root.classList.remove('book-nudge-open');
+        nudgeDialog.removeEventListener('keydown', onNudgeKeydown);
+        nudgeBackdrop.removeEventListener('click', closeNudge);
+        var delay = reduced ? 0 : 250;
+        setTimeout(function () { nudge.hidden = true; }, delay);
+        if (nudgeTrigger && nudgeTrigger.focus) nudgeTrigger.focus();
+        nudgeTrigger = null;
+      };
+
+      var onNudgeKeydown = function (e) {
+        if (e.key === 'Escape') { e.preventDefault(); closeNudge(); return; }
+        if (e.key !== 'Tab') return;
+        var f = nudgeFocusable();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      };
+
+      openNudge = function () {
+        nudgeTrigger = document.activeElement;
+        nudge.hidden = false;
+        root.classList.add('book-nudge-open');
+        // rAF so the browser paints the pre-transition state before the
+        // class flips — without this the open transition never runs.
+        requestAnimationFrame(function () { nudge.classList.add('is-open'); });
+        nudgeDialog.addEventListener('keydown', onNudgeKeydown);
+        nudgeBackdrop.addEventListener('click', closeNudge);
+        nudgeDialog.focus();
+      };
+
+      nudgeClose.addEventListener('click', closeNudge);
+      nudgeDismiss.addEventListener('click', closeNudge);
+    }
+
     // Set when the guest uses the "don't have it handy" link below rather
     // than just leaving the address blank — sent with the payload so
     // Spencer can tell "hasn't gotten to it" from "moving, follow up."
@@ -1289,12 +1348,9 @@
           // reader is told nothing about what replaced it.
           done.focus({ preventScroll: true });
 
-          // The save-the-date's only job past this point is handing the
-          // guest to the page that actually answers "now what" — flights,
-          // lodging, the weekend. That hand-off is a click, not a timed
-          // redirect (see .done-next in the markup): the booking-deadline
-          // note sitting under it needs to actually be read, not carried
-          // past by an automatic navigation.
+          // Give "you're all set" a beat to register before the booking
+          // nudge takes focus, rather than popping the two at once.
+          setTimeout(openNudge, reduced ? 250 : 900);
         })
         .catch(function () {
           sending = false;

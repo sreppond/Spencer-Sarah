@@ -1868,16 +1868,6 @@ html.js .gform.is-stepped .step-q .word {
   margin-top: clamp(1.6rem, 5vw, 2.2rem);
 }
 
-/* Deliberately quieter than .done-sub — a nudge, not news. Lives under
-   the CTA so it reads as a footnote to "continue," not a reason to stay. */
-.done-note {
-  margin-top: 1rem;
-  font-size: var(--t-small);
-  font-weight: 400;
-  line-height: 1.55;
-  color: var(--stone-text);
-}
-
 /* --- "sent something already?" ---
    Only ever rendered on a return visit, where the done screen is shown
    from a remembered submission rather than one that just happened. It is
@@ -1903,6 +1893,118 @@ html.js .gform.is-stepped .step-q .word {
   transition: color .3s var(--ease-soft);
 }
 .done-again-link:hover, .done-again-link:focus-visible { color: var(--ink); }
+
+
+/* ---- Booking nudge popup ------------------------------------------------
+   Same fixed-overlay / backdrop / dialog pattern as .lodge-lightbox in
+   travel/index.html, condensed to one column since there is no photo
+   here. save-the-date.js is the only thing that ever opens it, once,
+   right after a fresh successful submission. */
+.book-nudge[hidden] { display: none; }
+.book-nudge {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gutter);
+}
+html.book-nudge-open,
+html.book-nudge-open body { overflow-y: hidden; }
+
+.book-nudge-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(37,29,18,.66);
+  opacity: 0;
+  transition: opacity .25s var(--ease-out);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .book-nudge-backdrop { backdrop-filter: blur(3px); }
+}
+.book-nudge.is-open .book-nudge-backdrop { opacity: 1; }
+
+.book-nudge-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 26rem);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: clamp(1.8rem, 6vw, 2.4rem) clamp(1.4rem, 6vw, 2rem);
+  border-radius: 1.1rem;
+  text-align: center;
+  background: linear-gradient(168deg, #fdfaf4 0%, var(--card) 60%, #f4ecdd 100%);
+  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 30px 70px -28px rgba(37,29,18,.55);
+  opacity: 0;
+  transform: translateY(14px) scale(.98);
+  transition: opacity .25s var(--ease-out), transform .25s var(--ease-out);
+}
+.book-nudge.is-open .book-nudge-dialog { opacity: 1; transform: none; }
+.book-nudge-dialog:focus { outline: none; }
+.book-nudge-dialog:focus-visible { outline: 2.5px solid var(--gold-text); outline-offset: 4px; }
+
+.book-nudge-close {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 2.75rem = 44px at the default root size — the accessible touch-target
+     floor, matching .lodge-lightbox-close. */
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--stone-text);
+  cursor: pointer;
+  transition: background .2s var(--ease-soft), color .2s var(--ease-soft), transform .2s var(--ease-soft);
+}
+.book-nudge-close:hover,
+.book-nudge-close:focus-visible { background: rgba(196,159,108,.16); color: var(--gold-text); }
+.book-nudge-close:hover { transform: scale(1.06); }
+.book-nudge-close:focus-visible { outline: 2px solid var(--gold-text); outline-offset: 2px; }
+.book-nudge-close svg { width: 42%; height: 42%; }
+
+.book-nudge-eyebrow { margin-bottom: .7rem; }
+
+.book-nudge-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5.6vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.book-nudge-body {
+  margin-top: .9rem;
+  font-size: var(--t-body);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.book-nudge-body strong { color: var(--gold-text); font-weight: 600; }
+
+.book-nudge-cta { margin-top: 1.7rem; }
+
+.book-nudge-dismiss {
+  display: block;
+  margin: .9rem auto 0;
+  border: 0;
+  padding: .4rem;
+  background: none;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  color: var(--stone-text);
+  text-decoration: underline;
+  text-underline-offset: .25em;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+  transition: color .3s var(--ease-soft);
+}
+.book-nudge-dismiss:hover, .book-nudge-dismiss:focus-visible { color: var(--ink); }
 
 
 /* §5 (the photo strip) is gone — the mosaic in §3.6 replaced it. */

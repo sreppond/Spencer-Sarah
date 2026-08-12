@@ -410,11 +410,13 @@
              Swapping the form out without moving focus leaves a screen
              reader parked on a button that no longer exists. -->
         <!-- The form is the last thing on the page. A successful send lands
-             here with a CTA on to Travel & Stay and a quiet note about the
-             lodging deadline — see .done-next / .done-note. A remembered
-             return visit (already submitted, days ago) shows the same
-             screen, with a quiet "sent something already? update it" link
-             added by save-the-date.js. -->
+             here with a CTA on to Travel & Stay; the booking-deadline
+             message itself lives in the #book-nudge popup below, which
+             save-the-date.js opens a beat later. A remembered return
+             visit (already submitted, days ago) shows the same screen,
+             with a quiet "sent something already? update it" link added
+             by save-the-date.js — and no popup, since it's already been
+             seen. -->
         <div class="form-done" id="form-done" tabindex="-1" hidden>
           <span class="done-mark" aria-hidden="true"></span>
           <p class="done-line">Thank you — you're all set.</p>
@@ -430,12 +432,50 @@
               <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </a>
-          <p class="done-note">A gentle heads-up: Whitefish has limited lodging for the weekend, so we'd suggest booking your stay before the end of October to make sure a room is still there for you.</p>
         </div>
       </div>
     </section>
 
   </div><!-- /paper -->
+
+  <!-- The booking nudge. A genuine popup — the one deliberately-timed,
+       unmissable moment on the page — because the old one-line footnote
+       under the hand-off button ("book by end of October") was too easy
+       to skim past. save-the-date.js opens this itself, once, right after
+       a fresh "send our details" (never on a remembered return visit).
+       Fixed overlay, sibling within <main> rather than a document.body
+       append, matching the .lodge-lightbox pattern in travel/index.html —
+       starts hidden and stays that way until script says otherwise. -->
+  <div class="book-nudge" id="book-nudge" hidden>
+    <div class="book-nudge-backdrop" id="book-nudge-backdrop"></div>
+    <div class="book-nudge-dialog" id="book-nudge-dialog" role="dialog" aria-modal="true"
+         aria-labelledby="book-nudge-title" aria-describedby="book-nudge-body" tabindex="-1">
+      <button type="button" class="book-nudge-close" id="book-nudge-close" aria-label="Close">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+          <path d="M5 5l10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <p class="eyebrow book-nudge-eyebrow">One quick thing before you go</p>
+      <h2 class="book-nudge-title" id="book-nudge-title">Whitefish books up fast</h2>
+      <p class="book-nudge-body" id="book-nudge-body">
+        It's a small lake town with one big wedding weekend, so beds go quicker
+        than you'd think. <strong>We strongly recommend locking in your stay by
+        the end of October</strong> — after that it's genuinely a toss-up whether
+        there's a room left with your name on it.
+      </p>
+      <a class="flow-btn flow-btn--gold book-nudge-cta" href="travel/">
+        <span class="flow-btn__ink" aria-hidden="true"></span>
+        <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="flow-btn__label">See Travel &amp; Stay</span>
+        <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <button type="button" class="book-nudge-dismiss" id="book-nudge-dismiss">I'll book soon, promise</button>
+    </div>
+  </div>
 </main>
 
 <!-- Ambient audio. Only ever started by the envelope tap. -->
