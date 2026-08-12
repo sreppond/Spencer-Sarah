@@ -2481,58 +2481,35 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
    top edge of the frame (the source file is cropped to the summit; see
    the note by .travel-hero-media below) — then masked so its foot
    dissolves into the white page background rather than cutting to a
-   hard edge. Sized to one viewport tall, not an aspect-ratio box: a
-   guest shouldn't have to scroll to reach "Travel & Stay". Quieter than
-   the save-the-date's hero — no calendar action — but keeps a live
-   countdown, the one piece of urgency this page still carries before it
-   gets to Where to Stay. */
-.travel-hero {
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh;
-  text-align: center;
-}
+   hard edge. Quieter than the save-the-date's hero — no calendar action
+   — but keeps a live countdown, the one piece of urgency this page
+   still carries before it gets to Where to Stay. */
+.travel-hero { text-align: center; }
 
 /* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
    deliberately, the one element on this page that isn't gutter-padded.
-   flex: 1 makes it claim whatever the copy below doesn't need, so the
-   photo always fills the rest of that first viewport exactly rather
-   than an aspect-ratio guess that leaves a gap or overflows. The mask
-   (not a solid overlay) is what makes the fade actually read as the
-   photo dissolving into paper rather than a rectangle laid over it; it
-   only works because the page behind it is the same white the mask
+   The mask (not a solid overlay) is what makes the fade actually read as
+   the photo dissolving into paper rather than a rectangle laid over it;
+   it only works because the page behind it is the same white the mask
    fades to (11.1).
 
-   The source file itself is cropped to the summit — its top edge *is*
-   the mountain's highest point, no sky above it — so object-position is
-   pinned to top rather than centered: on any viewport short/wide enough
-   to force a vertical crop too (not just the usual side crop), the lake
-   and dock at the bottom give up the room first, never the peak. */
-.travel-hero-media {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  overflow: hidden;
-}
-/* Absolutely positioned against the flex item rather than a plain
-   height:100% — a percentage height on a replaced element doesn't
-   reliably resolve against a flex-grown ancestor (it can settle on the
-   image's own intrinsic aspect ratio instead of the grown box), which is
-   exactly the bug this sidesteps. */
+   aspect-ratio is set to the source file's own ratio (1537:760), not a
+   round design number — with the box shaped exactly like the image,
+   object-fit: cover has nothing left to crop, at any viewport width.
+   An earlier version filled the viewport height with flex-grow, which
+   forced a vertical crop on short/wide windows and ate the boat at the
+   bottom of the frame; matching the ratio exactly is what guarantees
+   the whole photo — summit to boat — is always in frame. */
+.travel-hero-media { width: 100%; line-height: 0; }
 .travel-hero-media img {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1537 / 760;
   object-fit: cover;
-  object-position: center top;
   -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
           mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
 }
 
 .travel-hero-inner {
-  flex: none;
   max-width: 34rem;
   margin: 0 auto;
   padding: 1.4rem var(--gutter) clamp(3rem, 9vh, 4.5rem);
