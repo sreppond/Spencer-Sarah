@@ -311,26 +311,45 @@ window.TRAVEL = {
 
 
   /* ---- FAQ -----------------------------------------------------
-     Seeds from the build guide §B.11. Answers are TODO except the
-     packing line, which has a real, checked answer already. */
-  faq: [
-    { q: 'What time should I arrive on Friday?', a: '' },
-    { q: 'Do I need to rent a car?', a: '' },
+     Seeds from the build guide §B.11, grouped into the categories the
+     travel page tabs through. Answers are TODO except the packing line,
+     which has a real, checked answer already. */
+  faqCategories: [
     {
-      q: 'What should I wear?',
-      /* §C.4, checked against average June temps/precip for Whitefish.
-         Do not soften the "wettest month" or the evening-cold framing —
-         both are the actual, checked forecast pattern, not hedging. */
-      a: 'Mid-June in northwest Montana runs warm in the afternoon and ' +
-        'genuinely cold once the sun goes down – think 70° at four ' +
-        'o’clock and mid-40s by ten. June is also the wettest month ' +
-        'here. The reception is outdoors and lakeside, so bring a real ' +
-        'layer, not a decorative one, and something you don’t mind ' +
-        'getting a little damp.'
+      key: 'travel',
+      label: 'Travel & Schedule',
+      items: [
+        { q: 'What time should I arrive on Friday?', a: '' },
+        { q: 'Do I need to rent a car?', a: '' },
+        { q: 'Is there a shuttle from the hotels?', a: '', flag: 'SHUTTLE_CONFIRMED' }
+      ]
     },
-    { q: 'Are kids invited?', a: '' },
-    { q: 'Is there a shuttle from the hotels?', a: '', flag: 'SHUTTLE_CONFIRMED' },
-    { q: 'I can’t make it – what should I do?', a: '' }
+    {
+      key: 'attire',
+      label: 'Attire',
+      items: [
+        {
+          q: 'What should I wear?',
+          /* §C.4, checked against average June temps/precip for Whitefish.
+             Do not soften the "wettest month" or the evening-cold framing —
+             both are the actual, checked forecast pattern, not hedging. */
+          a: 'Mid-June in northwest Montana runs warm in the afternoon and ' +
+            'genuinely cold once the sun goes down – think 70° at four ' +
+            'o’clock and mid-40s by ten. June is also the wettest month ' +
+            'here. The reception is outdoors and lakeside, so bring a real ' +
+            'layer, not a decorative one, and something you don’t mind ' +
+            'getting a little damp.'
+        }
+      ]
+    },
+    {
+      key: 'general',
+      label: 'General',
+      items: [
+        { q: 'Are kids invited?', a: '' },
+        { q: 'I can’t make it – what should I do?', a: '' }
+      ]
+    }
   ],
 
 

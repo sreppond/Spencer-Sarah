@@ -19,7 +19,7 @@
 
 <title>Travel &amp; Stay | Sarah &amp; Spencer</title>
 <meta name="description" content="Where to stay for Sarah and Spencer's wedding in Whitefish, Montana – lodging and the weekend, June 12, 2027.">
-<meta name="theme-color" content="#f7f2e9">
+<meta name="theme-color" content="#ffffff">
 <meta name="color-scheme" content="light">
 <!-- Guests reach this from the save-the-date's own nav, not search — see
      A8/§A8. Link-preview crawlers ignore robots meta either way. -->
@@ -48,13 +48,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260811n">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812b">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260811g"></script>
-<script defer src="../assets/js/travel-data.js?v=20260811i"></script>
+<script defer src="../assets/js/config.js?v=20260812a"></script>
+<script defer src="../assets/js/travel-data.js?v=20260812a"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260811l"></script>
+<script defer src="../assets/js/travel.js?v=20260812b"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -79,11 +79,15 @@
 <main class="paper" id="page">
 
   <!-- ---------- HERO ----------
-       Deliberately not a repeat of the save-the-date's hero: a different
-       crop of a copy of the Whitefish Lake asset (never the source — see
-       the 🔒 note in BUILDGUIDE §B.3), quieter, with a job the other
-       hero doesn't have: a live countdown and a calendar action. -->
+       Opens on the Glacier Image (full-bleed), masked so its foot
+       dissolves straight into the white page background rather than
+       cutting to a hard edge — see .travel-hero-media in CSS §11.2. No
+       calendar action: the copy leads straight from the photo into a
+       live countdown, then Where to Stay below. -->
   <header class="travel-hero" id="travel-hero">
+    <div class="travel-hero-media">
+      <img src="../images/Glacier Image.png" alt="Glacier-fed peaks above Whitefish, Montana" decoding="async" fetchpriority="high">
+    </div>
     <div class="travel-hero-inner">
       <p class="eyebrow">Whitefish, Montana</p>
       <h1 class="travel-hero-title">Travel &amp; Stay</h1>
@@ -103,33 +107,6 @@
         </div>
         <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
       </div>
-
-      <a class="flow-btn flow-btn--gold travel-hero-cal"
-         href="../assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
-         data-calendar="ics">
-        <span class="flow-btn__ink" aria-hidden="true"></span>
-        <span class="flow-btn__content">
-          <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="flow-btn__label">Add to your calendar</span>
-          <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-      </a>
-
-      <!-- Quiet utility row, not a section: the flight-finder, the
-           three-column airline list and the address-list map all lived
-           here as full sections before the August 2026 redesign narrowed
-           this page to one job (get guests to book a room). Both links
-           below are sensible defaults, not confirmed with Spencer yet —
-           see the open questions called out in the redesign notes. -->
-      <p class="travel-hero-utility">
-        <a href="https://www.google.com/search?q=flights+to+Glacier+Park+International+Airport+FCA" target="_blank" rel="noopener">Nearest airport: Glacier Park Intl (FCA)</a>
-        <span class="travel-hero-utility-dot" aria-hidden="true">·</span>
-        <a href="https://www.google.com/maps/dir/?api=1&amp;destination=1380+Wisconsin+Ave%2C+Whitefish%2C+MT+59937" target="_blank" rel="noopener">Directions to the venue</a>
-      </p>
     </div>
   </header>
 
@@ -240,7 +217,9 @@
       <p class="eyebrow">Questions</p>
       <h2 class="sheet-title" id="questions-heading">If you're wondering</h2>
 
-      <div class="faq" id="faq"></div>
+      <div class="faq-tabs" id="faq-tabs" role="tablist" aria-label="FAQ categories"></div>
+
+      <div class="faq" id="faq" role="tabpanel" aria-live="polite"></div>
 
       <div class="local-contact" id="local-contact">
         <span class="local-contact-mark" aria-hidden="true">
