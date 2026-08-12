@@ -24,8 +24,9 @@ window.TRAVEL = {
        overlapping June 12, 2027. Call the property before this becomes
        true: is the block honored under the rebrand, which wing, will the
        restaurant/lobby be open, is there active construction. Until then
-       the card shows normally with no code and a line naming the
-       rebrand, and it does not get the gold room-block treatment. */
+       the card shows normally with no code, a line naming the rebrand,
+       and a muted "pending" room-block callout rather than the gold
+       confirmed one — see badgeFor() in travel.js. */
     ROOM_BLOCK_CONFIRMED: false,
 
     /* No wedding-day shuttle plan exists yet. While false, the FAQ answers
@@ -51,19 +52,21 @@ window.TRAVEL = {
 
 
   /* ---- Lodging -------------------------------------------------
-     Six options, rendered as a photo gallery — see lodgeGallery() in
-     travel.js. `driveMinutes` and `coords` are UNVERIFIED placeholders
-     except the two properties on the venue's own grounds (0, trivially
-     true) — do not treat the rest as real until checked against Maps.
-     Order here is the order cards render in; reordering this array (e.g.
-     if the room block turns out to be a bad recommendation) is the
-     entire fix — no template change.
+     Five options, rendered as an expand-on-select carousel — see
+     lodgeGallery() in travel.js. `driveMinutes` and `coords` are
+     UNVERIFIED placeholders except the one property on the venue's own
+     grounds (0, trivially true) — do not treat the rest as real until
+     checked against Maps. Order here is the order panels render in;
+     reordering this array (e.g. if the room block turns out to be a bad
+     recommendation) is the entire fix — no template change.
 
-     `photos` is empty for every entry below on purpose: no real
-     photography exists yet for any of the six properties. Drop one or
-     more image paths in and the gallery card + lightbox pick them up
-     automatically — nothing else to change. A single photo renders as a
-     plain image in the lightbox; more than one turns it into a carousel. */
+     Each entry below has one real photo now, uploaded straight into
+     /images/ (root-relative — see assetPath() in travel.js, which adds
+     the '../' this page needs since /travel/ lives one level down). Add
+     more paths to an entry's `photos` array and the carousel panel +
+     lightbox pick them up automatically — nothing else to change. A
+     single photo renders as a plain image in the lightbox; more than
+     one turns it into a carousel. */
   lodging: [
     {
       id: 'lodge-at-whitefish-lake',
@@ -82,45 +85,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.lodgeatwhitefishlake.com',
       phone: '',
       coords: [48.4231, -114.3536],
-      photos: [],
-      isRoomBlock: false
-    },
-    {
-      id: 'viking-creek-homes',
-      name: 'Luxury Homes by the Lodge (Viking Creek)',
-      tagline: 'Same property as the venue, a short walk away',
-      address: '',
-      driveMinutes: 0,
-      priceTier: '$$$',
-      bestFor: 'A group wanting a house to themselves without giving up the walk',
-      amenities: ['Full kitchen', 'Multiple bedrooms', 'Lodge amenities included'],
-      blurb: 'Full houses with full kitchens and multiple bedrooms, on the ' +
-        'same property as the venue next to the Viking Creek Wetland ' +
-        'Preserve – plus access to everything at the Main Lodge. The best ' +
-        'option for a group wanting a house to themselves without giving ' +
-        'up walkability to the wedding.',
-      bookingUrl: 'https://www.luxuryhomesbythelodge.com',
-      phone: '',
-      coords: null,
-      photos: [],
-      isRoomBlock: false
-    },
-    {
-      id: 'hidden-moose-lodge',
-      name: 'Hidden Moose Lodge',
-      tagline: 'A quiet 15-room B&B about 2 miles from downtown',
-      address: '1735 E Lakeshore Dr, Whitefish, MT 59937',
-      driveMinutes: null,
-      priceTier: '$$$',
-      bestFor: 'A quiet, small-inn stay',
-      amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
-      blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
-        'outdoor hot tub, and a full breakfast included – quieter and more ' +
-        'personal than a hotel.',
-      bookingUrl: 'https://www.hiddenmooselodge.com',
-      phone: '(406) 862-6516',
-      coords: null,
-      photos: [],
+      photos: ['images/Lodge at Whitefish.jpg'],
       isRoomBlock: false
     },
     {
@@ -130,7 +95,11 @@ window.TRAVEL = {
          the copy regardless of outcome — a guest who books here will see
          "Hotel Whitefish" on their confirmation for a property the
          invitation called "Grouse Mountain Lodge," and that confusion is
-         guaranteed unless this page names it once. */
+         guaranteed unless this page names it once. Second in this list
+         (not first) so the venue itself stays the lead recommendation;
+         `isRoomBlock: true` alone is enough to get the pending "Room
+         Block" callout in the gallery/lightbox, independent of
+         ROOM_BLOCK_CONFIRMED — see badgeFor() in travel.js. */
       id: 'grouse-mountain-lodge',
       name: 'Grouse Mountain Lodge',
       tagline: 'Rebranding to Hotel Whitefish – call before booking',
@@ -150,8 +119,26 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '(406) 862-3000',
       coords: null,
-      photos: [],
+      photos: ['images/Grouse Mountain.jpg'],
       isRoomBlock: true
+    },
+    {
+      id: 'hidden-moose-lodge',
+      name: 'Hidden Moose Lodge',
+      tagline: 'A quiet 15-room B&B about 2 miles from downtown',
+      address: '1735 E Lakeshore Dr, Whitefish, MT 59937',
+      driveMinutes: null,
+      priceTier: '$$$',
+      bestFor: 'A quiet, small-inn stay',
+      amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
+      blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
+        'outdoor hot tub, and a full breakfast included – quieter and more ' +
+        'personal than a hotel.',
+      bookingUrl: 'https://www.hiddenmooselodge.com',
+      phone: '(406) 862-6516',
+      coords: null,
+      photos: ['images/hidden-moose-lodge-in.jpg'],
+      isRoomBlock: false
     },
     {
       id: 'the-firebrand',
@@ -168,7 +155,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.firebrandhotel.com',
       phone: '(406) 863-1900',
       coords: null,
-      photos: [],
+      photos: ['images/Firebrand.jpeg'],
       isRoomBlock: false
     },
     {
@@ -188,7 +175,7 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '',
       coords: null,
-      photos: [],
+      photos: ['images/Airbnb.avif'],
       isRoomBlock: false
     }
   ],

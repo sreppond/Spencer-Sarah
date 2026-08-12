@@ -319,7 +319,7 @@
 
   /* ------------------------------------------------------------------
      Where to Stay — the page's centerpiece: an expand-on-select image
-     carousel of the six properties with a lightbox for the full detail
+     carousel of the five properties with a lightbox for the full detail
      on each. Built entirely from travel-data.js, so a price, a photo or
      the whole recommended order (see the note on Grouse Mountain / Hotel
      Whitefish in travel-data.js) is a data change, never a template
@@ -386,6 +386,15 @@
       if (entry.badge) return entry.badge;
       if (entry.isRoomBlock && flags.ROOM_BLOCK_CONFIRMED) return 'Room Block';
       return null;
+    }
+
+    // A room block that hasn't been confirmed by the property yet (see
+    // flags.ROOM_BLOCK_CONFIRMED in travel-data.js) still deserves a
+    // callout — guests should know Grouse Mountain Lodge is where we're
+    // trying to get one, just not the gold "confirmed" treatment
+    // badgeFor() reserves for once the property has actually signed off.
+    function pendingRoomBlockBadge(entry) {
+      return (entry.isRoomBlock && !flags.ROOM_BLOCK_CONFIRMED) ? 'Room Block – Pending' : null;
     }
 
     function mapsLink(address) {
@@ -464,6 +473,13 @@
         badge.textContent = badgeText;
         badges.appendChild(badge);
       }
+      var pendingBlockText = pendingRoomBlockBadge(entry);
+      if (pendingBlockText) {
+        var pendingBlock = document.createElement('span');
+        pendingBlock.className = 'lodge-gallery-badge lodge-gallery-badge--pending';
+        pendingBlock.textContent = pendingBlockText;
+        badges.appendChild(pendingBlock);
+      }
       if (!(entry.photos || []).length) {
         var pending = document.createElement('span');
         pending.className = 'lodge-gallery-badge lodge-gallery-badge--pending';
@@ -475,7 +491,7 @@
       // Always-visible collapsed name — vertical on the desktop row
       // layout, a small horizontal bar on the mobile column layout (see
       // the breakpoint in .lodge-carousel-spine) — so a guest can tell
-      // the six properties apart before expanding any of them. Fades out
+      // the five properties apart before expanding any of them. Fades out
       // in favor of .lodge-carousel-label the moment this panel is
       // hovered, focused, or made active.
       var spine = document.createElement('span');
@@ -530,7 +546,7 @@
     list.forEach(function (entry, index) {
       var item = buildPanel(entry, index);
       // A small per-panel stagger on top of the shared reveal transition
-      // below — capped low enough that even all six in view at once (a
+      // below — capped low enough that even all five in view at once (a
       // wide desktop viewport) finish inside half a second. Written as
       // an explicit list matching .lodge-carousel-item's transition-
       // property order (opacity, transform, flex-grow) in save-the-
@@ -543,7 +559,7 @@
     });
 
     // One panel reads as active from the first paint — otherwise the row
-    // looks like six unlabeled photos until something is hovered or
+    // looks like five unlabeled photos until something is hovered or
     // tapped. Index 0 is the recommended property (see travel-data.js).
     setActive(0);
 
@@ -578,7 +594,7 @@
     }
 
     /* ---- lightbox ------------------------------------------------------
-       One dialog, reused for all six properties — see the markup note in
+       One dialog, reused for all five properties — see the markup note in
        travel/index.html. Built once here rather than per-card: there is
        only ever one open at a time. */
     var lightbox = (function () {
@@ -695,6 +711,13 @@
           badge.className = 'lodge-gallery-badge';
           badge.textContent = text;
           badgesEl.appendChild(badge);
+        }
+        var pendingBlockText = pendingRoomBlockBadge(entry);
+        if (pendingBlockText) {
+          var pendingBlock = document.createElement('span');
+          pendingBlock.className = 'lodge-gallery-badge lodge-gallery-badge--pending';
+          pendingBlock.textContent = pendingBlockText;
+          badgesEl.appendChild(pendingBlock);
         }
       }
 

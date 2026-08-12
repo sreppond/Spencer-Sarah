@@ -2523,7 +2523,7 @@ html.smooth-scroll { scroll-behavior: smooth; }
 .lodge-urgency:empty { display: none; }
 
 /* Expand-on-select carousel, not a filtered/reflowing grid — one row of
-   six panels on tablet+, stacked into one column on phones (the site's
+   five panels on tablet+, stacked into one column on phones (the site's
    own mobile-first rule from the file header applies here too). One
    panel is active at a time; travel.js drives which. */
 .lodge-carousel {
@@ -2630,7 +2630,7 @@ html.smooth-scroll { scroll-behavior: smooth; }
 /* A bare icon centered in a lot of empty space reads as "nothing
    loaded" rather than a considered placeholder — the soft vignette and
    medallion ring below give it enough presence to read as intentional,
-   without turning six identical panels into six competing focal points. */
+   without turning five identical panels into five competing focal points. */
 .lodge-carousel-media.is-empty {
   display: flex;
   flex-direction: column;
@@ -2713,7 +2713,7 @@ html.smooth-scroll { scroll-behavior: smooth; }
   .lodge-gallery-badges { opacity: 1; }
 }
 
-/* Collapsed name — always visible so a guest can tell the six
+/* Collapsed name — always visible so a guest can tell the five
    properties apart before expanding any of them. A vertical spine on
    the desktop row (where a collapsed panel is narrow and tall); a small
    horizontal bar on the phone column (where a collapsed panel is wide
@@ -2847,7 +2847,7 @@ html.js .lodge-fallback.is-superseded { display: none; }
 
 
 /* ---- Lodging lightbox ---------------------------------------------------
-   One dialog, reused for all six properties — see the markup note in
+   One dialog, reused for all five properties — see the markup note in
    travel/index.html and the open() function in travel.js. Desktop is a
    two-column dialog (media / detail panel); phone stacks them as a
    bottom sheet. Motion is a fade + slight rise, ~220ms, and the sitewide
