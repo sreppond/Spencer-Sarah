@@ -2402,19 +2402,49 @@ html.book-nudge-open body { overflow-y: hidden; }
    so this is automatically inert for anyone who asked for less motion. */
 html.smooth-scroll { scroll-behavior: smooth; }
 
-/* --- 11.1 · Hero ---
-   Quieter than the save-the-date's — no painting, no envelope, no
-   traced artwork — because this page's hero has a job the other one
-   doesn't: the countdown and the calendar action. Deliberately not
-   full-viewport; the guest should see there is more below immediately. */
-.travel-hero {
-  /* .page-sub .paper already reserves clearance for the fixed nav
-     (padding-top including --safe-t) — this is breathing room on top of
-     that, not a second nav offset. */
-  padding: clamp(1.2rem, 5vh, 2.5rem) var(--gutter) clamp(3rem, 9vh, 4.5rem);
-  text-align: center;
+/* --- 11.1 · Page background ---
+   This page reads white, not the site's tan --paper: the hero photo
+   fades into it directly (11.2), so anything less than true white would
+   show a seam where the mask ends. Scoped to body.travel-page rather
+   than touching --paper itself, which the save-the-date still needs at
+   its original tan. */
+body.travel-page .paper { background: #fff; }
+
+/* --- 11.2 · Hero ---
+   Opens full-bleed on the Glacier Image, masked so its foot dissolves
+   into the white page background below rather than cutting to a hard
+   edge. Quieter than the save-the-date's hero — no countdown, no
+   calendar action — because the only job left here is getting a guest
+   from the photo straight into Where to Stay. */
+.travel-hero { text-align: center; }
+
+/* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
+   deliberately, the one element on this page that isn't gutter-padded.
+   The mask (not a solid overlay) is what makes the fade actually read as
+   the photo dissolving into paper rather than a rectangle laid over it;
+   it only works because the page behind it is the same white the mask
+   fades to (11.1). */
+.travel-hero-media {
+  width: 100%;
+  line-height: 0;
 }
-.travel-hero-inner { max-width: 34rem; margin: 0 auto; }
+.travel-hero-media img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: center 42%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
+          mask-image: linear-gradient(to bottom, #000 62%, transparent 94%);
+}
+@media (min-width: 640px) {
+  .travel-hero-media img { aspect-ratio: 16 / 9; }
+}
+
+.travel-hero-inner {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(3rem, 9vh, 4.5rem);
+}
 .travel-hero-title {
   margin-top: .6rem;
   font-family: var(--font-display);
@@ -2433,14 +2463,13 @@ html.smooth-scroll { scroll-behavior: smooth; }
   color: var(--ink-body);
   text-wrap: pretty;
 }
-.travel-hero-cal { margin: clamp(2rem, 7vw, 2.6rem) auto 0; max-width: 22rem; }
 
 /* A quiet line, not a button — two small text links standing in for the
    flight-finder and map sections the August 2026 redesign cut. Kept
    deliberately low-visual-weight so it reads as a utility, not a peer
-   of the calendar CTA above it. */
+   of the page's other calls to action. */
 .travel-hero-utility {
-  margin-top: clamp(1.1rem, 4vw, 1.5rem);
+  margin-top: clamp(1.6rem, 5vw, 2.2rem);
   font-size: var(--t-small);
   color: var(--ink-soft);
 }
@@ -2453,52 +2482,6 @@ html.smooth-scroll { scroll-behavior: smooth; }
 .travel-hero-utility a:hover,
 .travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
 .travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
-
-/* --- 11.2 · Countdown --- */
-.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
-.countdown-passed {
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
-  font-weight: 600;
-  color: var(--ink);
-}
-.countdown-grid {
-  display: flex;
-  justify-content: center;
-  gap: clamp(1rem, 5vw, 2rem);
-}
-.countdown-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 3.6rem;
-}
-.countdown-num {
-  font-family: var(--font-display);
-  font-size: clamp(2.1rem, 8vw, 2.8rem);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: var(--gold-text);
-}
-.countdown-unit {
-  margin-top: .35rem;
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .16em;
-  text-indent: .16em;
-  text-transform: uppercase;
-  color: var(--stone-text);
-}
-/* A quick flip on the number that actually changed, not a jittery
-   ticker — one keyframe, retriggered by travel.js removing and
-   re-adding this class. Neutralized by the sitewide reduced-motion
-   animation-duration clamp (§9), same as every other animation here. */
-.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
-@keyframes countdown-flip {
-  0%   { opacity: .35; transform: translateY(-.3em); }
-  100% { opacity: 1;   transform: none; }
-}
 
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }

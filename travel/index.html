@@ -19,7 +19,7 @@
 
 <title>Travel &amp; Stay | Sarah &amp; Spencer</title>
 <meta name="description" content="Where to stay for Sarah and Spencer's wedding in Whitefish, Montana – lodging and the weekend, June 12, 2027.">
-<meta name="theme-color" content="#f7f2e9">
+<meta name="theme-color" content="#ffffff">
 <meta name="color-scheme" content="light">
 <!-- Guests reach this from the save-the-date's own nav, not search — see
      A8/§A8. Link-preview crawlers ignore robots meta either way. -->
@@ -79,45 +79,21 @@
 <main class="paper" id="page">
 
   <!-- ---------- HERO ----------
-       Deliberately not a repeat of the save-the-date's hero: a different
-       crop of a copy of the Whitefish Lake asset (never the source — see
-       the 🔒 note in BUILDGUIDE §B.3), quieter, with a job the other
-       hero doesn't have: a live countdown and a calendar action. -->
+       Opens on the Glacier Image (full-bleed), masked so its foot
+       dissolves straight into the white page background rather than
+       cutting to a hard edge — see .travel-hero-media in CSS §11.2. No
+       countdown, no calendar action: this page's only job now is getting
+       a guest from "where are we" to "where do I stay," so the copy
+       leads straight into Where to Stay below. -->
   <header class="travel-hero" id="travel-hero">
+    <div class="travel-hero-media">
+      <img src="../images/Glacier Image.png" alt="Glacier-fed peaks above Whitefish, Montana" decoding="async" fetchpriority="high">
+    </div>
     <div class="travel-hero-inner">
       <p class="eyebrow">Whitefish, Montana</p>
       <h1 class="travel-hero-title">Travel &amp; Stay</h1>
       <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
-
-      <!-- Days / hours / minutes only — seconds are frantic and burn
-           battery for nothing. travel.js swaps this to a single line
-           once the date has passed, and it is a plain updating number
-           under prefers-reduced-motion rather than a digit-roll. -->
-      <div class="countdown" id="countdown" aria-live="off">
-        <p class="countdown-passed" id="countdown-passed" hidden>Married in Whitefish, June 12, 2027</p>
-        <div class="countdown-grid" id="countdown-grid">
-          <div class="countdown-cell"><span class="countdown-num" id="cd-days">–</span><span class="countdown-unit">days</span></div>
-          <div class="countdown-cell"><span class="countdown-num" id="cd-hours">–</span><span class="countdown-unit">hours</span></div>
-          <div class="countdown-cell"><span class="countdown-num" id="cd-mins">–</span><span class="countdown-unit">minutes</span></div>
-        </div>
-        <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
-      </div>
-
-      <a class="flow-btn flow-btn--gold travel-hero-cal"
-         href="../assets/sarah-and-spencer.ics" download="sarah-and-spencer.ics"
-         data-calendar="ics">
-        <span class="flow-btn__ink" aria-hidden="true"></span>
-        <span class="flow-btn__content">
-          <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="flow-btn__label">Add to your calendar</span>
-          <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-      </a>
 
       <!-- Quiet utility row, not a section: the flight-finder, the
            three-column airline list and the address-list map all lived
