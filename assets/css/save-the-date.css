@@ -2420,6 +2420,15 @@ html.smooth-scroll { scroll-behavior: smooth; }
   .lodge-gallery { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* Same fade + rise as .weekend-card — travel.js toggles .is-revealed
+   per card, staggered slightly, the first time each scrolls into view. */
+.lodge-gallery-item {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
+}
+.lodge-gallery-item.is-revealed { opacity: 1; transform: none; }
+
 .lodge-gallery-card {
   position: relative;
   display: flex;
@@ -2836,6 +2845,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .lodge-gallery-card:hover { transform: none; }
+  .lodge-gallery-item { opacity: 1; transform: none; }
 }
 
 /* --- 11.5 · The Weekend --- */

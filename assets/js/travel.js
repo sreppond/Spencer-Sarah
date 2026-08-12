@@ -333,7 +333,14 @@
       return li;
     }
 
-    list.forEach(function (entry, index) { gallery.appendChild(buildCard(entry, index)); });
+    list.forEach(function (entry, index) {
+      var item = buildCard(entry, index);
+      // A small per-card stagger on top of the shared reveal transition
+      // below — capped low enough that even all six in view at once (a
+      // wide desktop viewport) finish inside half a second.
+      item.style.transitionDelay = Math.min(index * 0.06, 0.3) + 's';
+      gallery.appendChild(item);
+    });
 
     gallery.hidden = false;
     if (fallback) fallback.classList.add('is-superseded');
@@ -346,6 +353,23 @@
           ' properties but travel-data.js has ' + list.length + '. Update the static <ul> in travel/index.html to match.'
         );
       }
+    }
+
+    // Same fade + rise the Weekend cards use (see weekend() below) —
+    // one motion language for "content arriving on scroll" across the
+    // page, not a bespoke one just for this section.
+    if (reduced || !('IntersectionObserver' in window)) {
+      $$('.lodge-gallery-item', gallery).forEach(function (li) { li.classList.add('is-revealed'); });
+    } else {
+      var revealIo = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            revealIo.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .2 });
+      $$('.lodge-gallery-item', gallery).forEach(function (li) { revealIo.observe(li); });
     }
 
     /* ---- lightbox ------------------------------------------------------
