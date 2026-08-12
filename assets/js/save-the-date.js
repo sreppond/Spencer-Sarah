@@ -280,6 +280,16 @@
     revealHero();
     revealAudioToggle();
 
+    // Audio defaults on (see the "Ambient audio" section below), but only
+    // from here — the moment the envelope has actually finished opening
+    // and the hero is what's on screen. The envelope itself is silent by
+    // design (its own video carries no audio track); starting the ambient
+    // bed any earlier, mid-animation, would make it sound like the
+    // envelope was making noise. A guest who has explicitly turned audio
+    // off before — this visit or a remembered one — is the one case that
+    // stays silent.
+    if (audioPreference() !== 'off') startAmbient();
+
     // Matches .env-scene's own .85s opacity fade (CSS §1) — by the time
     // this fires the scene is already fully transparent, so pulling it
     // out of the flow is invisible rather than an event of its own.
@@ -333,14 +343,11 @@
     envelope.setAttribute('aria-disabled', 'true');
     scene.classList.add('is-opening');
 
-    // Audio defaults on (see A6 below): this tap is the one gesture
-    // available to satisfy the browser's autoplay policy, so it is now or
-    // never for starting the ambient bed. A guest who has explicitly
-    // turned it off before — on this visit or a remembered one — is the
-    // one case that stays silent; everyone else gets it, with the toggle
-    // at the hand-off below as the way to turn it back off.
-    if (audioPreference() !== 'off') startAmbient();
-
+    // The ambient bed starts in finishEnvelope() instead, once the
+    // envelope has actually finished opening — see the comment there.
+    // This tap is still what supplies the user gesture the browser wants;
+    // it just isn't spent until playback actually begins a few seconds
+    // later, on the same page's "sticky" activation.
     playEnvelopeVideo();
   }
 
@@ -600,14 +607,28 @@
      Ambient audio
 
      Default on. The bed is genuinely quiet — mastered to -18 LUFS, played
-     at config.audio.targetVolume gain. It starts on every path onto the
-     page that can supply a gesture (the envelope tap), and is at least
-     attempted on the paths that can't (a remembered return visit, the
-     skip link, reduced-motion) — see the audioPreference() calls above,
-     in openEnvelope(), bypassEnvelope() and the reduced/alreadyOpened
-     branches. The toggle at the hand-off is how a guest turns it back
-     off, and that choice — off only, never on, since on is already the
-     default — is what gets remembered for a returning visit.
+     at config.audio.targetVolume gain. The envelope itself is always
+     silent (its clip carries no audio track) — the ambient bed starts
+     only once the hero is actually on screen, in finishEnvelope() below,
+     never mid-animation. It is at least attempted on every path that
+     lands there (the envelope tap, a remembered return visit, the skip
+     link, reduced-motion, the 2.8s auto-open) — see the audioPreference()
+     calls in finishEnvelope(), bypassEnvelope() and the
+     reduced/alreadyOpened branches. The toggle at the hand-off is how a
+     guest turns it back off, and that choice — off only, never on, since
+     on is already the default — is what gets remembered for a returning
+     visit.
+
+     The paths with no gesture are not a corner case: a guest inside the
+     30-day "already opened" window (i.e. almost every reload while this
+     site is being worked on) lands on bypassEnvelope() every single time,
+     and the browser refuses a non-muted play() call that isn't backed by
+     one — silently, so "default on" looked like it was doing nothing.
+     armAmbientRetry() below is the actual fix: it waits for the guest's
+     real first interaction with the page, whatever it is, and retries
+     startAmbient() then. That interaction is a gesture the policy
+     accepts, so audio reliably starts within one tap/key/scroll of
+     landing on the page even when nothing here could supply one itself.
      ------------------------------------------------------------------ */
   var audioFailed = false;
   var fadeTimer = null;
@@ -640,9 +661,13 @@
         fadeTo(opts.targetVolume != null ? opts.targetVolume : 0.16, opts.fadeInMs || 4000);
         setPressed(true);
       }).catch(function () {
-        // Autoplay refused: keep offering it. File missing: the 'error'
-        // listener above has already retired the control.
+        // Autoplay refused: keep offering it, and arm the gesture retry
+        // below so the guest's next real tap/key/scroll picks it up
+        // without them having to find and press the toggle themselves.
+        // File missing: the 'error' listener above has already retired
+        // the control, so this still runs but armAmbientRetry() no-ops.
         setPressed(false);
+        armAmbientRetry();
       });
     }
   }
@@ -692,6 +717,35 @@
           setPressed(true);
         }
       }
+    });
+  }
+
+  /* Browsers only grant a non-muted play() when it is backed by a fresh
+     user gesture. bypassEnvelope() and the reduced-motion/alreadyOpened
+     branches call startAmbient() with none, immediately on load, and get
+     silently refused — startAmbient()'s own .catch() above is what arms
+     this. (The envelope-tap path calls startAmbient() later, from
+     finishEnvelope() once the hero is revealed, on the same page's
+     "sticky" activation from that earlier tap — it does not need this.)
+     Deliberately not armed at load: a pointerdown fires on the envelope
+     tap itself, which would otherwise start the bed mid-animation, before
+     the guest has actually seen the reveal. Arming only after a real,
+     gesture-less attempt has already failed keeps it out of that window
+     entirely. Listens once for whatever the guest's actual next touch of
+     the page turns out to be — pointer, key or scroll all count — and
+     retries then; removes its own listeners the moment it runs. */
+  var retryArmed = false;
+  function armAmbientRetry() {
+    if (retryArmed) return;
+    retryArmed = true;
+    var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+    function attempt() {
+      retryArmed = false;
+      events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
+      if (audio && audio.paused && audioPreference() !== 'off') startAmbient();
+    }
+    events.forEach(function (evt) {
+      document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
     });
   }
 

@@ -48,30 +48,34 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812b">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260812d">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260812a"></script>
+<script defer src="../assets/js/config.js?v=20260812b"></script>
 <script defer src="../assets/js/travel-data.js?v=20260812a"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260812b"></script>
+<script defer src="../assets/js/travel.js?v=20260812c"></script>
 </head>
 
 <body class="page-sub travel-page">
 
-<!-- The scroll-spy variant of the A3 site nav: same component and CSS,
-     a different link set (in-page sections here, cross-page elsewhere),
-     and active-section highlighting that travel.js adds on top. Gated
-     off .travel-hero rather than .hero-viewport — the save-the-date's
-     hero-gating script (site-nav.js) is untouched and unreferenced here,
-     so nothing about this page can ever touch that protected element. -->
-<nav class="site-nav" id="site-nav" aria-label="Site">
-  <div class="site-nav-inner">
-    <a class="site-nav-word" href="../">Sarah &amp; Spencer</a>
-    <ul class="site-nav-links" id="travel-nav-links">
-      <li><a href="#where-to-stay">Where to Stay</a></li>
-      <li><a href="#the-weekend">The Weekend</a></li>
-      <li><a href="#questions">Questions</a></li>
+<!-- Same hero-nav component as index.html: a hamburger (left) and an RSVP
+     button (right), fixed over the top of the page from the first frame.
+     RSVP points back at the save-the-date's own form, since this page has
+     none of its own. Wired up by the "Hero nav" block in travel.js. -->
+<nav class="hero-nav" id="hero-nav" aria-label="Site">
+  <button type="button" class="hero-nav-toggle" id="hero-nav-toggle"
+          aria-haspopup="true" aria-expanded="false" aria-controls="hero-nav-menu">
+    <span class="hero-nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span class="sr-only">Menu</span>
+  </button>
+
+  <a class="hero-nav-rsvp" href="../#details">RSVP</a>
+
+  <div class="hero-nav-menu" id="hero-nav-menu" hidden>
+    <ul class="hero-nav-menu-links">
+      <li><a href="../">Save the Date</a></li>
+      <li><a href="./" aria-current="page">Travel &amp; Stay</a></li>
     </ul>
   </div>
 </nav>
