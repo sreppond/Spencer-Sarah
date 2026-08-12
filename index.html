@@ -72,7 +72,7 @@
 
      BUMP THIS TOKEN whenever save-the-date.css or save-the-date.js changes.
      The date is only a convention — any value the browser has not seen works. -->
-<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260812b">
+<link rel="stylesheet" href="assets/css/save-the-date.css?v=20260812c">
 
 <!-- Marks the document as script-capable before first paint so the
      envelope overlay only ever appears when it can actually open. -->
@@ -84,22 +84,30 @@
      Must load after config.js and can load before or after the page
      script — it depends on neither. -->
 <script defer src="assets/js/calendar.js?v=20260811g"></script>
-<script defer src="assets/js/site-nav.js?v=20260811g"></script>
+<script defer src="assets/js/hero-nav.js?v=20260812a"></script>
 <script defer src="assets/js/save-the-date.js?v=20260812a"></script>
 </head>
 
 <body>
 
-<!-- Quiet persistent nav. Ships hidden — visibility:hidden keeps it out of
-     the tab order too — and assets/js/site-nav.js reveals it only once the
-     hero has fully cleared the viewport. See CSS §1.5 and the 🔒 note
-     there: it must never cross the painting, at any opacity. -->
-<nav class="site-nav" id="site-nav" aria-label="Site">
-  <div class="site-nav-inner">
-    <a class="site-nav-word" href="./">Sarah &amp; Spencer</a>
-    <ul class="site-nav-links">
-      <li><a href="travel/">Travel &amp; Stay</a></li>
+<!-- Persistent hero-top bar: a hamburger (left) and an RSVP button (right),
+     both visible from the first frame, straight over the painting. See
+     CSS §1.5 for why this is safe over the artwork (bloom, not a plate)
+     and assets/js/hero-nav.js for the open/close behaviour. -->
+<nav class="hero-nav" id="hero-nav" aria-label="Site">
+  <button type="button" class="hero-nav-toggle" id="hero-nav-toggle"
+          aria-haspopup="true" aria-expanded="false" aria-controls="hero-nav-menu">
+    <span class="hero-nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span class="sr-only">Menu</span>
+  </button>
+
+  <a class="hero-nav-rsvp" href="#details">RSVP</a>
+
+  <div class="hero-nav-menu" id="hero-nav-menu" hidden>
+    <a class="hero-nav-menu-word" href="./">Sarah &amp; Spencer</a>
+    <ul class="hero-nav-menu-links">
       <li><a href="./" aria-current="page">Save the Date</a></li>
+      <li><a href="travel/">Travel &amp; Stay</a></li>
     </ul>
   </div>
 </nav>

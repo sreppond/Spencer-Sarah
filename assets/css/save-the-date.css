@@ -330,17 +330,16 @@ html:not(.js) .env-scene { display: none; }
 
 /* ==========================================================================
    1.5 · SITE NAV
-   One component, pasted as a markup partial into index.html and
-   travel/index.html — the only two pages left. index.html gates it with
-   site-nav.js; travel/index.html has its own hero and its own copy of the
-   same logic in travel.js instead.
+   travel/index.html only now. index.html has its own hero-top bar instead
+   (below) — this pill remains exactly as it was for the travel page, which
+   still gates it behind its own hero with the copy of this logic in
+   travel.js.
 
-   🔒 On the save-the-date this must never appear over the hero — not at
-   low opacity, not as a scrim, not on scroll-up. It ships hidden and
-   site-nav.js only reveals it once .hero-viewport has fully cleared the
-   viewport. Pages with no hero reveal it immediately.
-   z-index sits below the envelope's 90: by the time the nav could ever
-   show, the envelope is long gone, but the ordering stays honest anyway.
+   🔒 On the travel page this must never appear over the hero — not at
+   low opacity, not as a scrim, not on scroll-up. It ships hidden and is
+   revealed only once its hero has fully cleared the viewport.
+   z-index sits below the envelope's 90 on the save-the-date; travel has no
+   envelope, but the value is kept the same across both pages.
 
    Visual: a floating glass pill rather than a full-width bar, sized to
    its own content and centred — the same silhouette the old sub-480px
@@ -511,6 +510,198 @@ html:not(.js) .env-scene { display: none; }
     transform: none !important;
     transition: opacity .2s linear !important;
   }
+}
+
+
+/* ==========================================================================
+   1.6 · HERO NAV (index.html only)
+   Replaces the old hidden-until-scrolled pill on the save-the-date: a
+   hamburger (left) and an RSVP button (right), fixed to the top of the
+   viewport and visible from the very first frame, straight over the
+   painting. It stays on through the rest of the page too — there is
+   nothing to gate here, so it is simply always there.
+
+   It is never a plate over the artwork. Both controls sit on their own
+   soft ivory bloom — the same device .hero-cue already uses lower in the
+   painting (§2) — rather than a dark bar or a frosted rectangle, so the
+   hero itself is never dimmed or covered.
+
+   z-index sits below the envelope's 90: while the envelope is up this is
+   fully covered, so it is only ever seen once the guest has already
+   opened it. #hero-nav-toggle and #hero-nav-menu are wired up by
+   assets/js/hero-nav.js. */
+
+.hero-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: calc(var(--safe-t) + .85rem)
+           calc(var(--gutter) - .35rem + var(--safe-r)) 0
+           calc(var(--gutter) - .35rem + var(--safe-l));
+  pointer-events: none;
+}
+
+.hero-nav-toggle,
+.hero-nav-rsvp {
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Shared bloom: a soft ivory halo behind each control, generous enough to
+   clear whatever passage of sky, peak or paper sits behind it. No hard
+   edge, so it never reads as a panel. */
+.hero-nav-toggle::before,
+.hero-nav-rsvp::before {
+  content: '';
+  position: absolute;
+  inset: -.9rem;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 68% 68% at 50% 50%,
+      rgba(250,246,238,.88) 0%,
+      rgba(250,246,238,.66) 46%,
+      rgba(250,246,238,.3)  72%,
+      rgba(250,246,238,0)   100%);
+}
+
+.hero-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink);
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-toggle:hover,
+.hero-nav-toggle:focus-visible,
+.hero-nav-toggle.is-open { color: var(--gold-text); }
+
+.hero-nav-toggle-bars {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 13px;
+}
+.hero-nav-toggle-bars span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.6px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform .32s var(--ease-soft), opacity .2s var(--ease-soft), top .32s var(--ease-soft);
+}
+.hero-nav-toggle-bars span:nth-child(1) { top: 0; }
+.hero-nav-toggle-bars span:nth-child(2) { top: 5.7px; }
+.hero-nav-toggle-bars span:nth-child(3) { top: 11.4px; }
+/* Bars fold into an X once open, the standard hamburger-to-close tell. */
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(1) { top: 5.7px; transform: rotate(45deg); }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(2) { opacity: 0; }
+.hero-nav-toggle.is-open .hero-nav-toggle-bars span:nth-child(3) { top: 5.7px; transform: rotate(-45deg); }
+
+.hero-nav-rsvp {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 1.35rem;
+  border-radius: 999px;
+  font-family: var(--font-text);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-indent: .17em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+  background: rgba(168, 131, 79, .16);
+  border: 1px solid rgba(168, 131, 79, .32);
+  text-decoration: none;
+  transition: background .3s var(--ease-soft), color .3s var(--ease-soft), border-color .3s var(--ease-soft);
+}
+.hero-nav-rsvp:hover,
+.hero-nav-rsvp:focus-visible {
+  background: rgba(168, 131, 79, .28);
+  border-color: rgba(168, 131, 79, .5);
+}
+
+/* The dropdown menu is allowed to read as a solid card once open — unlike
+   the two controls above, it is a brief, guest-triggered interaction, not
+   something permanently laid over the painting. Same glass-pill treatment
+   the old §1.5 nav used, so the two still feel like one family. */
+.hero-nav-menu {
+  position: absolute;
+  top: calc(var(--safe-t) + 3.55rem);
+  left: calc(var(--gutter) - .35rem + var(--safe-l));
+  width: max-content;
+  max-width: calc(100vw - 2 * (var(--gutter) - .35rem) - var(--safe-l) - var(--safe-r));
+  padding: 1rem 1.35rem;
+  border-radius: 1rem;
+  background: rgba(251, 247, 240, .92);
+  border: 1px solid rgba(120, 104, 80, .14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .55),
+    0 22px 44px -26px rgba(93, 74, 44, .42),
+    0 4px 16px -10px rgba(93, 74, 44, .18);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+          backdrop-filter: blur(18px) saturate(160%);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-8px) scale(.97);
+  transform-origin: top left;
+  transition: opacity .3s var(--ease-soft), transform .32s var(--ease-soft);
+}
+.hero-nav-menu.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.hero-nav-menu-word {
+  display: block;
+  padding-bottom: .65rem;
+  margin-bottom: .65rem;
+  border-bottom: 1px solid rgba(205, 188, 166, .55);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-menu-word:hover,
+.hero-nav-menu-word:focus-visible { color: var(--gold-text); }
+
+.hero-nav-menu-links { list-style: none; }
+.hero-nav-menu-links li + li { margin-top: .3rem; }
+.hero-nav-menu-links a {
+  display: block;
+  padding: .5rem 0;
+  font-family: var(--font-text);
+  font-size: var(--t-small);
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--stone-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .3s var(--ease-soft);
+}
+.hero-nav-menu-links a:hover,
+.hero-nav-menu-links a:focus-visible { color: var(--gold-text); }
+.hero-nav-menu-links a[aria-current="page"] { color: var(--gold-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-nav-menu,
+  .hero-nav-toggle-bars span { transition: none !important; }
 }
 
 
@@ -2472,6 +2663,7 @@ html.book-nudge-open body { overflow-y: hidden; }
 @media print {
   .env-scene,
   .site-nav,
+  .hero-nav,
   .audio-toggle,
   .hero-cue,
   .skip-link { display: none !important; }
