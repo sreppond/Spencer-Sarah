@@ -469,19 +469,30 @@
         }
       }
 
+      // Two visually separate groups rather than one run-on block: what
+      // the property has (amenities), then how to find/reach it (address,
+      // phone) — a reader scanning the panel is asking two different
+      // questions, not one.
       function buildMeta(entry) {
         metaEl.innerHTML = '';
-        var parts = [];
-        if (entry.amenities && entry.amenities.length) parts.push({ text: entry.amenities.join(' · '), todo: false });
-        parts.push(todoOrText(entry.address, 'Address'));
-        parts.push(todoOrText(entry.phone, 'Phone'));
-        parts.forEach(function (p, i) {
-          if (i > 0) metaEl.appendChild(document.createElement('br'));
+
+        if (entry.amenities && entry.amenities.length) {
+          var amenities = document.createElement('p');
+          amenities.className = 'lodge-lightbox-amenities';
+          amenities.textContent = entry.amenities.join(' · ');
+          metaEl.appendChild(amenities);
+        }
+
+        var contact = document.createElement('p');
+        contact.className = 'lodge-lightbox-contact';
+        [todoOrText(entry.address, 'Address'), todoOrText(entry.phone, 'Phone')].forEach(function (p, i) {
+          if (i > 0) contact.appendChild(document.createElement('br'));
           var span = document.createElement('span');
           if (p.todo) span.className = 'is-todo';
           span.textContent = p.text;
-          metaEl.appendChild(span);
+          contact.appendChild(span);
         });
+        metaEl.appendChild(contact);
       }
 
       function buildActions(entry) {

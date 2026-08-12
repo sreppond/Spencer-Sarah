@@ -2464,9 +2464,33 @@ html.smooth-scroll { scroll-behavior: smooth; }
   .lodge-gallery-card:hover .lodge-gallery-photo img,
   .lodge-gallery-card:focus-visible .lodge-gallery-photo img { transform: scale(1.06); }
 }
-.lodge-gallery-photo.is-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; }
-.lodge-gallery-photo .m-empty-mark { width: clamp(22px, 6vw, 30px); color: var(--leaf); opacity: .75; }
-.lodge-gallery-photo .m-empty-mark svg { width: 100%; height: auto; }
+/* A bare icon centered in a lot of empty space reads as "nothing
+   loaded" rather than a considered placeholder — the soft vignette and
+   medallion ring below give it enough presence to read as intentional,
+   without turning six identical cards into six competing focal points. */
+.lodge-gallery-photo.is-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 62%),
+    linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+}
+.lodge-gallery-photo .m-empty-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(52px, 11vw, 72px);
+  height: clamp(52px, 11vw, 72px);
+  padding: clamp(13px, 3vw, 18px);
+  border: 1px solid rgba(158,156,132,.38);
+  border-radius: 50%;
+  color: var(--leaf);
+  opacity: .85;
+}
+.lodge-gallery-photo .m-empty-mark svg { width: 100%; height: 100%; }
 .lodge-gallery-photo .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
 
 /* Tap affordance for touch, which has no hover to signal "clickable."
@@ -2626,30 +2650,36 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 .lodge-lightbox-close {
   position: absolute;
-  top: .8rem;
-  right: .8rem;
+  top: .6rem;
+  right: .6rem;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  /* 2.75rem = 44px at the default root size — the accessible touch-target
+     floor (WCAG 2.5.5 / Apple HIG), not just whatever looked balanced
+     against the icon glyph inside it. */
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
   border-radius: 50%;
   background: rgba(37,29,18,.5);
   color: #fff8ec;
   cursor: pointer;
-  transition: background .2s var(--ease-soft);
+  transition: background .2s var(--ease-soft), transform .2s var(--ease-soft);
 }
 .lodge-lightbox-close:hover,
 .lodge-lightbox-close:focus-visible { background: rgba(37,29,18,.75); }
+.lodge-lightbox-close:hover { transform: scale(1.06); }
 .lodge-lightbox-close:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
-.lodge-lightbox-close svg { width: 55%; height: 55%; }
+.lodge-lightbox-close svg { width: 40%; height: 40%; }
 
 .lodge-lightbox-media {
   position: relative;
   min-height: 15rem;
-  background: linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 60%),
+    linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
   overflow: hidden;
 }
 .lightbox-photo-empty {
@@ -2659,10 +2689,21 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: .6rem;
+  gap: .8rem;
 }
-.lightbox-photo-empty .m-empty-mark { width: clamp(28px, 7vw, 40px); color: var(--leaf); opacity: .75; }
-.lightbox-photo-empty .m-empty-mark svg { width: 100%; height: auto; }
+.lightbox-photo-empty .m-empty-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(76px, 13vw, 100px);
+  height: clamp(76px, 13vw, 100px);
+  padding: clamp(19px, 3.4vw, 25px);
+  border: 1px solid rgba(158,156,132,.38);
+  border-radius: 50%;
+  color: var(--leaf);
+  opacity: .85;
+}
+.lightbox-photo-empty .m-empty-mark svg { width: 100%; height: 100%; }
 .lightbox-photo-empty .m-empty-note { font-size: var(--t-small); font-style: italic; color: var(--stone-text); }
 .lightbox-photo-track {
   display: flex;
@@ -2677,17 +2718,21 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
   border-radius: 50%;
   background: rgba(37,29,18,.5);
   color: #fff8ec;
   cursor: pointer;
+  transition: background .2s var(--ease-soft);
 }
+.lightbox-photo-nav:hover,
+.lightbox-photo-nav:focus-visible { background: rgba(37,29,18,.75); }
+.lightbox-photo-nav:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
 .lightbox-photo-nav--prev { left: .6rem; }
 .lightbox-photo-nav--next { right: .6rem; }
-.lightbox-photo-nav svg { width: 50%; height: 50%; }
+.lightbox-photo-nav svg { width: 38%; height: 38%; }
 .lightbox-photo-dots {
   position: absolute;
   bottom: .8rem;
@@ -2696,15 +2741,21 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   display: flex;
   gap: .4rem;
 }
+/* The visible dot stays small and quiet; padding pads the actual hit
+   area out to a real touch target without inflating the dot itself. */
 .lightbox-photo-dot {
   width: .5rem;
   height: .5rem;
+  padding: .55rem;
+  background-clip: content-box;
   border: 0;
   border-radius: 50%;
-  background: rgba(255,248,236,.55);
+  background-color: rgba(255,248,236,.55);
   cursor: pointer;
+  transition: background-color .2s var(--ease-soft);
 }
-.lightbox-photo-dot[aria-selected="true"] { background: #fff8ec; }
+.lightbox-photo-dot[aria-selected="true"] { background-color: #fff8ec; }
+.lightbox-photo-dot:focus-visible { outline: 2px solid #fff8ec; outline-offset: 2px; }
 
 .lodge-lightbox-panel {
   padding: 1.6rem 1.7rem clamp(1.6rem, 4vh, 2rem);
@@ -2724,7 +2775,15 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 .lodge-lightbox-blurb.is-todo { font-style: italic; color: var(--stone-text); }
 .lodge-lightbox-proximity { margin-top: .6rem; font-size: var(--t-small); color: var(--ink-soft); }
 .lodge-lightbox-proximity[hidden] { display: none; }
-.lodge-lightbox-meta { margin-top: .9rem; font-size: var(--t-small); line-height: 1.7; color: var(--ink-soft); }
+.lodge-lightbox-meta { margin-top: .9rem; font-size: var(--t-small); }
+.lodge-lightbox-amenities {
+  padding-bottom: .7rem;
+  margin-bottom: .7rem;
+  border-bottom: 1px solid rgba(205,188,166,.4);
+  letter-spacing: .01em;
+  color: var(--ink-soft);
+}
+.lodge-lightbox-contact { line-height: 1.7; color: var(--ink-soft); }
 .lodge-lightbox-meta .is-todo { font-style: italic; color: var(--stone-text); }
 .lodge-lightbox-actions { margin-top: 1.2rem; display: flex; flex-direction: column; gap: .7rem; }
 
