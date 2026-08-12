@@ -271,6 +271,11 @@ html:not(.js) .env-scene { display: none; }
   bottom: calc(1.3rem + var(--safe-b));
   transform: translateX(-50%);
   border: 0;
+  /* padding alone left this ~37px tall; min-height + flex centering gets
+     it to the 44px tap floor without changing the visible label size. */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   padding: .7rem 1.1rem;
   background: none;
   font-family: var(--font-text);
@@ -383,7 +388,15 @@ html:not(.js) .env-scene { display: none; }
 @media (max-width: 480px) {
   .site-nav { background: transparent; border-bottom: none; }
   .site-nav-inner {
-    max-width: max-content;
+    position: relative;
+    /* max-content alone sized this off the two-item save-the-date pill.
+       The travel page reuses the same component with three destinations
+       ("Where to Stay" / "The Weekend" / "Questions"), which doesn't fit
+       in that width on a 320–375px phone: the flex items were shrinking
+       below their own text width and wrapping each label onto two lines
+       inside the pill. Capping to the viewport and letting the links
+       scroll (below) keeps every label on one line at any phone width. */
+    max-width: min(max-content, calc(100vw - 2.4rem));
     margin: calc(.5rem + var(--safe-t)) auto 0;
     padding: .6rem 1.1rem;
     border: 1px solid var(--rule);
@@ -394,7 +407,29 @@ html:not(.js) .env-scene { display: none; }
     box-shadow: 0 8px 24px -16px rgba(93, 74, 44, .35);
   }
   .site-nav-word { display: none; }   /* the pill is a nav, not a masthead */
-  .site-nav-links { gap: 1rem; }
+  .site-nav-links {
+    gap: 1rem;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .site-nav-links::-webkit-scrollbar { display: none; }
+  .site-nav-links a { flex: none; white-space: nowrap; }
+  /* A soft hint that the pill scrolls, for the three-item travel nav —
+     harmless on the two-item save-the-date pill, which never scrolls far
+     enough for this sliver to show. Purely decorative: pointer-events:none
+     so it never steals the swipe. */
+  .site-nav-inner::after {
+    content: '';
+    position: absolute;
+    top: 1px; right: 1px; bottom: 1px;
+    width: 1.4rem;
+    border-radius: 0 999px 999px 0;
+    background: linear-gradient(to right, transparent, rgba(251, 247, 240, .92) 65%);
+    pointer-events: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1156,9 +1191,12 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
    between two equal things, which it is not — almost everyone wants the
    file. This is the escape hatch for the people who do not. */
 .date-alt {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 1.1rem;
-  padding: .5rem .4rem;          /* keeps the tap target at 44px tall */
+  min-height: 44px;              /* the padding alone landed at ~41px */
+  padding: .5rem .4rem;
   font-size: var(--t-small);
   color: var(--stone-text);
   text-decoration: underline;
@@ -1582,13 +1620,15 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.3rem;
-  height: 2.3rem;
+  /* 2.75rem = 44px: the tap-target floor, not just the visible size —
+     was 2.3rem (36.8px), under it on every phone. */
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--rule);
   border-radius: 50%;
   background: rgba(255,255,255,.5);
   font-family: var(--font-text);
-  font-size: .9rem;
+  font-size: 1rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--stone-text);
@@ -2218,7 +2258,9 @@ html.book-nudge-open body { overflow-y: hidden; }
 @media (max-width: 380px) {
   .stepper-dots { gap: .4rem; }
   .stepper-dots li { gap: .4rem; }
-  .step-dot { width: 2.1rem; height: 2.1rem; font-size: .84rem; }
+  /* Used to shrink the dot itself below the 44px floor to fit narrow
+     phones — four dots at the full 2.75rem plus the connectors between
+     them still fit inside 320px, so only the gap needs to tighten. */
   .flow-btn { padding: .95em 1.5em; letter-spacing: .12em; text-indent: .12em; }
 }
 
@@ -2445,6 +2487,12 @@ html.smooth-scroll { scroll-behavior: smooth; }
   color: var(--ink-soft);
 }
 .travel-hero-utility a {
+  /* Bare inline text otherwise sits at ~17px tall with its neighbour one
+     word away — padding brings each link to the 44px tap floor and adds
+     real separation between the two on the narrow widths where they wrap
+     to their own lines. */
+  display: inline-block;
+  padding: .68rem .2rem;
   color: var(--gold-text);
   text-decoration: underline;
   text-decoration-color: transparent;
