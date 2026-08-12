@@ -20,6 +20,24 @@
   var nav = document.getElementById('site-nav');
   if (!nav) return;
 
+  // Publish the pill's real rendered height as --nav-h so CSS can size
+  // anchor scroll-margin from the actual pill instead of a guessed
+  // constant — see the identical block in travel.js, whose 3-link nav is
+  // the one that actually wraps at narrow widths. This page's 2-link nav
+  // rarely does, but the mechanism should hold regardless of link count.
+  var navInner = nav.querySelector('.site-nav-inner');
+  if (navInner) {
+    var publishNavH = function () {
+      document.documentElement.style.setProperty('--nav-h', navInner.getBoundingClientRect().height + 'px');
+    };
+    publishNavH();
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(publishNavH).observe(navInner);
+    } else {
+      window.addEventListener('resize', publishNavH, { passive: true });
+    }
+  }
+
   var hero = document.querySelector('.hero-viewport');
 
   if (!hero || !('IntersectionObserver' in window)) {

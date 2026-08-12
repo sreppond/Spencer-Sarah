@@ -105,6 +105,21 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
+
+  /* --- spacing scale ---------------------------------------------------
+     Not a repo-wide constraint — most spacing on this page is a fluid
+     clamp() tuned to its own section, and that's earned its keep. This is
+     for the handful of static, same-role gaps where nothing warrants an
+     independent value: the frosted-glass card family below (§11.5/11.6)
+     had picked three slightly different paddings — 1.6rem, 1.7rem, 1.5rem
+     — for what is visually the same card. New shared spots should reach
+     for one of these before inventing a fourth. */
+  --space-2xs: .5rem;    /*  8px */
+  --space-xs:  .7rem;    /* 11.2px */
+  --space-sm:  1rem;     /* 16px */
+  --space-md:  1.5rem;   /* 24px */
+  --space-lg:  2rem;     /* 32px */
+  --space-xl:  3rem;     /* 48px */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -249,8 +264,12 @@ html:not(.js) .env-scene { display: none; }
   font-family: var(--font-text);
   font-size: clamp(.82rem, 3.2vw, .95rem);
   font-weight: 500;
-  letter-spacing: .38em;
-  text-indent: .38em;
+  /* Was .38em — nearly double any other tracked value on the site, and
+     wide tracking reads worst on lowercase (no uppercase forms to counter
+     the run of gaps). Brought in line with the site's other tracked-caps
+     labels at a comparable size. */
+  letter-spacing: .18em;
+  text-indent: .18em;
   text-transform: lowercase;
   color: rgba(250, 246, 238, .95);
   pointer-events: none;
@@ -1133,7 +1152,11 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
   font-size: clamp(2.2rem, 8.4vw, 3.1rem);
   font-weight: 500;            /* was 400: Cormorant 400 is a hairline at size */
   line-height: 1.06;
-  letter-spacing: .012em;
+  /* Was +.012em — the one display heading on the site tracking open
+     instead of tight. .celebrate proves the rule at a bigger size (see
+     its own comment); this is the same face a tier down, so it gets the
+     same direction at half the magnitude. */
+  letter-spacing: -.006em;
   color: var(--ink);
   text-align: center;
   text-wrap: balance;
@@ -1163,6 +1186,10 @@ html.js .hero-cue   { transform: translateX(-50%) translateY(14px); }
 .celebrate-sheet {
   padding-top: clamp(4.5rem, 16vh, 9rem);
   padding-bottom: clamp(4rem, 14vh, 8rem);
+  /* The hero cue links here (#celebrate) and this nav can wrap to two
+     lines at narrow widths same as the travel page's — see --nav-h in
+     site-nav.js and the identical note on .travel-section. */
+  scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t));
 }
 
 .celebrate {
@@ -1380,6 +1407,18 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
   box-shadow: 0 10px 38px rgba(70,58,42,.16);
 }
 
+/* .m-tl/.m-tr sit under the floating site nav once it's shown, and the
+   nav is a fixed pill spanning most of the width at phone sizes — not
+   just a corner element — so both top corners can end up under it, not
+   only the one nearer the pill's edge. Measured in a real render: when
+   this page's own 2-link nav wraps to two lines (≤360px), the pill
+   overlapped .m-tl by 13px and .m-tr by 7px. --nav-h (published by
+   site-nav.js/travel.js — see CSS §5.5) is the pill's actual rendered
+   height; margin-top only engages once that height grows past a
+   one-line pill, so nothing shifts on the far more common case where
+   the nav fits on one line. */
+.m-tl, .m-tr { margin-top: max(0px, calc(var(--nav-h, 57px) - 45px)); }
+
 .m-tl { top:  3%; left:  1%; width: 22%; height: 46%; --m-fx: -130%; --m-fy:  -80%; }
 .m-bl { bottom: 5%; left:  3%; width: 20%; height: 34%; --m-fx: -120%; --m-fy:  110%; }
 .m-tr { top:  4%; right: 2%; width: 18%; height: 31%; --m-fx:  120%; --m-fy: -110%; }
@@ -1438,7 +1477,13 @@ html:not(.js) .mosaic-stage { height: min(80svh, 46rem); }
    bottom padding (and the safe-area inset a device's home indicator
    needs) replaces that cushion so the page doesn't end abruptly against
    the edge of the viewport. */
-.form-sheet { padding-top: clamp(4rem, 13vh, 7rem); padding-bottom: calc(clamp(3.5rem, 11vh, 5.5rem) + var(--safe-b)); }
+.form-sheet {
+  padding-top: clamp(4rem, 13vh, 7rem);
+  padding-bottom: calc(clamp(3.5rem, 11vh, 5.5rem) + var(--safe-b));
+  /* The skip-link targets #details directly — same reasoning as
+     .celebrate-sheet above. */
+  scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t));
+}
 
 .gform { margin-top: clamp(2.2rem, 7vw, 3rem); }
 
@@ -2093,8 +2138,17 @@ html.book-nudge-open body { overflow-y: hidden; }
 /* Clearance for the fixed site nav (CSS §1.5), which occupies no layout
    space of its own. On mobile the nav is a floating pill rather than a
    full-width bar, but the clearance is kept anyway — the eyebrow above
-   the page title is exactly what the pill would otherwise sit over. */
-.page-sub .paper { margin-top: 0; padding-top: calc(3.4rem + var(--safe-t)); }
+   the page title is exactly what the pill would otherwise sit over.
+
+   --nav-h is published by site-nav.js/travel.js from the pill's real
+   rendered height (see the ResizeObserver there) — not a guessed
+   constant. The travel nav's three links can wrap to two lines at narrow
+   widths ("Where to Stay", "The Weekend"), growing the pill from ~57px to
+   as much as ~97px; a fixed 3.4rem clearance sized for the one-line case
+   left this top padding shorter than the pill it was meant to clear. The
+   100px fallback covers the worst measured case for the moment before
+   the script runs. */
+.page-sub .paper { margin-top: 0; padding-top: calc(var(--nav-h, 100px) + .9rem + var(--safe-t)); }
 .page-sub .paper::before { inset: 0; }
 
 
@@ -2112,8 +2166,12 @@ html.book-nudge-open body { overflow-y: hidden; }
   font-family: var(--font-display);
   font-size: clamp(1.45rem, 5.2vw, 1.8rem);
   font-weight: 600;            /* tracked caps need weight to survive */
-  letter-spacing: .24em;
-  text-indent: .24em;
+  /* Was .24em — the widest tracked-caps value on the site, on the one
+     tracked-caps label that isn't --t-micro-sized. In absolute pixels
+     that was nearly double the eyebrow's gap; brought down to match the
+     other "important, not tiny" tracked labels (.flow-btn, .cue-label). */
+  letter-spacing: .18em;
+  text-indent: .18em;
   text-transform: uppercase;
   color: var(--ink);
 }
@@ -2244,6 +2302,22 @@ html.book-nudge-open body { overflow-y: hidden; }
 
 @media (max-width: 480px) {
   :root { --hero-framing: 69% 50%; }
+}
+
+/* .audio-toggle sits fixed in the bottom-left corner; .hero-cue is
+   centred and sized to its own "Scroll for detail" label. Measured in a
+   real render: the two hit targets physically overlap by 17px at 320px
+   width and are within 3px of touching at 360px — a tap meant for one can
+   land on the other. Trimming the cue's horizontal padding (its tap
+   target, not its visible text) buys back some of that on its own; below
+   350px it isn't quite enough, so the cue also steps a few px right of
+   dead-centre, which is imperceptible against a column already reading
+   as centred at a glance. */
+@media (max-width: 400px) {
+  .hero-cue { padding-inline: .8rem; }
+}
+@media (max-width: 350px) {
+  .hero-cue { left: calc(50% + 20px); }
 }
 
 /* Stack the actions only once they genuinely run out of width, and give
@@ -2509,6 +2583,9 @@ body.travel-page .paper { background: #fff; }
   font-size: clamp(2.4rem, 10vw, 3.6rem);
   font-weight: 500;
   line-height: 1.05;
+  /* Same tier and same treatment as .sheet-title — this reaches the
+     largest size of the two, so it gets the tighter neighbor's value. */
+  letter-spacing: -.008em;
   color: var(--ink);
   text-wrap: balance;
 }
@@ -2544,6 +2621,15 @@ body.travel-page .paper { background: #fff; }
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
 .travel-section + .travel-section { padding-top: clamp(3rem, 9vh, 4.5rem); }
+/* Only the first section inherits enough top padding from .page-sub .paper
+   (above) to already clear the fixed nav; the second and third sections'
+   own padding-top is smaller and was never meant to carry that job alone.
+   scroll-margin-top is what actually matters here: it's what a click on
+   #the-weekend/#questions in the nav (or a hash link, or a restored scroll
+   position) lands against, not the padding used for the first paint. Measured
+   without it, the third section's own ~72px of top padding was 19px short of
+   a wrapped, 90px-tall nav pill — the section's eyebrow landed under it. */
+.travel-section { scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t)); }
 
 /* --- 11.4 · Where to Stay (lodging gallery + lightbox) --- */
 
@@ -2989,6 +3075,10 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
     radial-gradient(circle at 50% 42%, rgba(158,156,132,.16) 0%, rgba(158,156,132,0) 60%),
     linear-gradient(158deg, #f4eee1 0%, var(--paper-deep) 100%);
   overflow: hidden;
+  /* The photo swipe (travel.js) reads pointermove for 1:1 drag tracking —
+     pan-y leaves vertical page scroll to the browser but stops it from
+     also trying to interpret the horizontal drag as a scroll gesture. */
+  touch-action: pan-y;
 }
 .lightbox-photo-empty {
   position: absolute;
@@ -3158,8 +3248,8 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
    clickable, but it isn't inert either. */
 .weekend-card {
   position: relative;
-  padding: 1.5rem 1.6rem 1.6rem;
-  margin-bottom: 1.2rem;
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
   border-left: 3px solid var(--gold);
   border-radius: 0 1rem 1rem 0;
   background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);
@@ -3257,7 +3347,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 24px 46px -26px rgba(93,74,44,.48);
 }
 .faq-item summary {
-  padding: 1.1rem 1.7rem;
+  padding: 1.1rem var(--space-md);
   position: relative;
   font-family: var(--font-text);
   font-size: var(--t-body);
@@ -3275,14 +3365,14 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 .faq-item summary::after {
   content: '+';
   position: absolute;
-  right: 1.7rem;
+  right: var(--space-md);
   top: 1.1rem;
   font-size: 1.3rem;
   color: var(--gold-text);
   transition: transform .25s var(--ease-out);
 }
 .faq-item[open] summary::after { transform: rotate(45deg); }
-.faq-answer { padding: 0 1.7rem 1.3rem; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
+.faq-answer { padding: 0 var(--space-md) 1.3rem; font-size: var(--t-small); line-height: 1.65; color: var(--ink-body); }
 .faq-answer.is-todo { font-style: italic; color: var(--stone-text); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3291,7 +3381,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 
 .local-contact {
   margin-top: clamp(2.4rem, 7vw, 3rem);
-  padding: 1.6rem 1.5rem;
+  padding: var(--space-md);
   border-radius: 1rem;
   text-align: center;
   background: linear-gradient(168deg, rgba(253,250,244,.92) 0%, rgba(251,247,240,.85) 60%, rgba(244,236,221,.85) 100%);

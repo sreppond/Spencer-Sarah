@@ -203,6 +203,25 @@
     // CSS §9 — this class is the only thing that turns it on at all.
     if (!reduced) document.documentElement.classList.add('smooth-scroll');
 
+    // Publish the pill's real rendered height as --nav-h so CSS can size
+    // scroll-margin-top (and the sub-page top clearance) from the actual
+    // pill instead of a guessed constant. This nav's three links can wrap
+    // to two lines at narrow widths ("Where to Stay", "The Weekend"),
+    // which changes the pill's height by ~20px — a fixed clearance sized
+    // for the one-line case left anchor-scrolled sections landing under it.
+    var navInner = $('.site-nav-inner', nav);
+    if (navInner) {
+      var publishNavH = function () {
+        document.documentElement.style.setProperty('--nav-h', navInner.getBoundingClientRect().height + 'px');
+      };
+      publishNavH();
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(publishNavH).observe(navInner);
+      } else {
+        window.addEventListener('resize', publishNavH, { passive: true });
+      }
+    }
+
     /* ---- scroll-spy: which section is "active" -----------------------
        rootMargin shrinks the observed viewport to a thin band at 45-55%
        of the screen, so the active link flips when a section crosses the
@@ -595,25 +614,131 @@
           });
           mediaEl.appendChild(dots);
 
-          var startX = null;
-          mediaEl.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
-          mediaEl.addEventListener('touchend', function (e) {
-            if (startX === null) return;
-            var dx = e.changedTouches[0].clientX - startX;
-            startX = null;
-            if (Math.abs(dx) < 40) return;
-            showPhoto(photoIndex + (dx < 0 ? 1 : -1));
-          }, { passive: true });
+          bindDrag();
         }
 
-        showPhoto(0);
+        showPhoto(0, 'none');
       }
 
-      function showPhoto(i) {
+      /* 1:1 pointer-tracked swipe. What this replaced only read the start
+         and end point of a touch — the track never moved until release,
+         and always animated the same fixed .35s regardless of how fast or
+         slow the gesture was. This tracks the finger live during the drag,
+         rubber-bands past the first/last photo instead of a silent no-op,
+         and hands the release velocity to the settle so a flick lands
+         quicker than a slow drag does (§5/§6 of the fluid-interface note:
+         velocity handoff, then project where the gesture was headed).
+         The prev/next buttons and dots keep their existing wrap-around —
+         only the drag itself treats the ends as real boundaries, since
+         there's nothing to reveal sliding in from the far side without
+         cloning slides. */
+      function bindDrag() {
+        var track = $('.lightbox-photo-track', mediaEl);
+        if (!track || !('PointerEvent' in window)) return;
+
+        var pointerId = null;
+        var dragging = false;
+        var startX = 0;
+        var baseX = 0;    // track's translateX (px) when the drag began
+        var lastX = 0;
+        var lastT = 0;
+        var velocity = 0; // px/ms, from the most recent move
+        var width = 0;
+
+        mediaEl.addEventListener('pointerdown', function (e) {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          if (currentPhotos.length < 2) return;
+          pointerId = e.pointerId;
+          startX = lastX = e.clientX;
+          lastT = e.timeStamp;
+          velocity = 0;
+          width = mediaEl.clientWidth || 1;
+          baseX = -photoIndex * width;
+        });
+
+        mediaEl.addEventListener('pointermove', function (e) {
+          if (pointerId === null || e.pointerId !== pointerId) return;
+          var dx = e.clientX - startX;
+
+          // A real tap on the prev/next/dot controls moves ~0px — this
+          // hysteresis is what keeps a click a click instead of every tap
+          // becoming a zero-distance drag.
+          if (!dragging) {
+            if (Math.abs(dx) < 10) return;
+            dragging = true;
+            // Guards a real but rare edge case — capture can be refused
+            // (e.g. a pointer another handler already captured) — without
+            // it, an uncaught throw here would abort this handler mid-way
+            // and leave the track not following the finger for the rest
+            // of the gesture.
+            try { mediaEl.setPointerCapture(pointerId); } catch (err) {}
+            track.style.transition = 'none';
+          }
+
+          e.preventDefault();
+          var dt = e.timeStamp - lastT;
+          // Guard against two events landing close enough in time that a
+          // tiny dt turns an ordinary move into a spurious huge velocity —
+          // clamp to a ceiling well past any real flick (3px/ms = 3000px/s)
+          // rather than trusting division by a near-zero denominator.
+          if (dt > 0) velocity = clamp((e.clientX - lastX) / dt, -3, 3);
+          lastX = e.clientX;
+          lastT = e.timeStamp;
+
+          var raw = baseX + dx;
+          var min = -(currentPhotos.length - 1) * width;
+          var x = raw > 0 ? rubberband(raw, width)
+                : raw < min ? min - rubberband(min - raw, width)
+                : raw;
+          track.style.transform = 'translateX(' + x + 'px)';
+        });
+
+        function endDrag(e) {
+          if (pointerId === null || (e && e.pointerId !== pointerId)) return;
+          var wasDragging = dragging;
+          pointerId = null;
+          dragging = false;
+          if (!wasDragging) return;
+
+          // Project where the gesture was headed rather than snapping to
+          // the release point alone — a fast flick that hasn't crossed
+          // the halfway mark still advances if it's moving fast enough.
+          var dx = lastX - startX;
+          var projected = dx + velocity * 120;
+          var deltaIndex = Math.round(-projected / width);
+          var target = clamp(photoIndex + deltaIndex, 0, currentPhotos.length - 1);
+
+          var remainingPx = Math.abs(target * -width - (baseX + dx));
+          var speed = Math.max(Math.abs(velocity), .35); // px/ms floor so a barely-moving release still settles promptly
+          var duration = clamp(remainingPx / speed / 1000, .18, .5);
+          showPhoto(target, 'transform ' + duration.toFixed(2) + 's var(--ease-out)');
+        }
+
+        mediaEl.addEventListener('pointerup', endDrag);
+        mediaEl.addEventListener('pointercancel', endDrag);
+      }
+
+      // The further past the first/last photo, the less it follows — same
+      // resistance curve as a native scroll bounce, so the boundary reads
+      // as "there's nothing more here" instead of "frozen".
+      function rubberband(overshoot, dimension) {
+        var k = .55;
+        return (overshoot * dimension * k) / (dimension + k * overshoot);
+      }
+
+      function showPhoto(i, transition) {
         if (!currentPhotos.length) return;
         photoIndex = (i + currentPhotos.length) % currentPhotos.length;
         var track = $('.lightbox-photo-track', mediaEl);
-        if (track) track.style.transform = 'translateX(' + (photoIndex * -100) + '%)';
+        if (track) {
+          // Explicit on every call, not just during a drag: without this,
+          // a transition value left behind by the last drag's custom
+          // settle duration would silently apply to the next plain
+          // button/dot tap too. No override falls back to the stylesheet's
+          // own .35s var(--ease-out) — reduced-motion clamps either one.
+          track.style.transition = transition || '';
+          track.style.transform = 'translateX(' + (photoIndex * -100) + '%)';
+        }
         $$('.lightbox-photo-dot', mediaEl).forEach(function (dot, n) {
           dot.setAttribute('aria-selected', String(n === photoIndex));
         });
