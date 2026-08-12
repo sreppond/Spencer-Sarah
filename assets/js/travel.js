@@ -2,9 +2,9 @@
    Sarah & Spencer — Travel & Stay
 
    Vanilla, no build step — see BUILDGUIDE §B.0 for why. This file grows a
-   section at a time as the page does; today it drives the scroll-spy nav.
-   assets/js/calendar.js (loaded alongside this) wires every [data-calendar]
-   link on its own; nothing here duplicates it.
+   section at a time as the page does; today it drives the hero countdown
+   and the scroll-spy nav. assets/js/calendar.js (loaded alongside this)
+   wires every [data-calendar] link on its own; nothing here duplicates it.
    ========================================================================== */
 
 (function () {
@@ -228,6 +228,92 @@
     }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
 
     sections.forEach(function (s) { spy.observe(s); });
+  }());
+
+
+  /* ------------------------------------------------------------------
+     Countdown — days / hours / minutes to the wedding. Seconds are
+     frantic and burn battery for nothing, so the interval is a minute,
+     not a frame.
+
+     The ceremony's exact start time is not confirmed (see config.js
+     flags.CEREMONY_TIME_CONFIRMED) — same honesty rule as the calendar
+     action: count to local midnight on the day itself until a real time
+     exists, rather than guessing an hour that might be wrong.
+     ------------------------------------------------------------------ */
+  (function countdown() {
+    var root = $('#countdown');
+    if (!root) return;
+
+    var grid = $('#countdown-grid');
+    var passed = $('#countdown-passed');
+    var live = $('#countdown-live');
+    var daysEl = $('#cd-days'), hoursEl = $('#cd-hours'), minsEl = $('#cd-mins');
+
+    var CFG = window.SAVE_THE_DATE || {};
+    var date = CFG.date || {};
+    var flags = CFG.flags || {};
+
+    // Local-time + UTC-offset string → a UTC instant, same technique
+    // calendar.js uses for the .ics file, kept independent here rather
+    // than shared across a file boundary for one nine-line function.
+    function localToUtc(local, offset) {
+      var m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/.exec(local || '');
+      if (!m) return null;
+      var o = /^([+-])(\d{2}):?(\d{2})$/.exec(offset || '+00:00');
+      var minutes = o ? (o[1] === '-' ? -1 : 1) * (parseInt(o[2], 10) * 60 + parseInt(o[3], 10)) : 0;
+      return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) - minutes * 60000);
+    }
+
+    var target = flags.CEREMONY_TIME_CONFIRMED
+      ? localToUtc(date.startLocal, date.utcOffset)
+      : localToUtc((date.iso || '').replace(/-/g, '') + 'T000000', date.utcOffset);
+
+    if (!target) { root.hidden = true; return; }
+
+    function setCell(el, value) {
+      var str = String(value);
+      if (!el || el.textContent === str) return;
+      el.textContent = str;
+      if (reduced) return;
+      // Restart the CSS animation by forcing a reflow between removing
+      // and re-adding the class — the standard "no-op change won't
+      // retrigger a keyframe" workaround.
+      el.classList.remove('is-rolling');
+      void el.offsetWidth;
+      el.classList.add('is-rolling');
+    }
+
+    var announced = false;
+
+    function tick() {
+      var diff = target.getTime() - Date.now();
+
+      if (diff <= 0) {
+        grid.hidden = true;
+        passed.hidden = false;
+        clearInterval(timer);
+        return;
+      }
+
+      var days = Math.floor(diff / 86400000);
+      var hours = Math.floor((diff % 86400000) / 3600000);
+      var mins = Math.floor((diff % 3600000) / 60000);
+
+      setCell(daysEl, days);
+      setCell(hoursEl, hours);
+      setCell(minsEl, mins);
+
+      // One announcement, not one per minute — a live region that
+      // re-announces every 60 seconds is noise, not information.
+      if (!announced && live) {
+        announced = true;
+        live.textContent = days + ' days, ' + hours + ' hours and ' + mins + ' minutes until the wedding.';
+      }
+    }
+
+    tick();
+    var timer = setInterval(tick, 60000);
   }());
 
 

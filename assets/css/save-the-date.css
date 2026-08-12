@@ -2413,9 +2413,9 @@ body.travel-page .paper { background: #fff; }
 /* --- 11.2 · Hero ---
    Opens full-bleed on the Glacier Image, masked so its foot dissolves
    into the white page background below rather than cutting to a hard
-   edge. Quieter than the save-the-date's hero — no countdown, no
-   calendar action — because the only job left here is getting a guest
-   from the photo straight into Where to Stay. */
+   edge. Quieter than the save-the-date's hero — no calendar action —
+   but keeps a live countdown, the one piece of urgency this page still
+   carries before it gets to Where to Stay. */
 .travel-hero { text-align: center; }
 
 /* Full-bleed, edge to edge — breaks out of .travel-hero-inner's measure
@@ -2468,24 +2468,51 @@ body.travel-page .paper { background: #fff; }
   text-wrap: pretty;
 }
 
-/* A quiet line, not a button — two small text links standing in for the
-   flight-finder and map sections the August 2026 redesign cut. Kept
-   deliberately low-visual-weight so it reads as a utility, not a peer
-   of the page's other calls to action. */
-.travel-hero-utility {
-  margin-top: clamp(1.6rem, 5vw, 2.2rem);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
+/* --- 11.2b · Countdown --- */
+.countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
+.countdown-passed {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5.6vw, 1.8rem);
+  font-weight: 600;
+  color: var(--ink);
 }
-.travel-hero-utility a {
+.countdown-grid {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 2rem);
+}
+.countdown-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.6rem;
+}
+.countdown-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 8vw, 2.8rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--gold-text);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  transition: text-decoration-color .25s var(--ease-soft);
 }
-.travel-hero-utility a:hover,
-.travel-hero-utility a:focus-visible { text-decoration-color: currentColor; }
-.travel-hero-utility-dot { margin: 0 .55em; color: var(--stone); }
+.countdown-unit {
+  margin-top: .35rem;
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--stone-text);
+}
+/* A quick flip on the number that actually changed, not a jittery
+   ticker — one keyframe, retriggered by travel.js removing and
+   re-adding this class. Neutralized by the sitewide reduced-motion
+   animation-duration clamp (§9), same as every other animation here. */
+.countdown-num.is-rolling { animation: countdown-flip .5s var(--ease-out); }
+@keyframes countdown-flip {
+  0%   { opacity: .35; transform: translateY(-.3em); }
+  100% { opacity: 1;   transform: none; }
+}
 
 /* --- 11.3 · shared section rhythm --- */
 .travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
