@@ -295,33 +295,51 @@
     // No video element, or nothing for it to play: there is nothing left
     // to show, so hand off immediately rather than strand the guest on a
     // frame that never moves.
-    if (!envVideo || !envVideo.querySelector('source[src]')) { finishEnvelope(); return; }
+    if (!envVideo || !envVideo.src) { finishEnvelope(); return; }
 
     envVideo.addEventListener('ended', finishEnvelope, { once: true });
-    // A codec this browser cannot decode, a failed fetch — same outcome
-    // as no video at all.
-    envVideo.addEventListener('error', finishEnvelope, { once: true });
+
+    // A source that fails — wrong codec, a bad fetch — steps to the next
+    // entry in envSources exactly once. The landscape clip is always the
+    // last entry and always ships, so a phone whose portrait take 404s
+    // still gets an envelope instead of a dead frame; only that last
+    // source's own failure hands off to the hero. Same shape as the hero
+    // loop's own source list above, sized down for one tap instead of an
+    // autoplaying loop.
+    function onError() {
+      if (setEnvelopeSource(envSourceAt + 1)) {
+        envVideo.addEventListener('error', onError, { once: true });
+        attemptPlay();
+      } else {
+        finishEnvelope();
+      }
+    }
+    envVideo.addEventListener('error', onError, { once: true });
 
     // Belt and braces: a codec this browser cannot decode sometimes fails
     // silently rather than telling us — no `error` event, no rejected
     // play(), `readyState` stuck at HAVE_NOTHING forever (confirmed against
     // Playwright's own decoder-less Chromium — see assets/video/README.md).
-    // This flat deadline, comfortably past the clip's own ~5s runtime, is
-    // what stops a guest on a browser like that from being stranded on a
-    // frame that will never move. finishEnvelope() is idempotent, so this
-    // is a silent no-op on every run where `ended` already fired first.
-    setTimeout(finishEnvelope, 6500);
+    // This flat deadline, comfortably past either source's own runtime
+    // (the portrait take runs ~8.3s, the landscape clip ~4.9s), is what
+    // stops a guest on a browser like that from being stranded on a frame
+    // that will never move. finishEnvelope() is idempotent, so this is a
+    // silent no-op on every run where `ended` already fired first.
+    setTimeout(finishEnvelope, 9800);
 
-    // muted must be true as a property, not just an attribute, for iOS to
-    // treat play() as allowed. The source track was stripped of audio at
-    // export anyway (see assets/video/README.md), so nothing is lost.
-    envVideo.muted = true;
-    envVideo.defaultMuted = true;
-    envVideo.currentTime = 0;
-    var p = envVideo.play();
-    // A refused play() (a policy this tap should already satisfy, but
-    // belt and braces) is the same dead end as a missing file.
-    if (p && p.catch) p.catch(finishEnvelope);
+    function attemptPlay() {
+      // muted must be true as a property, not just an attribute, for iOS to
+      // treat play() as allowed. Both sources ship with no meaningful audio
+      // track (see assets/video/README.md), so nothing is lost.
+      envVideo.muted = true;
+      envVideo.defaultMuted = true;
+      envVideo.currentTime = 0;
+      var p = envVideo.play();
+      // A refused play() (a policy this tap should already satisfy, but
+      // belt and braces) is the same dead end as a missing file.
+      if (p && p.catch) p.catch(finishEnvelope);
+    }
+    attemptPlay();
   }
 
   function openEnvelope() {
@@ -344,16 +362,50 @@
     playEnvelopeVideo();
   }
 
+  // Two sources: a portrait take shot for a phone screen, and the
+  // landscape clip everywhere else — same "mobile first, always-shipped
+  // clip as the fallback" shape as the hero loop's own sources list
+  // above (see startHeroVideo). "Mobile" is decided once here, same as
+  // the hero, rather than tracked live across a resize.
+  var envSources = [];
+  var envSourceAt = 0;
+
+  function setEnvelopeSource(i) {
+    if (!envVideo || !envSources[i]) return false;
+    envSourceAt = i;
+    if (envSources[i].poster) envVideo.poster = envSources[i].poster;
+    envVideo.src = envSources[i].video;
+    envVideo.load();
+    // CSS §1 uses this to tell the two clips' framing apart: the portrait
+    // take is already cut for a phone's own aspect ratio and wants a plain
+    // `cover`, where the landscape clip needs `contain` below ~4:3 so it
+    // is not cropped to a sliver. Set on the scene, not just the video, so
+    // the hint/skip legibility rules that live beside it in the markup can
+    // key off it too. Toggled rather than assumed from screen width alone,
+    // so a fallback to the landscape clip (see onError in playEnvelopeVideo
+    // below) also flips the framing back correctly.
+    if (scene) scene.classList.toggle('is-mobile-cut', !!envSources[i].mobileCut);
+    return true;
+  }
+
   // config.js is authoritative for every asset path on the page; the HTML
-  // carries the same two strings only as a static mirror (see the note at
-  // the top of index.html). Applied unconditionally, before the reduced
-  // motion and repeat-visit branches below, because it costs nothing even
-  // on a run where the video never plays.
+  // carries no source of its own to pick between (see the note at the top
+  // of index.html) — a static mirror here would eagerly fetch whichever
+  // file it named before this code ever ran, on every device, which is
+  // exactly the wasted-bandwidth bug a phone-specific source exists to
+  // avoid. Applied unconditionally, before the reduced motion and
+  // repeat-visit branches below, because it costs nothing even on a run
+  // where the video never plays.
   if (envVideo) {
     var envMedia = CFG.media || {};
-    if (envMedia.envelopePoster) envVideo.poster = envMedia.envelopePoster;
-    var envSource = envVideo.querySelector('source');
-    if (envSource && envMedia.envelopeVideo) envSource.src = envMedia.envelopeVideo;
+    var envMobileSrc = window.matchMedia('(max-width: 767px)').matches ? envMedia.envelopeVideoMobile : '';
+    if (envMobileSrc) {
+      envSources.push({ video: envMobileSrc, poster: envMedia.envelopePosterMobile || envMedia.envelopePoster, mobileCut: true });
+    }
+    if (envMedia.envelopeVideo && envMedia.envelopeVideo !== envMobileSrc) {
+      envSources.push({ video: envMedia.envelopeVideo, poster: envMedia.envelopePoster });
+    }
+    setEnvelopeSource(0);
   }
 
   if (scene && envelope) {

@@ -94,6 +94,14 @@ window.SAVE_THE_DATE = {
        either file. */
     envelopePoster: 'assets/video/envelope-open-poster.jpg',
     envelopeVideo: 'assets/video/envelope-open.mp4',
+    /* A dedicated portrait take, not a crop of the landscape clip above —
+       shot and framed for a phone screen, so it needs none of the
+       object-fit gymnastics the landscape clip needs there. Served below
+       768px; the landscape clip remains the source above that width and
+       the fallback if this one ever fails to load. See
+       assets/video/README.md for how it was trimmed. */
+    envelopePosterMobile: 'assets/video/envelope-open-mobile-poster.jpg',
+    envelopeVideoMobile: 'assets/video/envelope-open-mobile.mp4',
     /* Optional portrait crop, served below 768px. Not cut yet, so it is
        left empty rather than pointed at a file that is not there: the
        hero falls straight through to heroVideo above. Fill this in when

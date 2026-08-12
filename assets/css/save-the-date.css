@@ -299,32 +299,40 @@ html:not(.js) .env-scene { display: none; }
 .env-scene.is-opening .env-hint,
 .env-scene.is-opening .env-skip { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 
-/* --- the whole envelope, on portrait/narrow screens ----------------------
-   The footage is a landscape 1126×618 studio shot (~1.82:1 — see
-   assets/video/README.md). `cover` scales it to fill the viewport by
-   height, so on anything narrower than that ratio the width crops hard —
-   on a typical phone portrait screen barely a quarter of the envelope's
-   width survives, reading as an unrecognisable close-up instead of an
-   envelope. Below 4:3 the crop is already severe, comfortably short of the
-   clip's own ratio, so switch to `contain` there: the whole envelope shows,
-   letterboxed on the scene's own paper tone (`.env-video`'s background,
-   already set above) — the same tone the clip's own tail fades to, so the
-   bars read as composed rather than broken. Landscape phones and anything
-   at or above 4:3 keep `cover`; height is what gets trimmed there, which
-   never loses more than the studio backdrop's own headroom. */
+/* --- the whole envelope, whichever clip ends up on screen ---------------
+   Two clips, two native shapes: the landscape studio shot is ~1.82:1 (see
+   assets/video/README.md), the portrait take save-the-date.js prefers on
+   phones is 9:16. `cover` crops brutally whenever the screen's own shape
+   runs the opposite way of whichever clip is loaded — on a phone showing
+   the landscape clip barely a quarter of the width survives; on the rare
+   screen showing the portrait clip sideways (a landscape phone under the
+   767px mobile threshold, or a fallback after the portrait file itself
+   fails — see setEnvelopeSource/onError in save-the-date.js) most of the
+   height goes the same way. `.is-mobile-cut` on `.env-scene` is JS's own
+   record of which clip is actually loaded (not just screen width, so the
+   fallback path gets this right too — see setEnvelopeSource), and each
+   rule below only fires for the clip it actually applies to, on the axis
+   that actually crops it. Both switch to `contain`, letterboxed on the
+   scene's own paper tone (`.env-video`'s background, already set above)
+   — the same tone the clip's own tail fades to, so the bars read as
+   composed rather than broken — and both re-ground the hint/skip text in
+   ink rather than the near-white built for photography, since that spot
+   is flat paper instead of footage whenever `contain` is what fired. */
 @media (max-aspect-ratio: 4/3) {
-  .env-video { object-fit: contain; }
-
-  /* The hint and skip button are anchored to the bottom of the full-screen
-     scene, not to the video's own box — once the video is letterboxed
-     instead of full-bleed, that spot is flat paper, not footage. Near-white
-     type over cream is close to unreadable there, and the scrim built to
-     ground pale type on photography would just smudge a plain background.
-     Drop the scrim and use the page's own ink instead. */
-  .env-scrim { display: none; }
-  .env-hint { color: var(--ink-soft); }
-  .env-skip { color: var(--stone-text); }
-  .env-skip:hover, .env-skip:focus-visible { color: var(--ink); }
+  .env-scene:not(.is-mobile-cut) .env-video { object-fit: contain; }
+  .env-scene:not(.is-mobile-cut) .env-scrim { display: none; }
+  .env-scene:not(.is-mobile-cut) .env-hint { color: var(--ink-soft); }
+  .env-scene:not(.is-mobile-cut) .env-skip { color: var(--stone-text); }
+  .env-scene:not(.is-mobile-cut) .env-skip:hover,
+  .env-scene:not(.is-mobile-cut) .env-skip:focus-visible { color: var(--ink); }
+}
+@media (orientation: landscape) {
+  .env-scene.is-mobile-cut .env-video { object-fit: contain; }
+  .env-scene.is-mobile-cut .env-scrim { display: none; }
+  .env-scene.is-mobile-cut .env-hint { color: var(--ink-soft); }
+  .env-scene.is-mobile-cut .env-skip { color: var(--stone-text); }
+  .env-scene.is-mobile-cut .env-skip:hover,
+  .env-scene.is-mobile-cut .env-skip:focus-visible { color: var(--ink); }
 }
 
 
