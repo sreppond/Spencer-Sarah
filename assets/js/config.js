@@ -116,12 +116,12 @@ window.SAVE_THE_DATE = {
 
   /* ---- Ambient audio --------------------------------------- */
   audio: {
-    targetVolume: 0.0192,        // 0.08 cut by 40%, then decreased to 40% of that
+    targetVolume: 0.00192,        // 0.08 cut by 40%, then decreased to 40% of that, then decreased to 10% of that
     // Same file, same gain in theory, but a phone speaker sits inches from
     // an ear (or is held to it) where a laptop's doesn't — the identical
     // number in HTMLMediaElement.volume terms reads louder there. Halved
     // rather than re-mastered, so this is easy to tune again by ear.
-    targetVolumeMobile: 0.0096,
+    targetVolumeMobile: 0.00096,
     fadeInMs: 4000
   },
 

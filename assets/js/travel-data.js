@@ -320,7 +320,25 @@ window.TRAVEL = {
       label: 'Travel & Schedule',
       items: [
         { q: 'What time should I arrive on Friday?', a: '' },
-        { q: 'Do I need to rent a car?', a: '' },
+        {
+          q: 'Which airport should I fly into?',
+          a: 'Our pick is Glacier Park International Airport (FCA) – it’s ' +
+            'about 15 minutes from downtown Kalispell, 20 minutes from ' +
+            'Whitefish, and 30 minutes from Glacier National Park. ' +
+            'Missoula is a fallback if you can’t get a good fare into FCA, ' +
+            'but it’s more of a detour – roughly 2.5 to 3 hours from ' +
+            'Kalispell, Whitefish, and the park.'
+        },
+        {
+          q: 'Do I need to rent a car?',
+          a: 'We’d recommend renting a car, or splitting one with friends – ' +
+            'it’s the best way to get around Flathead Valley and Glacier ' +
+            'National Park. Rideshare isn’t reliable out here, so don’t ' +
+            'count on Uber or Lyft. Every airport has rental cars through ' +
+            'the usual companies (Hertz, Enterprise, etc.), and if you ' +
+            'strike out there, Turo is a good backup – like Airbnb, but ' +
+            'for cars: enter your city, dates, and vehicle preference.'
+        },
         { q: 'Is there a shuttle from the hotels?', a: '', flag: 'SHUTTLE_CONFIRMED' }
       ]
     },

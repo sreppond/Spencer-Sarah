@@ -1349,6 +1349,22 @@
       }
     }
 
+    /* iOS Safari drops the synthetic click that is supposed to follow a tap
+       on these buttons when the on-screen keyboard is open: touchstart fires
+       while the field still has focus, the keyboard then starts closing and
+       the page reflows before touchend, and WebKit finds nothing at the
+       original touch point to click. The tap just dismisses the keyboard and
+       Continue/Go back silently does nothing — a second, now-keyboardless
+       tap is what actually works. Blurring on touchstart forces that reflow
+       to happen before the tap is hit-tested, so the first tap is the one
+       that lands. */
+    function blurActive() {
+      var el = document.activeElement;
+      if (el && el !== document.body && el.blur) el.blur();
+    }
+    submit.addEventListener('touchstart', blurActive, { passive: true });
+    if (back) back.addEventListener('touchstart', blurActive, { passive: true });
+
     // "Don't have it handy? Send the rest and we'll follow up." Address is
     // optional already (see rules.address above), so this link's real job
     // is reassurance plus an explicit flag — a blank address a guest chose
