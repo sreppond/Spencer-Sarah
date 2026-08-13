@@ -142,8 +142,32 @@
       else audio.volume = v;
     }
 
+    // See the matching, longer note in save-the-date.js: Chrome's Media
+    // Engagement Index can let audio.play() through with no gesture at
+    // all (this page's direct-load autoplay attempt below relies on
+    // exactly that once a guest has played audio on this origin before),
+    // but MEI does not extend to AudioContext.resume() — so a play() that
+    // succeeds this way still leaves the graph after it silent forever
+    // unless something else resumes the context. armAudioResume() is
+    // that something: it fires on the guest's next real gesture whether
+    // play() succeeded or failed, unlike armRetry() below which only
+    // fires on failure.
     function resumeAudioCtx() {
       if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+    }
+
+    var audioResumeArmed = false;
+    function armAudioResume() {
+      if (audioResumeArmed) return;
+      audioResumeArmed = true;
+      var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+      function attempt() {
+        events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
+        resumeAudioCtx();
+      }
+      events.forEach(function (evt) {
+        document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
+      });
     }
 
     function fadeTo(target, ms) {
@@ -181,6 +205,7 @@
     function tryPlay(fadeMs) {
       ensureGain();
       resumeAudioCtx();
+      armAudioResume();
       setGain(0);
       var p = audio.play();
       if (p && p.then) {
@@ -231,6 +256,7 @@
         store.set(AUDIO_KEY, 'on');
         ensureGain();
         resumeAudioCtx();
+        armAudioResume();
         setGain(0);
         var p = audio.play();
         if (p && p.then) {

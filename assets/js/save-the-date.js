@@ -730,9 +730,37 @@
 
   // Autoplay policy suspends a freshly created AudioContext until a
   // user gesture resumes it — the same rule that gates audio.play()
-  // itself, just one layer further down the graph.
+  // itself, just one layer further down the graph, and a stricter one:
+  // Chrome's Media Engagement Index can let audio.play() through with no
+  // gesture at all once this origin has been played enough (exactly what
+  // happens on a repeat visit, or arriving via the RSVP link's `#details`
+  // hash below, which hands off straight to bypassEnvelope() with none) —
+  // but MEI does not extend to AudioContext.resume(), which Chrome never
+  // waives. That combination is silent in a specific way: audio.play()
+  // resolves, the element genuinely plays, the toggle shows "on" — but
+  // the suspended context means the GainNode graph after it never
+  // processes a sample. armAudioResume() below is what actually recovers
+  // from that: it waits for the guest's real next tap/key/scroll,
+  // whatever it turns out to be, and resumes the context then, same
+  // shape as armAmbientRetry() but not conditioned on play() having
+  // failed — this fires whether it did or not, since play() succeeding
+  // is exactly the case that otherwise leaves nothing else to catch it.
   function resumeAudioCtx() {
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+  }
+
+  var audioResumeArmed = false;
+  function armAudioResume() {
+    if (audioResumeArmed) return;
+    audioResumeArmed = true;
+    var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+    function attempt() {
+      events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
+      resumeAudioCtx();
+    }
+    events.forEach(function (evt) {
+      document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
+    });
   }
 
   function fadeTo(target, ms) {
@@ -760,6 +788,7 @@
 
     ensureGain();
     resumeAudioCtx();
+    armAudioResume();
     audio.src = media.ambientAudio;
     setGain(0);
     var p = audio.play();
@@ -816,6 +845,7 @@
         if (!audio.src) audio.src = (CFG.media || {}).ambientAudio || '';
         ensureGain();
         resumeAudioCtx();
+        armAudioResume();
         setGain(0);
         var p = audio.play();
         if (p && p.then) {
