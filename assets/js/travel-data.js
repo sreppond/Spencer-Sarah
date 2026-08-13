@@ -123,24 +123,6 @@ window.TRAVEL = {
       isRoomBlock: false
     },
     {
-      id: 'hidden-moose-lodge',
-      name: 'Hidden Moose Lodge',
-      tagline: 'A quiet 15-room B&B about 2 miles from downtown',
-      address: '1735 E Lakeshore Dr, Whitefish, MT 59937',
-      driveMinutes: null,
-      priceTier: '$$$',
-      bestFor: 'A quiet, small-inn stay',
-      amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
-      blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
-        'outdoor hot tub, and a full breakfast included – quieter and more ' +
-        'personal than a hotel.',
-      bookingUrl: 'https://www.hiddenmooselodge.com',
-      phone: '(406) 862-6516',
-      coords: null,
-      photos: ['images/hidden-moose-lodge-in.jpg'],
-      isRoomBlock: false
-    },
-    {
       id: 'the-firebrand',
       name: 'The Firebrand',
       tagline: 'Downtown, walkable to dinner and the bars after',
@@ -156,6 +138,24 @@ window.TRAVEL = {
       phone: '(406) 863-1900',
       coords: null,
       photos: ['images/Firebrand.jpeg'],
+      isRoomBlock: false
+    },
+    {
+      id: 'hidden-moose-lodge',
+      name: 'Hidden Moose Lodge',
+      tagline: 'A quiet 15-room B&B about 2 miles from downtown',
+      address: '1735 E Lakeshore Dr, Whitefish, MT 59937',
+      driveMinutes: null,
+      priceTier: '$$$',
+      bestFor: 'A quiet, small-inn stay',
+      amenities: ['Breakfast included', 'Hot tub', 'Fireplace lounge'],
+      blurb: 'A 15-room bed & breakfast with a big river-rock fireplace, an ' +
+        'outdoor hot tub, and a full breakfast included – quieter and more ' +
+        'personal than a hotel.',
+      bookingUrl: 'https://www.hiddenmooselodge.com',
+      phone: '(406) 862-6516',
+      coords: null,
+      photos: ['images/hidden-moose-lodge-in.jpg'],
       isRoomBlock: false
     },
     {
