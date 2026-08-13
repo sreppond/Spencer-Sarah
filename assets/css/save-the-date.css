@@ -2647,52 +2647,6 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
   text-wrap: pretty;
 }
 
-/* --- 11.2a · Room block banner ---
-   Only shown once flags.ROOM_BLOCK_CONFIRMED is true (see
-   roomBlockBanner() in travel.js) — a short, hard-to-miss line pointing
-   at the #room-block section below, not a repeat of its full copy. */
-.room-block-banner {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: .5em .7em;
-  margin: 1.3rem auto 0;
-  max-width: 26rem;
-  padding: .6em 1.1em;
-  border-radius: 999px;
-  background: linear-gradient(168deg, rgba(253,250,244,.92) 0%, rgba(244,236,221,.8) 100%);
-  border: 1px solid rgba(196,159,108,.3);
-  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 12px 26px -22px rgba(93,74,44,.45);
-  -webkit-backdrop-filter: blur(12px);
-          backdrop-filter: blur(12px);
-  font-size: var(--t-small);
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--gold-text);
-  text-align: left;
-  text-decoration: none;
-  transition: box-shadow .25s var(--ease-soft), transform .25s var(--ease-soft);
-}
-.room-block-banner:hover,
-.room-block-banner:focus-visible {
-  box-shadow: 0 2px 4px rgba(93,74,44,.08), 0 16px 30px -20px rgba(93,74,44,.55);
-  transform: translateY(-1px);
-}
-.room-block-banner-badge {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  padding: .3em .7em;
-  border-radius: 999px;
-  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
-  font-size: var(--t-micro);
-  font-weight: 600;
-  letter-spacing: .08em;
-  color: #fff8ec;
-}
-.room-block-banner-text { color: var(--gold-text); }
-
 /* --- 11.2b · Countdown --- */
 .countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
 .countdown-passed {
@@ -2753,19 +2707,6 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
    against the fixed nav's real rendered height via --nav-h, not a
    hardcoded constant — see the note by .travel-section above. */
 .travel-section { scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t)); }
-
-/* --- 11.3b · Room Block ---
-   Its own section ahead of the full Where to Stay lineup — see
-   roomBlockSection() in travel.js. Badge sits centered above the title
-   rather than pinned to a photo corner like its carousel counterpart,
-   since there's no photo here to pin it to. */
-.room-block-badge {
-  display: flex;
-  width: fit-content;
-  margin: .8rem auto 0;
-}
-.room-block-call { display: flex; width: fit-content; margin: 1.5rem auto 0; }
-.room-block-call[hidden] { display: none; }
 
 /* --- 11.4 · Where to Stay (lodging gallery + lightbox) --- */
 

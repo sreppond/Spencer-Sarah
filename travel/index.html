@@ -103,16 +103,6 @@
       <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
 
-      <!-- Only shown once flags.ROOM_BLOCK_CONFIRMED is true — see
-           roomBlockBanner() in travel.js. Jumps straight to the Room
-           Block section below rather than the full Where to Stay
-           lineup, since this is the one lodging fact worth a guest's
-           immediate attention. -->
-      <a class="room-block-banner" id="room-block-banner" href="#room-block" hidden>
-        <span class="room-block-banner-badge">Room Block</span>
-        <span class="room-block-banner-text">We’ve got a room block at Grouse Mountain Lodge — here’s how to grab a spot</span>
-      </a>
-
       <!-- Days / hours / minutes only — seconds are frantic and burn
            battery for nothing. travel.js swaps this to a single line
            once the date has passed, and it is a plain updating number
@@ -128,30 +118,6 @@
       </div>
     </div>
   </header>
-
-  <!-- ---------- ROOM BLOCK ----------
-       Called out on its own, before the full "Where to Stay" lineup —
-       this is the one lodging fact most likely to change a guest's
-       plans, so it doesn't wait to be found inside a carousel card.
-       Populated by roomBlockSection() in travel.js from travel-data.js
-       `roomBlock` and gated by flags.ROOM_BLOCK_CONFIRMED, same honesty
-       rule as the rest of this page — see the note on that flag. -->
-  <section class="sheet travel-section" id="room-block" aria-labelledby="room-block-heading">
-    <div class="sheet-inner">
-      <p class="eyebrow">Our Room Block</p>
-      <span class="lodge-gallery-badge room-block-badge" id="room-block-badge">Room Block</span>
-      <h2 class="sheet-title" id="room-block-heading">Grouse Mountain Lodge</h2>
-      <p class="sheet-lede" id="room-block-lede"></p>
-      <a class="flow-btn flow-btn--gold room-block-call" id="room-block-call" href="tel:" hidden>
-        <span class="flow-btn__ink" aria-hidden="true"></span>
-        <span class="flow-btn__content">
-          <svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="flow-btn__label" id="room-block-call-label">Call to reserve</span>
-          <svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-      </a>
-    </div>
-  </section>
 
   <!-- ---------- WHERE TO STAY ----------
        The centerpiece — an expand-on-select image carousel, not a static

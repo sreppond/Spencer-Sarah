@@ -374,56 +374,6 @@
 
 
   /* ------------------------------------------------------------------
-     Room block banner + section — both gated on flags.ROOM_BLOCK_CONFIRMED
-     in travel-data.js, same honesty rule as everything else on this page.
-     Kept separate from lodgeGallery() below rather than reusing its
-     internal badge/booking helpers, since those are built around a
-     five-panel carousel entry and this is one standalone call-to-action.
-     ------------------------------------------------------------------ */
-  (function roomBlockBanner() {
-    var banner = $('#room-block-banner');
-    if (!banner) return;
-    var flags = TRAVEL.flags || {};
-    var rb = TRAVEL.roomBlock || {};
-    banner.hidden = !(flags.ROOM_BLOCK_CONFIRMED && rb.groupName && rb.reservationsPhone);
-  }());
-
-  (function roomBlockSection() {
-    var section = $('#room-block');
-    if (!section) return;
-
-    var flags = TRAVEL.flags || {};
-    var rb = TRAVEL.roomBlock || {};
-    var confirmed = !!(flags.ROOM_BLOCK_CONFIRMED && rb.groupName && rb.reservationsPhone);
-
-    var badge = $('#room-block-badge');
-    if (badge) {
-      badge.textContent = confirmed ? 'Room Block' : 'Room Block – Pending';
-      badge.classList.toggle('lodge-gallery-badge--pending', !confirmed);
-    }
-
-    var lede = $('#room-block-lede');
-    if (lede) {
-      lede.textContent = confirmed
-        ? (rb.blurb || 'Call and mention the “' + rb.groupName + '” block.')
-        : 'We’re working on a room block for the weekend – details coming soon.';
-    }
-
-    var callBtn = $('#room-block-call');
-    var callLabel = $('#room-block-call-label');
-    if (callBtn) {
-      if (confirmed) {
-        callBtn.href = 'tel:' + rb.reservationsPhone.replace(/[^\d+]/g, '');
-        if (callLabel) callLabel.textContent = 'Call ' + rb.reservationsPhone;
-        callBtn.hidden = false;
-      } else {
-        callBtn.hidden = true;
-      }
-    }
-  }());
-
-
-  /* ------------------------------------------------------------------
      Where to Stay — the page's centerpiece: an expand-on-select image
      carousel of the five properties with a lightbox for the full detail
      on each. Built entirely from travel-data.js, so a price, a photo or
