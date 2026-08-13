@@ -374,9 +374,6 @@ window.TRAVEL = {
         'you strike out there, Turo is a good backup – like Airbnb, but ' +
         'for cars: enter your city, dates, and vehicle preference.'
     },
-    { q: 'Will I have cell service or wifi out there?', a: '' },
-    { q: 'Whitefish is up in the mountains – will I feel the altitude?', a: '' },
-    { q: 'Is there parking at The Lodge at Whitefish Lake?', a: '' },
     {
       q: 'Are kids invited?',
       a: 'Kids are absolutely welcome for the whole weekend! For the ' +
@@ -390,8 +387,20 @@ window.TRAVEL = {
         'evening event starting at 8 PM, so no worries if that’s past ' +
         'bedtime for the little ones.'
     },
-    { q: 'What time does the ceremony start on Saturday?', a: '', flag: 'CEREMONY_TIME_SET' },
-    { q: 'The ceremony is outdoors – what happens if it rains?', a: '' },
+    {
+      q: 'What time does the ceremony start on Saturday?',
+      a: 'Still working that out – we’re deep in the planning stage, and ' +
+        'more wedding-day details (exact time included) are on the way. ' +
+        'For now, just save June 12, 2027, and we’ll fill in the rest ' +
+        'soon!'
+    },
+    {
+      q: 'The ceremony is outdoors – what happens if it rains?',
+      a: 'We’ve got it covered – literally: there’s tented seating and ' +
+        'we’ll have umbrellas on hand if the skies open up. Rain on your ' +
+        'wedding day is supposedly good luck, but we’re still rooting ' +
+        'for sunshine.'
+    },
     {
       q: 'The ceremony is lakeside – will it be easy to get around for guests who have trouble with uneven ground?',
       a: ''
