@@ -13,13 +13,6 @@
 
   var TRAVEL = window.TRAVEL || {};
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Same phone test save-the-date.js uses for its own audio — a phone
-  // speaker reads louder than a laptop's at the same numeric volume, so
-  // the ambient bed's target is halved there. Width alone can't tell a
-  // phone from a narrow or zoomed desktop window, hence the pointer check
-  // alongside it.
-  var isPhone = window.matchMedia('(max-width: 767px)').matches &&
-    window.matchMedia('(pointer: coarse)').matches;
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -101,6 +94,12 @@
      which the policy does accept. A guest arriving from the save the date
      (same origin, already played audio there) typically autoplays cleanly
      on the strength of that and never needs the retry at all.
+
+     🔒 Gain runs through the Web Audio API (ensureGain() below), never
+     `audio.volume` directly — see the matching note in save-the-date.js.
+     iOS Safari ignores HTMLMediaElement.volume entirely (reads back 1,
+     writes are a no-op), so without this an iPhone plays the file at its
+     raw mastered level no matter what config.audio.targetVolume says.
      ------------------------------------------------------------------ */
   (function ambientAudio() {
     var audio = $('#ambient');
@@ -114,21 +113,51 @@
     var AUDIO_TTL_DAYS = 400;
     var failed = false;
     var fadeTimer = null;
+    var audioCtx = null;
+    var gainNode = null;
+    var gainSupported = true;
+
+    function ensureGain() {
+      if (gainNode || !gainSupported) return gainNode;
+      try {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new Ctx();
+        var source = audioCtx.createMediaElementSource(audio);
+        gainNode = audioCtx.createGain();
+        gainNode.gain.value = 0;
+        source.connect(gainNode).connect(audioCtx.destination);
+      } catch (e) {
+        gainSupported = false;
+        gainNode = null;
+      }
+      return gainNode;
+    }
+
+    function getGain() {
+      return ensureGain() ? gainNode.gain.value : audio.volume;
+    }
+
+    function setGain(v) {
+      if (ensureGain()) gainNode.gain.value = v;
+      else audio.volume = v;
+    }
+
+    function resumeAudioCtx() {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+    }
 
     function fadeTo(target, ms) {
       clearInterval(fadeTimer);
-      var from = audio.volume;
+      var from = getGain();
       var t0 = performance.now();
       fadeTimer = setInterval(function () {
         var k = clamp((performance.now() - t0) / ms, 0, 1);
-        audio.volume = clamp(from + (target - from) * k, 0, 1);
+        setGain(clamp(from + (target - from) * k, 0, 1));
         if (k === 1) clearInterval(fadeTimer);
       }, 40);
     }
 
-    // See isPhone above and targetVolumeMobile's own comment in config.js.
     function targetVolume() {
-      if (isPhone && opts.targetVolumeMobile != null) return opts.targetVolumeMobile;
       return opts.targetVolume != null ? opts.targetVolume : 0.16;
     }
 
@@ -150,7 +179,9 @@
     }
 
     function tryPlay(fadeMs) {
-      audio.volume = 0;
+      ensureGain();
+      resumeAudioCtx();
+      setGain(0);
       var p = audio.play();
       if (p && p.then) {
         p.then(function () {
@@ -198,7 +229,9 @@
         store.set(AUDIO_KEY, 'off');
       } else {
         store.set(AUDIO_KEY, 'on');
-        audio.volume = 0;
+        ensureGain();
+        resumeAudioCtx();
+        setGain(0);
         var p = audio.play();
         if (p && p.then) {
           p.then(function () {
