@@ -10,10 +10,10 @@
 
   var CFG = window.SAVE_THE_DATE || {};
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Shared by the envelope's source selection below and the ambient-audio
-  // volume further down, plus travel.js's own copy — width alone can't
-  // tell a phone from a narrow or zoomed desktop window, so both have to
-  // agree. A snapshot at load, not tracked live across a resize, same as
+  // Used by the envelope's source selection below (phone gets its own
+  // portrait clip) — width alone can't tell a phone from a narrow or
+  // zoomed desktop window, hence the pointer check alongside it. A
+  // snapshot at load, not tracked live across a resize, same as
   // `reduced` above.
   var isPhone = window.matchMedia('(max-width: 767px)').matches &&
     window.matchMedia('(pointer: coarse)').matches;
@@ -682,28 +682,72 @@
      startAmbient() then. That interaction is a gesture the policy
      accepts, so audio reliably starts within one tap/key/scroll of
      landing on the page even when nothing here could supply one itself.
+
+     🔒 Gain runs through the Web Audio API (ensureGain() below), never
+     `audio.volume` directly. iOS Safari's HTMLMediaElement.volume is a
+     documented no-op — reads back 1, writes are silently ignored — so an
+     <audio> element there always plays at the file's raw mastered level
+     no matter what this code sets. A GainNode sitting after the element
+     in a Web Audio graph is the one thing iOS actually honours, and it
+     is what makes config.audio.targetVolume mean the same thing on a
+     phone as it does on a laptop — which is also why there is no longer
+     a separate targetVolumeMobile: the old split was tuned by ear against
+     a setting that never reached an iPhone in the first place. Do not
+     reintroduce `audio.volume = …`.
      ------------------------------------------------------------------ */
   var audioFailed = false;
   var fadeTimer = null;
+  var audioCtx = null;
+  var gainNode = null;
+  var gainSupported = true;
+
+  function ensureGain() {
+    if (gainNode || !gainSupported || !audio) return gainNode;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new Ctx();
+      var source = audioCtx.createMediaElementSource(audio);
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0;
+      source.connect(gainNode).connect(audioCtx.destination);
+    } catch (e) {
+      // No Web Audio API (very old browser): fall back to audio.volume,
+      // which at least works everywhere it exists except iOS.
+      gainSupported = false;
+      gainNode = null;
+    }
+    return gainNode;
+  }
+
+  function getGain() {
+    return ensureGain() ? gainNode.gain.value : audio.volume;
+  }
+
+  function setGain(v) {
+    if (ensureGain()) gainNode.gain.value = v;
+    else audio.volume = v;
+  }
+
+  // Autoplay policy suspends a freshly created AudioContext until a
+  // user gesture resumes it — the same rule that gates audio.play()
+  // itself, just one layer further down the graph.
+  function resumeAudioCtx() {
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+  }
 
   function fadeTo(target, ms) {
     if (!audio) return;
     clearInterval(fadeTimer);
-    var from = audio.volume;
+    var from = getGain();
     var t0 = performance.now();
     fadeTimer = setInterval(function () {
       var k = clamp((performance.now() - t0) / ms, 0, 1);
-      audio.volume = clamp(from + (target - from) * k, 0, 1);
+      setGain(clamp(from + (target - from) * k, 0, 1));
       if (k === 1) clearInterval(fadeTimer);
     }, 40);
   }
 
-  // A phone speaker reads louder than a laptop's at the same numeric
-  // volume — see isPhone above and targetVolumeMobile's own comment in
-  // config.js — so every fadeTo() target reads through this instead of
-  // opts.targetVolume directly.
   function targetVolume(opts) {
-    if (isPhone && opts.targetVolumeMobile != null) return opts.targetVolumeMobile;
     return opts.targetVolume != null ? opts.targetVolume : 0.16;
   }
 
@@ -714,8 +758,10 @@
 
     audio.addEventListener('error', function () { audioFailed = true; hideAudioToggle(); }, { once: true });
 
+    ensureGain();
+    resumeAudioCtx();
     audio.src = media.ambientAudio;
-    audio.volume = 0;
+    setGain(0);
     var p = audio.play();
 
     if (p && p.then) {
@@ -768,7 +814,9 @@
         // through startAmbient() on envelope open, so audio.src is still
         // empty at this point — this is the first tap that needs it set.
         if (!audio.src) audio.src = (CFG.media || {}).ambientAudio || '';
-        audio.volume = 0;
+        ensureGain();
+        resumeAudioCtx();
+        setGain(0);
         var p = audio.play();
         if (p && p.then) {
           p.then(function () {

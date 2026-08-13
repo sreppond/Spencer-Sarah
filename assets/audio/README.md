@@ -10,13 +10,30 @@ points at the path; nothing else hard-codes it.
 
 ## How it behaves
 
-It is started only by the guest's tap on the envelope — mobile browsers refuse
-audio outside a gesture — then fades in over 4 seconds to volume 0.16 and can
-be muted with the control in the lower-left corner. If the file is absent,
-playback fails silently and the mute control retires itself. Nothing else on
-the page is affected.
+It defaults on: it's attempted on every path onto either page, fading in
+over 4 seconds, and the browser's autoplay policy is what actually gates
+it — a fresh gesture (the envelope tap) lets it through immediately,
+everything else (a cold `/travel/` load, a remembered return visit) gets
+silently refused and retried on the guest's next tap/key/scroll instead,
+which the policy accepts. It can be muted with the control in the
+lower-left corner. If the file is absent, playback fails silently and the
+mute control retires itself. Nothing else on the page is affected.
 
 Path, target volume and fade live in `assets/js/config.js`.
+
+🔒 The gain is applied through a Web Audio `GainNode`
+(`assets/js/save-the-date.js` and `assets/js/travel.js`, see the
+`ensureGain` functions), never the `<audio>` element's own `.volume`. iOS
+Safari's `HTMLMediaElement.volume` is a documented no-op — it always reads
+back `1` and silently ignores writes — so on an iPhone, setting
+`audio.volume` does nothing and the file plays at its raw mastered
+loudness regardless. A `GainNode` sitting after the element in a Web Audio
+graph is what iOS actually honours, and it's the only way
+`audio.targetVolume` means the same thing on a phone as it does on a
+laptop. Don't reintroduce `audio.volume = …`, and don't reintroduce a
+separate mobile target either — see the comment above `audio` in
+config.js for why an earlier phone/desktop split was tuned against a
+number that, on iOS, was never really being applied.
 
 ## Don't drop a raw clip in here
 
@@ -52,7 +69,10 @@ file — but MP3 is the only format every guest's phone will play.
 
 ## Level
 
--18 LUFS in the file, 0.16 gain on the page, so roughly **-34 LUFS** actually
-in the room: under conversation, over silence. If it needs to move, change
+-18 LUFS in the file, 0.032 gain on the page (20% of the 0.16 it originally
+shipped at) — roughly **-48 LUFS** actually in the room: very subtle, closer
+to inaudible than to background music. If it needs to move, change
 `audio.targetVolume` in `assets/js/config.js` — leave the file where it is, so
-the mastering stays comparable if the clip is ever replaced.
+the mastering stays comparable if the clip is ever replaced. Because the gain
+now runs through a `GainNode` (see above), a change there lands the same way
+on an iPhone as it does anywhere else — that was not true before.
