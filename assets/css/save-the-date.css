@@ -2647,6 +2647,52 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
   text-wrap: pretty;
 }
 
+/* --- 11.2a · Room block banner ---
+   Only shown once flags.ROOM_BLOCK_CONFIRMED is true (see
+   roomBlockBanner() in travel.js) — a short, hard-to-miss line pointing
+   at the #room-block section below, not a repeat of its full copy. */
+.room-block-banner {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .5em .7em;
+  margin: 1.3rem auto 0;
+  max-width: 26rem;
+  padding: .6em 1.1em;
+  border-radius: 999px;
+  background: linear-gradient(168deg, rgba(253,250,244,.92) 0%, rgba(244,236,221,.8) 100%);
+  border: 1px solid rgba(196,159,108,.3);
+  box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 12px 26px -22px rgba(93,74,44,.45);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  font-size: var(--t-small);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--gold-text);
+  text-align: left;
+  text-decoration: none;
+  transition: box-shadow .25s var(--ease-soft), transform .25s var(--ease-soft);
+}
+.room-block-banner:hover,
+.room-block-banner:focus-visible {
+  box-shadow: 0 2px 4px rgba(93,74,44,.08), 0 16px 30px -20px rgba(93,74,44,.55);
+  transform: translateY(-1px);
+}
+.room-block-banner-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: .3em .7em;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 28%, #d59a63, #b0743f 55%, #70441f 100%);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: .08em;
+  color: #fff8ec;
+}
+.room-block-banner-text { color: var(--gold-text); }
+
 /* --- 11.2b · Countdown --- */
 .countdown { margin: clamp(2rem, 7vw, 2.8rem) auto 0; }
 .countdown-passed {
@@ -2708,7 +2754,31 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
    hardcoded constant — see the note by .travel-section above. */
 .travel-section { scroll-margin-top: calc(var(--nav-h, 100px) + .75rem + var(--safe-t)); }
 
+/* --- 11.3b · Room Block ---
+   Its own section ahead of the full Where to Stay lineup — see
+   roomBlockSection() in travel.js. Badge sits centered above the title
+   rather than pinned to a photo corner like its carousel counterpart,
+   since there's no photo here to pin it to. */
+.room-block-badge {
+  display: flex;
+  width: fit-content;
+  margin: .8rem auto 0;
+}
+.room-block-call { display: flex; width: fit-content; margin: 1.5rem auto 0; }
+.room-block-call[hidden] { display: none; }
+
 /* --- 11.4 · Where to Stay (lodging gallery + lightbox) --- */
+
+/* Context for the $ signs on every lodging card — see travel-data.js
+   priceScale. Quiet meta text, not an alert like .lodge-urgency below. */
+.lodge-price-legend {
+  margin-top: .6rem;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--stone-text);
+  text-align: center;
+}
+.lodge-price-legend:empty { display: none; }
 
 /* The "book by" urgency line — see travel-data.js lodgingBookBy for
    where the copy comes from. A soft callout, not an alarm: it's real,
@@ -3406,6 +3476,9 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
 }
 .weekend-detail { margin-top: .5rem; font-size: var(--t-small); line-height: 1.6; color: var(--ink-body); }
 .weekend-detail.is-todo { font-style: italic; color: var(--stone-text); }
+.weekend-time { color: var(--gold-text); font-weight: 600; }
+.weekend-detail a { color: var(--gold-text); text-decoration: underline; text-underline-offset: 2px; }
+.weekend-detail a:hover, .weekend-detail a:focus-visible { color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   .weekend-card { opacity: 1; transform: none; }
@@ -3418,35 +3491,7 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
    dividers) with a hairline gold border, backdrop blur and a soft deep
    shadow. Hovering — or opening — lifts the card and warms its border,
    so the row reads as "alive" before a guest even taps it. */
-.faq-tabs {
-  margin-top: clamp(1.6rem, 5vw, 2rem);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: .55rem;
-}
-.faq-tab {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;              /* the padding alone landed at ~36px */
-  padding: .5rem 1.15rem;
-  border: 1px solid var(--rule);
-  border-radius: 100px;
-  background: transparent;
-  font-family: var(--font-text);
-  font-size: var(--t-small);
-  color: var(--ink-soft);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: color .3s var(--ease-soft), border-color .3s var(--ease-soft), background-color .3s var(--ease-soft);
-}
-.faq-tab:hover { color: var(--gold-text); border-color: var(--gold-deep); }
-.faq-tab.is-active {
-  border-color: var(--gold-deep);
-  background: var(--gold-deep);
-  color: #fbf7f0;
-}
-.faq { margin-top: clamp(1.4rem, 4vw, 1.8rem); display: flex; flex-direction: column; gap: .8rem; }
+.faq { margin-top: clamp(1.6rem, 5vw, 2rem); display: flex; flex-direction: column; gap: .8rem; }
 .faq-item {
   border-radius: 1rem;
   background: linear-gradient(168deg, rgba(253,250,244,.85) 0%, rgba(251,247,240,.66) 100%);

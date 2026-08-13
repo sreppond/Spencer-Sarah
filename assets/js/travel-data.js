@@ -21,24 +21,20 @@ window.TRAVEL = {
   flags: {
     /* Grouse Mountain Lodge is mid-renovation into "Hotel Whitefish"
        through a phased reopening that runs into summer 2027 — directly
-       overlapping June 12, 2027. Call the property before this becomes
-       true: is the block honored under the rebrand, which wing, will the
-       restaurant/lobby be open, is there active construction. Until then
-       the card shows normally with no code, a line naming the rebrand,
-       and a muted "pending" room-block callout rather than the gold
-       confirmed one — see badgeFor() in travel.js. */
-    ROOM_BLOCK_CONFIRMED: false,
-
-    /* No wedding-day shuttle plan exists yet. While false, the FAQ answers
-       "Is there a shuttle from the hotels?" with "details coming" instead
-       of a guess. If a shuttle is arranged, that answer needs real content
-       before this flips. */
-    SHUTTLE_CONFIRMED: false,
+       overlapping June 12, 2027. The block itself is confirmed in writing
+       (August 2026): guests call Central Reservations and quote the group
+       name — see `roomBlock` below. What's still open is the renovation
+       logistics (which wing, restaurant/lobby hours, construction noise) —
+       re-check with the property as the date gets closer. While this flag
+       is true the card gets the gold "Room Block" badge and the real
+       call-to-book instructions; flipping it back to false would fall back
+       to the muted "pending" state — see badgeFor() in travel.js. */
+    ROOM_BLOCK_CONFIRMED: true,
 
     /* Friday welcome party time and venue are not set. While false, the
        Weekend section shows Friday as "arrive — details coming" rather
        than a specific time nobody has confirmed. */
-    WELCOME_PARTY_SET: false,
+    WELCOME_PARTY_SET: true,
 
     /* config.js's ceremony window (16:30-23:30 local) is a placeholder-
        shaped guess. Shared with the save-the-date's calendar action —
@@ -69,6 +65,44 @@ window.TRAVEL = {
      one turns it into a carousel. */
   lodging: [
     {
+      /* See flags.ROOM_BLOCK_CONFIRMED and `roomBlock` below: this is our
+         actual room block, confirmed in writing with the property in
+         August 2026. First in this list on purpose — this is the option
+         we want every guest to see and consider before anything else, and
+         `isRoomBlock: true` plus the confirmed flag together get it the
+         gold "Room Block" badge in the gallery/lightbox (see badgeFor() in
+         travel.js). Pursuit is also rebranding this property to "Hotel
+         Whitefish" through a phased renovation that runs directly through
+         the wedding weekend — name the rebrand in the copy regardless,
+         since a guest who books here will see "Hotel Whitefish" on their
+         confirmation for a property the invitation called "Grouse
+         Mountain Lodge," and that confusion is guaranteed unless this
+         page names it once. */
+      id: 'grouse-mountain-lodge',
+      name: 'Grouse Mountain Lodge',
+      tagline: 'Our room block – call to reserve your spot',
+      address: '2 Fairway Dr, Whitefish, MT 59937',
+      driveMinutes: null,
+      priceTier: '$$',
+      bestFor: 'Our room block',
+      amenities: ['Pool', 'On-site dining (renovation-dependent)'],
+      blurb: 'This is where our room block is! Call the Central ' +
+        'Reservations office at (406) 892-2525 and let them know you’re ' +
+        'with the “Simmons – Reppond Wedding Block” – no code needed, ' +
+        'just ask for us by name and they’ll take it from there. The ' +
+        'property is mid-renovation and relaunching in phases as "Hotel ' +
+        'Whitefish" – 144 rooms total, 72 already renovated and open ' +
+        '(including a new bridal suite), with a new 8,250 sq ft event ' +
+        'pavilion opening fall 2026. We’ll keep an eye on the ' +
+        'restaurant/lobby hours as the date gets closer and update this ' +
+        'if anything changes.',
+      bookingUrl: '',
+      phone: '(406) 862-3000',
+      coords: null,
+      photos: ['images/Grouse Mountain.jpg'],
+      isRoomBlock: true
+    },
+    {
       id: 'lodge-at-whitefish-lake',
       name: 'The Lodge at Whitefish Lake',
       badge: 'Wedding Venue',
@@ -87,40 +121,6 @@ window.TRAVEL = {
       coords: [48.4231, -114.3536],
       photos: ['images/Lodge at Whitefish.jpg'],
       isRoomBlock: false
-    },
-    {
-      /* See flags.ROOM_BLOCK_CONFIRMED above: Pursuit is rebranding this
-         property to "Hotel Whitefish" through a phased renovation that
-         runs directly through the wedding weekend. Name the rebrand in
-         the copy regardless of outcome — a guest who books here will see
-         "Hotel Whitefish" on their confirmation for a property the
-         invitation called "Grouse Mountain Lodge," and that confusion is
-         guaranteed unless this page names it once. Second in this list
-         (not first) so the venue itself stays the lead recommendation;
-         `isRoomBlock: true` alone is enough to get the pending "Room
-         Block" callout in the gallery/lightbox, independent of
-         ROOM_BLOCK_CONFIRMED — see badgeFor() in travel.js. */
-      id: 'grouse-mountain-lodge',
-      name: 'Grouse Mountain Lodge',
-      tagline: 'Rebranding to Hotel Whitefish – call before booking',
-      address: '2 Fairway Dr, Whitefish, MT 59937',
-      driveMinutes: null,
-      priceTier: '$$',
-      bestFor: 'Our room block – once confirmed',
-      amenities: ['Pool', 'On-site dining (renovation-dependent)'],
-      blurb: 'Grouse Mountain Lodge is mid-renovation and relaunching in ' +
-        'phases as "Hotel Whitefish" – 144 rooms total, 72 already ' +
-        'renovated and open (including a new bridal suite), with a new ' +
-        '8,250 sq ft event pavilion opening fall 2026. The full relaunch ' +
-        'is targeted for summer 2027, essentially our wedding weekend. We ' +
-        'are confirming with the property whether the room block, the ' +
-        'restaurant and the lobby will be fully open June 11-13. Details ' +
-        'here the moment we know.',
-      bookingUrl: '',
-      phone: '(406) 862-3000',
-      coords: null,
-      photos: ['images/Grouse Mountain.jpg'],
-      isRoomBlock: true
     },
     {
       id: 'hidden-moose-lodge',
@@ -161,17 +161,18 @@ window.TRAVEL = {
     {
       id: 'vacation-rentals',
       name: 'Vacation rentals',
-      tagline: 'A deep bench of cabins and condos on VRBO/Airbnb',
+      tagline: 'Great for larger groups traveling together',
       address: '',
       noFixedAddress: true,
       driveMinutes: null,
       priceTier: '$$',
       bestFor: 'Easier on the budget, or a longer stay',
       amenities: [],
-      blurb: 'Whitefish has a deep bench of cabins and condos on VRBO and ' +
-        'Airbnb, from downtown walk-ups to lakefront houses – search ' +
-        '"Whitefish, MT." Best option for larger groups or anyone staying ' +
-        'longer than the wedding weekend.',
+      blurb: 'This is a great option for parties traveling in larger groups ' +
+        '– Whitefish has plenty of cabins and condos on VRBO and Airbnb, ' +
+        'from downtown walk-ups to lakefront houses. Search "Whitefish, ' +
+        'MT." Also a good call if you’re staying longer than the wedding ' +
+        'weekend.',
       bookingUrl: '',
       phone: '',
       coords: null,
@@ -179,6 +180,17 @@ window.TRAVEL = {
       isRoomBlock: false
     }
   ],
+
+  /* ---- Price scale ---------------------------------------------------
+     A bare "$$" means nothing without a scale to read it against — this
+     is that scale. `max` is how many $ signs the priciest lodging option
+     uses (see `priceTier` on each entry above); travel.js renders every
+     tier as "$$ of $$$$" using this number rather than a hardcoded 4, so
+     adding a pricier property later is still a one-line data change. */
+  priceScale: {
+    max: 4,
+    legend: 'Priced relative to each other, from $ (most budget-friendly) to $$$$ (priciest) – not fixed nightly rates.'
+  },
 
   /* ---- Book-by urgency line -------------------------------------------
      No confirmed deadline exists for this page yet — see the open
@@ -194,25 +206,36 @@ window.TRAVEL = {
     text: 'We’d suggest booking your stay by the end of October 2026, while Whitefish still has rooms for the weekend.'
   },
 
+  /* No online code or booking link exists for this block — it's a phone
+     call, not a click. Guests call Central Reservations and give them the
+     group name; the property takes it from there. Confirmed in writing
+     with the property, August 2026. See flags.ROOM_BLOCK_CONFIRMED and
+     the `grouse-mountain-lodge` lodging entry above, which carries the
+     same instructions inline on its own card. */
   roomBlock: {
     property: 'grouse-mountain-lodge',
-    code: '',          // TODO — Spencer + property, once confirmed in writing
-    bookingUrl: '',     // TODO
-    cutoff: '',         // TODO — ISO date
+    groupName: 'Simmons – Reppond Wedding Block',
+    reservationsPhone: '(406) 892-2525',
+    blurb: 'Call the Central Reservations office and give them the name ' +
+      'of our block – they’ll take it from there. No confirmation code ' +
+      'needed, just ask for us by name.',
+    cutoff: '',         // TODO — ISO date, once the property gives us one
     note: 'Gated behind flags.ROOM_BLOCK_CONFIRMED — see the comment on that flag above.'
   },
 
 
   /* ---- Schedule --------------------------------------------------
-     Most of this is TODO by design — see §E item 4 (welcome party) and
-     item 7 (Sunday farewell). The one thing that IS certain and belongs
-     in the lede regardless of the gaps: guests should plan to fly in
-     Friday. */
+     The welcome party (Friday) is real and confirmed — see
+     flags.WELCOME_PARTY_SET. Saturday's ceremony time and Sunday's
+     farewell are still TODO by design; the one thing that IS certain
+     regardless of those gaps: guests should plan to fly in Friday. */
   schedule: [
     {
       day: 'Friday', date: '2027-06-11',
       title: 'Arrive + welcome party',
-      time: '', venue: '', blurb: '', dress: '',
+      time: '8:00 PM', venue: 'Herb & Omni, Whitefish',
+      venueUrl: 'https://www.herbandomni.com',
+      blurb: 'Kicks off the weekend – plan to be there.', dress: '',
       flag: 'WELCOME_PARTY_SET'
     },
     {
@@ -311,62 +334,89 @@ window.TRAVEL = {
 
 
   /* ---- FAQ -----------------------------------------------------
-     Seeds from the build guide §B.11, grouped into the categories the
-     travel page tabs through. Answers are TODO except the packing line,
-     which has a real, checked answer already. */
-  faqCategories: [
+     One flat list, no more category tabs – guests were clicking through
+     tabs to find one answer, not browsing by topic. Order is deliberate:
+     travel logistics first (the questions guests need answered before they
+     book anything), then what the weekend itself looks like, then the
+     open/unconfirmed stuff last. An empty `a` isn't a bug – it's a real
+     question worth asking that we don't have a checked answer for yet;
+     the render code in travel.js turns that into an honest "Answer
+     coming." rather than a guess. Attire is deliberately not here – we
+     haven't decided what to say about it yet. */
+  faq: [
     {
-      key: 'travel',
-      label: 'Travel & Schedule',
-      items: [
-        { q: 'What time should I arrive on Friday?', a: '' },
-        {
-          q: 'Which airport should I fly into?',
-          a: 'Our pick is Glacier Park International Airport (FCA) – it’s ' +
-            'about 15 minutes from downtown Kalispell, 20 minutes from ' +
-            'Whitefish, and 30 minutes from Glacier National Park. ' +
-            'Missoula is a fallback if you can’t get a good fare into FCA, ' +
-            'but it’s more of a detour – roughly 2.5 to 3 hours from ' +
-            'Kalispell, Whitefish, and the park.'
-        },
-        {
-          q: 'Do I need to rent a car?',
-          a: 'We’d recommend renting a car, or splitting one with friends – ' +
-            'it’s the best way to get around Flathead Valley and Glacier ' +
-            'National Park. Rideshare isn’t reliable out here, so don’t ' +
-            'count on Uber or Lyft. Every airport has rental cars through ' +
-            'the usual companies (Hertz, Enterprise, etc.), and if you ' +
-            'strike out there, Turo is a good backup – like Airbnb, but ' +
-            'for cars: enter your city, dates, and vehicle preference.'
-        },
-        { q: 'Is there a shuttle from the hotels?', a: '', flag: 'SHUTTLE_CONFIRMED' }
-      ]
+      q: 'What time should I arrive on Friday?',
+      a: 'The welcome party starts at 8 PM in Whitefish, so we’d recommend ' +
+        'getting in by 5-6 PM – enough time to check in, unpack, and get ' +
+        'settled before heading out for the night.'
     },
     {
-      key: 'attire',
-      label: 'Attire',
-      items: [
-        {
-          q: 'What should I wear?',
-          /* §C.4, checked against average June temps/precip for Whitefish.
-             Do not soften the "wettest month" or the evening-cold framing —
-             both are the actual, checked forecast pattern, not hedging. */
-          a: 'Mid-June in northwest Montana runs warm in the afternoon and ' +
-            'genuinely cold once the sun goes down – think 70° at four ' +
-            'o’clock and mid-40s by ten. June is also the wettest month ' +
-            'here. The reception is outdoors and lakeside, so bring a real ' +
-            'layer, not a decorative one, and something you don’t mind ' +
-            'getting a little damp.'
-        }
-      ]
+      q: 'Which airport should I fly into?',
+      /* The FCA code really is left over from the airport's old name –
+         Kalispell's "Flathead County Airport," before it was renamed
+         Glacier Park International. Real fact, not an invented bit. */
+      a: 'Glacier Park International – code FCA, which confuses everyone ' +
+        'expecting a "G" in there somewhere. It’s left over from the ' +
+        'airport’s old name, Flathead County Airport, from back before ' +
+        'the fancier rebrand. It’s about 15 minutes from downtown ' +
+        'Kalispell and 20 from Whitefish. Missoula is a fallback if you ' +
+        'can’t get a good fare into FCA, but treat it as a last resort – ' +
+        'it’s a 2.5-3 hour detour from here.'
     },
     {
-      key: 'general',
-      label: 'General',
-      items: [
-        { q: 'Are kids invited?', a: '' },
-        { q: 'I can’t make it – what should I do?', a: '' }
-      ]
+      q: 'Do I need to rent a car?',
+      a: 'We’d recommend renting a car, or splitting one with friends – ' +
+        'it’s the best way to get around Flathead Valley and Glacier ' +
+        'National Park. Rideshare isn’t reliable out here, so don’t ' +
+        'count on Uber or Lyft. Every airport has rental cars through ' +
+        'the usual companies (Hertz, Enterprise, etc.), and if you ' +
+        'strike out there, Turo is a good backup – like Airbnb, but ' +
+        'for cars: enter your city, dates, and vehicle preference.'
+    },
+    { q: 'Will I have cell service or wifi out there?', a: '' },
+    { q: 'Whitefish is up in the mountains – will I feel the altitude?', a: '' },
+    { q: 'Is there parking at The Lodge at Whitefish Lake?', a: '' },
+    {
+      q: 'Are kids invited?',
+      a: 'Kids are absolutely welcome for the whole weekend! For the ' +
+        'ceremony itself, we’ll have on-site care available so parents ' +
+        'can be fully present for our vows – and the kids get to come ' +
+        'right back and celebrate with us the moment we say "I do."'
+    },
+    {
+      q: 'Is the Friday welcome party kid-friendly?',
+      a: 'Kids are part of the whole weekend, so yes – it’s just an ' +
+        'evening event starting at 8 PM, so no worries if that’s past ' +
+        'bedtime for the little ones.'
+    },
+    { q: 'What time does the ceremony start on Saturday?', a: '', flag: 'CEREMONY_TIME_SET' },
+    { q: 'The ceremony is outdoors – what happens if it rains?', a: '' },
+    {
+      q: 'The ceremony is lakeside – will it be easy to get around for guests who have trouble with uneven ground?',
+      a: ''
+    },
+    { q: 'Is the rehearsal dinner open to all guests?', a: '' },
+    { q: 'I don’t drink – will there be non-alcoholic options?', a: '' },
+    {
+      q: 'What’s the plan for Sunday?',
+      a: 'We’re putting together a low-key farewell gathering on Sunday, ' +
+        'June 13 – time and place are still coming together, and we’ll ' +
+        'share details as soon as we have them.'
+    },
+    {
+      q: 'We’re thinking about extending our trip – is it worth it?',
+      a: 'Absolutely – Glacier National Park is right there in Flathead ' +
+        'Valley, and June is a beautiful time to see it. We don’t have ' +
+        'specific recommendations pulled together yet, but block off ' +
+        'extra days if you can swing it.'
+    },
+    { q: 'Can we bring our dog?', a: '' },
+    { q: 'Do you have a gift registry?', a: '' },
+    {
+      q: 'I can’t make it – what should I do?',
+      a: 'We’ll miss you, but totally understand – just let us know so we ' +
+        'can keep you posted and make sure you’re not stuck wondering ' +
+        'what you missed.'
     }
   ],
 

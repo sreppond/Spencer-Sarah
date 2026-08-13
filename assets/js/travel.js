@@ -374,6 +374,56 @@
 
 
   /* ------------------------------------------------------------------
+     Room block banner + section — both gated on flags.ROOM_BLOCK_CONFIRMED
+     in travel-data.js, same honesty rule as everything else on this page.
+     Kept separate from lodgeGallery() below rather than reusing its
+     internal badge/booking helpers, since those are built around a
+     five-panel carousel entry and this is one standalone call-to-action.
+     ------------------------------------------------------------------ */
+  (function roomBlockBanner() {
+    var banner = $('#room-block-banner');
+    if (!banner) return;
+    var flags = TRAVEL.flags || {};
+    var rb = TRAVEL.roomBlock || {};
+    banner.hidden = !(flags.ROOM_BLOCK_CONFIRMED && rb.groupName && rb.reservationsPhone);
+  }());
+
+  (function roomBlockSection() {
+    var section = $('#room-block');
+    if (!section) return;
+
+    var flags = TRAVEL.flags || {};
+    var rb = TRAVEL.roomBlock || {};
+    var confirmed = !!(flags.ROOM_BLOCK_CONFIRMED && rb.groupName && rb.reservationsPhone);
+
+    var badge = $('#room-block-badge');
+    if (badge) {
+      badge.textContent = confirmed ? 'Room Block' : 'Room Block – Pending';
+      badge.classList.toggle('lodge-gallery-badge--pending', !confirmed);
+    }
+
+    var lede = $('#room-block-lede');
+    if (lede) {
+      lede.textContent = confirmed
+        ? (rb.blurb || 'Call and mention the “' + rb.groupName + '” block.')
+        : 'We’re working on a room block for the weekend – details coming soon.';
+    }
+
+    var callBtn = $('#room-block-call');
+    var callLabel = $('#room-block-call-label');
+    if (callBtn) {
+      if (confirmed) {
+        callBtn.href = 'tel:' + rb.reservationsPhone.replace(/[^\d+]/g, '');
+        if (callLabel) callLabel.textContent = 'Call ' + rb.reservationsPhone;
+        callBtn.hidden = false;
+      } else {
+        callBtn.hidden = true;
+      }
+    }
+  }());
+
+
+  /* ------------------------------------------------------------------
      Where to Stay — the page's centerpiece: an expand-on-select image
      carousel of the five properties with a lightbox for the full detail
      on each. Built entirely from travel-data.js, so a price, a photo or
@@ -406,6 +456,20 @@
 
     var urgency = $('#lodge-urgency');
     if (urgency) urgency.textContent = (TRAVEL.lodgingBookBy || {}).text || '';
+
+    // A bare "$$" means nothing without a scale to read it against — see
+    // travel-data.js priceScale. Every price tier renders as "$$ of
+    // $$$$" rather than a lone symbol, on the carousel label and in the
+    // lightbox alike.
+    var priceScale = TRAVEL.priceScale || {};
+    var priceLegend = $('#lodge-price-legend');
+    if (priceLegend) priceLegend.textContent = priceScale.legend || '';
+
+    function priceText(tier) {
+      if (!tier) return '';
+      var max = priceScale.max || 4;
+      return tier + ' of ' + new Array(max + 1).join('$');
+    }
 
     // The same five-stroke sprig used on the wax seal and the mosaic's
     // empty frame (save-the-date.js `markEmpty`) — duplicated rather than
@@ -509,7 +573,7 @@
       panel.setAttribute('aria-haspopup', 'dialog');
       panel.setAttribute('aria-pressed', 'false');
       var labelBits = [entry.name];
-      if (entry.priceTier) labelBits.push(entry.priceTier);
+      if (entry.priceTier) labelBits.push(priceText(entry.priceTier));
       labelBits.push('view details');
       panel.setAttribute('aria-label', labelBits.join(', '));
 
@@ -574,7 +638,7 @@
       if (entry.priceTier) {
         var price = document.createElement('span');
         price.className = 'lodge-carousel-price';
-        price.textContent = entry.priceTier;
+        price.textContent = priceText(entry.priceTier);
         label.appendChild(price);
       }
       panel.appendChild(label);
@@ -959,6 +1023,30 @@
           });
           actionsEl.appendChild(codeBtn);
           actionsEl.appendChild(toast);
+        } else if (status === 'room-block' && TRAVEL.roomBlock && TRAVEL.roomBlock.groupName) {
+          // Our actual room block: a phone call, not a code to copy —
+          // see the note on `roomBlock` in travel-data.js.
+          var callNote = document.createElement('p');
+          callNote.className = 'lodge-detail-meta';
+          callNote.textContent = TRAVEL.roomBlock.blurb ||
+            ('Call and mention the “' + TRAVEL.roomBlock.groupName + '” block.');
+          actionsEl.appendChild(callNote);
+
+          if (TRAVEL.roomBlock.reservationsPhone) {
+            var callBtn = document.createElement('a');
+            callBtn.className = 'flow-btn flow-btn--gold lodge-detail-book';
+            callBtn.href = 'tel:' + TRAVEL.roomBlock.reservationsPhone.replace(/[^\d+]/g, '');
+            callBtn.innerHTML =
+              '<span class="flow-btn__ink" aria-hidden="true"></span>' +
+              '<span class="flow-btn__content">' +
+              '<svg class="flow-btn__arrow flow-btn__arrow--in" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+              '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '<span class="flow-btn__label">Call ' + TRAVEL.roomBlock.reservationsPhone + '</span>' +
+              '<svg class="flow-btn__arrow flow-btn__arrow--out" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+              '<path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '</span>';
+            actionsEl.appendChild(callBtn);
+          }
         } else if (entry.isRoomBlock && !flags.ROOM_BLOCK_CONFIRMED) {
           var pendingNote = document.createElement('p');
           pendingNote.className = 'lodge-detail-meta is-todo';
@@ -1030,7 +1118,7 @@
         buildMedia(entry);
         buildBadges(entry);
         nameEl.textContent = entry.name;
-        priceEl.textContent = entry.priceTier || '';
+        priceEl.textContent = priceText(entry.priceTier);
         var blurbInfo = todoOrText(entry.blurb, 'More about ' + entry.name);
         blurbEl.textContent = blurbInfo.text;
         blurbEl.classList.toggle('is-todo', blurbInfo.todo);
@@ -1128,10 +1216,39 @@
       var detail = document.createElement('p');
       detail.className = 'weekend-detail';
       if (known && (item.time || item.venue || item.blurb)) {
-        detail.textContent = [item.time, item.venue, item.blurb].filter(Boolean).join(' – ');
+        // Time set off in its own <strong> so the one fact that changes a
+        // guest's plans (when to be there) reads first and boldest; venue
+        // becomes a real link when a URL is on hand (see the welcome
+        // party's Herb & Omni link in travel-data.js) instead of plain text.
+        var wroteAny = false;
+        if (item.time) {
+          var timeEl = document.createElement('strong');
+          timeEl.className = 'weekend-time';
+          timeEl.textContent = item.time;
+          detail.appendChild(timeEl);
+          wroteAny = true;
+        }
+        if (item.venue) {
+          if (wroteAny) detail.appendChild(document.createTextNode(' – '));
+          if (item.venueUrl) {
+            var venueLink = document.createElement('a');
+            venueLink.href = item.venueUrl;
+            venueLink.target = '_blank';
+            venueLink.rel = 'noopener noreferrer';
+            venueLink.textContent = item.venue;
+            detail.appendChild(venueLink);
+          } else {
+            detail.appendChild(document.createTextNode(item.venue));
+          }
+          wroteAny = true;
+        }
+        if (item.blurb) {
+          if (wroteAny) detail.appendChild(document.createTextNode(' – '));
+          detail.appendChild(document.createTextNode(item.blurb));
+        }
       } else {
         detail.classList.add('is-todo');
-        detail.textContent = item.day + ' – details coming, but plan to be here.';
+        detail.textContent = 'Details coming.';
       }
       li.appendChild(detail);
 
@@ -1157,68 +1274,38 @@
 
 
   /* ------------------------------------------------------------------
-     Questions — category tabs plus the FAQ accordion (native <details>,
-     no JS required for the interaction itself) plus the contact card
-     with Sarah and Spencer's own numbers.
+     Questions — one flat FAQ accordion (native <details>, no JS required
+     for the interaction itself — see travel-data.js `faq` for why the
+     old category tabs are gone) plus the contact card with Sarah and
+     Spencer's own numbers.
      ------------------------------------------------------------------ */
   (function questions() {
     var faq = $('#faq');
-    var tabsWrap = $('#faq-tabs');
-    var categories = TRAVEL.faqCategories || [];
+    var items = TRAVEL.faq || [];
 
-    if (faq && categories.length) {
+    if (faq && items.length) {
       var flags = TRAVEL.flags || {};
-      var selected = categories[0].key;
 
-      var renderItems = function (key) {
-        var cat = categories.filter(function (c) { return c.key === key; })[0];
-        faq.innerHTML = '';
-        (cat ? cat.items : []).forEach(function (item) {
-          var known = item.flag ? !!flags[item.flag] : !!item.a;
+      items.forEach(function (item) {
+        var known = item.flag ? !!flags[item.flag] : !!item.a;
 
-          var details = document.createElement('details');
-          details.className = 'faq-item';
-          var summary = document.createElement('summary');
-          summary.textContent = item.q;
-          details.appendChild(summary);
+        var details = document.createElement('details');
+        details.className = 'faq-item';
+        var summary = document.createElement('summary');
+        summary.textContent = item.q;
+        details.appendChild(summary);
 
-          var answer = document.createElement('div');
-          answer.className = 'faq-answer';
-          if (known && item.a) {
-            answer.textContent = item.a;
-          } else {
-            answer.classList.add('is-todo');
-            answer.textContent = 'Answer coming.';
-          }
-          details.appendChild(answer);
-          faq.appendChild(details);
-        });
-      };
-
-      if (tabsWrap && categories.length > 1) {
-        categories.forEach(function (cat) {
-          var tab = document.createElement('button');
-          tab.type = 'button';
-          tab.className = 'faq-tab' + (cat.key === selected ? ' is-active' : '');
-          tab.textContent = cat.label;
-          tab.setAttribute('role', 'tab');
-          tab.setAttribute('aria-selected', cat.key === selected ? 'true' : 'false');
-          tab.addEventListener('click', function () {
-            if (cat.key === selected) return;
-            selected = cat.key;
-            $$('.faq-tab', tabsWrap).forEach(function (t) {
-              t.classList.remove('is-active');
-              t.setAttribute('aria-selected', 'false');
-            });
-            tab.classList.add('is-active');
-            tab.setAttribute('aria-selected', 'true');
-            renderItems(selected);
-          });
-          tabsWrap.appendChild(tab);
-        });
-      }
-
-      renderItems(selected);
+        var answer = document.createElement('div');
+        answer.className = 'faq-answer';
+        if (known && item.a) {
+          answer.textContent = item.a;
+        } else {
+          answer.classList.add('is-todo');
+          answer.textContent = 'Answer coming.';
+        }
+        details.appendChild(answer);
+        faq.appendChild(details);
+      });
     }
 
     var contacts = TRAVEL.contacts || {};
