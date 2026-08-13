@@ -10,10 +10,11 @@
 
   var CFG = window.SAVE_THE_DATE || {};
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Same phone test as envIsPhone below (§ envelope source selection) and
-  // travel.js's own copy — width alone can't tell a phone from a narrow or
-  // zoomed desktop window, so both have to agree. A snapshot at load, not
-  // tracked live across a resize, same as `reduced` above.
+  // Shared by the envelope's source selection below and the ambient-audio
+  // volume further down, plus travel.js's own copy — width alone can't
+  // tell a phone from a narrow or zoomed desktop window, so both have to
+  // agree. A snapshot at load, not tracked live across a resize, same as
+  // `reduced` above.
   var isPhone = window.matchMedia('(max-width: 767px)').matches &&
     window.matchMedia('(pointer: coarse)').matches;
   var root = document.documentElement;
@@ -412,17 +413,11 @@
   // where the video never plays.
   if (envVideo) {
     var envMedia = CFG.media || {};
-    // Width alone misreads a desktop browser: a laptop window that is not
-    // maximised, or a page zoomed in for readability, both report a CSS
-    // viewport under 767px while still being mouse-driven, and would
-    // otherwise get handed the portrait clip meant for a phone. Requiring
-    // a coarse (touch) pointer alongside the width is what actually tells
-    // a phone apart from either of those — a real phone has no other kind
-    // of primary pointer, where a zoomed-in or narrow desktop window still
-    // reports `fine`.
-    var envIsPhone = window.matchMedia('(max-width: 767px)').matches &&
-      window.matchMedia('(pointer: coarse)').matches;
-    var envMobileSrc = envIsPhone ? envMedia.envelopeVideoMobile : '';
+    // isPhone (top of file) is the same width-plus-pointer test this used
+    // to compute locally — width alone misreads a desktop browser that
+    // isn't maximised or is zoomed in for readability as a phone, since
+    // both still report `pointer: fine`.
+    var envMobileSrc = isPhone ? envMedia.envelopeVideoMobile : '';
     if (envMobileSrc) {
       envSources.push({ video: envMobileSrc, poster: envMedia.envelopePosterMobile || envMedia.envelopePoster, mobileCut: true });
     }
