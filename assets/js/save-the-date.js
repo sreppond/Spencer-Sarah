@@ -336,12 +336,13 @@
     // silently rather than telling us — no `error` event, no rejected
     // play(), `readyState` stuck at HAVE_NOTHING forever (confirmed against
     // Playwright's own decoder-less Chromium — see assets/video/README.md).
-    // This flat deadline, comfortably past either source's own runtime
-    // (the portrait take runs ~8.3s, the landscape clip ~4.9s), is what
-    // stops a guest on a browser like that from being stranded on a frame
-    // that will never move. finishEnvelope() is idempotent, so this is a
-    // silent no-op on every run where `ended` already fired first.
-    setTimeout(finishEnvelope, 9800);
+    // This flat deadline, comfortably past either source's own ~4.9s
+    // runtime (both clips are cut and retimed to match — see
+    // assets/video/README.md), is what stops a guest on a browser like
+    // that from being stranded on a frame that will never move.
+    // finishEnvelope() is idempotent, so this is a silent no-op on every
+    // run where `ended` already fired first.
+    setTimeout(finishEnvelope, 6500);
 
     function attemptPlay() {
       // muted must be true as a property, not just an attribute, for iOS to

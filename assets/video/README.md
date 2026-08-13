@@ -115,7 +115,7 @@ nothing.
 | --- | --- | --- |
 | `envelope-open.mp4` | **shipped** | 1126×618, ~4.9s, 48fps, H.264 High, no audio track, `+faststart`. ~910 KB. Cut from a 10s, 24fps, 1280×720 source. Served on anything 768px and wider, and as the fallback everywhere if the portrait file below ever fails. |
 | `envelope-open-poster.jpg` | **shipped** | The landscape clip's own frame 0 — see below. |
-| `envelope-open-mobile.mp4` | **shipped** | 720×1280 (9:16), ~8.3s, 24fps, H.264 High, no audio track, `+faststart`. ~1.8 MB. Trimmed and re-encoded from a 720×1280, 10s source shot and framed for a phone screen — see "A dedicated portrait cut for phones" below. Served below 768px. |
+| `envelope-open-mobile.mp4` | **shipped** | 720×1280 (9:16), ~4.9s, 48fps, H.264 High, no audio track, `+faststart`. ~1.3 MB. Trimmed, retimed and re-encoded from a 720×1280, 10s source shot and framed for a phone screen — see "A dedicated portrait cut for phones" below. Served below 768px. |
 | `envelope-open-mobile-poster.jpg` | **shipped** | The portrait clip's own frame 0. |
 
 This is what plays when a guest taps the envelope, in place of the old
@@ -148,28 +148,33 @@ noise-floor audio track — the same non-signal the landscape clip's own
 source carried) was the full uncut take: envelope opens, card rises and
 the last line of text ("Whitefish, MT / 06.12.2027") settles into place
 by ~7.7s, then holds on the fully-revealed card with no fade for the
-remaining ~2.3s. That hold and the raw audio track needed the same fix
-the landscape clip got, done the same way — trim the static tail, add a
-fade to a held white frame so `.env-scene`'s own opacity transition (CSS
-§1) has a plain field to fade from, and drop the audio:
+remaining ~2.3s.
+
+The two source takes turn out to share the same real-world pacing almost
+exactly — the landscape source's own README history below describes the
+identical shape (flap opens, card rises, then a static hold) on the same
+rough timeline. So this clip gets the *exact same* treatment as the
+landscape one, parameter for parameter, rather than just a trim: the same
+8.6s trim point, the same 1.75× speed-up, the same `fps=48` fix for the
+judder that speed-up alone would cause, and the same fade-to-white
+timing. The two shipped files land within 3ms of each other's duration
+(4.9375s) as a result — this is not a coincidence, it is what happens
+when the same pacing gets the same math:
 
 ```
 ffmpeg -i master.mp4 \
-  -vf "trim=0:8.3,setpts=PTS-STARTPTS,fade=t=out:st=7.8:d=0.5:color=white" \
+  -vf "trim=0:8.6,setpts=(PTS-STARTPTS)/1.75,fps=48,fade=t=out:st=4.4:d=0.5:color=white" \
   -an -c:v libx264 -crf 19 -preset slow -profile:v high -level 4.0 \
-  -pix_fmt yuv420p -g 48 -movflags +faststart envelope-open-mobile.mp4
+  -pix_fmt yuv420p -g 96 -movflags +faststart envelope-open-mobile.mp4
 ```
 
-Unlike the landscape clip, this pass does not retime the footage —
-`setpts=PTS-STARTPTS` only re-zeroes timestamps after the trim, it does
-not change their spacing. The source's own pace was left alone rather
-than matched to the landscape clip's brisker 1.75×, since retiming is a
-creative call on someone else's footage that trimming a dead hold is not.
-One consequence: this clip runs longer (~8.3s) than the landscape one
-(~4.9s), so the flat safety timeout in `playEnvelopeVideo()` that hands
-off to the hero if a browser's `error`/`ended` events never fire had to
-move from 6.5s to 9.8s to stay comfortably past *either* clip's own
-runtime — see the comment at that `setTimeout` call.
+An earlier version of this file only trimmed the tail and left the pacing
+alone, reasoning that retiming was a creative call this repo shouldn't
+make unilaterally on someone else's footage — see git history on this
+file if that reasoning is ever worth revisiting. In practice the two
+clips running at different speeds read as the mobile envelope being
+sluggish next to the desktop one, which is a worse guest experience than
+the retiming risk, so the two now match.
 
 `envelope-open-mobile-poster.jpg` follows the same rule as the landscape
 poster below: it is frame 0 of the *processed* file, not the raw upload,
@@ -179,11 +184,12 @@ exported the same way —
 ffmpeg -i envelope-open-mobile.mp4 -frames:v 1 -update 1 -q:v 3 envelope-open-mobile-poster.jpg
 ```
 
-If this clip is ever re-shot or re-cut, re-check where the text settles
-(sample frames every ~0.1s through the back third of the clip — a static
-contact sheet is the fastest way to see it) rather than assuming ~7.8s
-still holds, and re-export the poster from whatever the new file's own
-frame 0 actually is.
+If this clip is ever re-shot or re-cut, re-check the source's own timing
+before assuming the 8.6s/1.75×/4.4s numbers above still hold — sample
+frames every ~0.1s through the back third of the *source* (before any
+retiming) to see where the text actually settles, the same way the
+landscape clip's own cut was checked, and re-export the poster from
+whatever the new file's own frame 0 actually is.
 
 ### The source ran long and needed cropping in
 
