@@ -366,10 +366,12 @@ window.TRAVEL = {
       q: 'Do I need to rent a car?',
       a: 'We’d recommend renting a car, or splitting one with friends – ' +
         'it’s the best way to get around Flathead Valley and Glacier ' +
-        'National Park. Rideshare isn’t reliable out here, so don’t ' +
-        'count on Uber or Lyft. Every airport has rental cars through ' +
-        'the usual companies (Hertz, Enterprise, etc.), and if you ' +
-        'strike out there, Turo is a good backup – like Airbnb, but ' +
+        'National Park. Rideshare (Uber/Lyft) is an option too, ' +
+        'especially if you’re staying right at the venue, but it’s more ' +
+        'limited out here given how rural the area is, so don’t count on ' +
+        'it for anything last-minute. Every airport has rental cars ' +
+        'through the usual companies (Hertz, Enterprise, etc.), and if ' +
+        'you strike out there, Turo is a good backup – like Airbnb, but ' +
         'for cars: enter your city, dates, and vehicle preference.'
     },
     { q: 'Will I have cell service or wifi out there?', a: '' },
