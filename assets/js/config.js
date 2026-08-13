@@ -116,7 +116,7 @@ window.SAVE_THE_DATE = {
   },
 
   /* ---- Ambient audio ---------------------------------------
-     0.032 = 20% of the 0.16 gain the bed originally shipped at — very
+     0.016 = 10% of the 0.16 gain the bed originally shipped at — very
      subtle, and the same number on every platform. Earlier rounds tried
      a lower desktop value plus a separate, halved targetVolumeMobile —
      that split was tuned by ear against a setting that, on iOS, was
@@ -129,7 +129,7 @@ window.SAVE_THE_DATE = {
      so one target volume means the same thing everywhere and the
      mobile-specific knob is gone rather than carried forward unverified. */
   audio: {
-    targetVolume: 0.032,
+    targetVolume: 0.016,
     fadeInMs: 4000
   },
 

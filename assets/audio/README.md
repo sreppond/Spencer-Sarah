@@ -69,8 +69,8 @@ file — but MP3 is the only format every guest's phone will play.
 
 ## Level
 
--18 LUFS in the file, 0.032 gain on the page (20% of the 0.16 it originally
-shipped at) — roughly **-48 LUFS** actually in the room: very subtle, closer
+-18 LUFS in the file, 0.016 gain on the page (10% of the 0.16 it originally
+shipped at) — roughly **-54 LUFS** actually in the room: very subtle, closer
 to inaudible than to background music. If it needs to move, change
 `audio.targetVolume` in `assets/js/config.js` — leave the file where it is, so
 the mastering stays comparable if the clip is ever replaced. Because the gain
