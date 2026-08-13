@@ -2,8 +2,8 @@
    Sarah & Spencer — Travel & Stay
 
    Vanilla, no build step — see BUILDGUIDE §B.0 for why. This file grows a
-   section at a time as the page does; today it drives the hero countdown
-   and the hero nav's hamburger toggle. assets/js/calendar.js (loaded
+   section at a time as the page does; today it drives the hero location
+   map and the hero nav's hamburger toggle. assets/js/calendar.js (loaded
    alongside this) wires every [data-calendar] link on its own; nothing
    here duplicates it.
    ========================================================================== */
@@ -321,88 +321,200 @@
 
 
   /* ------------------------------------------------------------------
-     Countdown — days / hours / minutes to the wedding. Seconds are
-     frantic and burn battery for nothing, so the interval is a minute,
-     not a frame.
-
-     The ceremony's exact start time is not confirmed (see config.js
-     flags.CEREMONY_TIME_CONFIRMED) — same honesty rule as the calendar
-     action: count to local midnight on the day itself until a real time
-     exists, rather than guessing an hour that might be wrong.
+     Location map — replaces the old countdown clock. A small card that
+     tilts toward the cursor on hover and expands on select into a real
+     map centered on the venue, built from real OpenStreetMap-family
+     tiles rather than a static screenshot. Collapsed by default; tiles
+     are only fetched the first time a guest actually expands it, so a
+     guest who never taps it never costs a third-party request.
      ------------------------------------------------------------------ */
-  (function countdown() {
-    var root = $('#countdown');
-    if (!root) return;
+  (function locationMap() {
+    var mount = $('#location-map');
+    if (!mount) return;
 
-    var grid = $('#countdown-grid');
-    var passed = $('#countdown-passed');
-    var live = $('#countdown-live');
-    var daysEl = $('#cd-days'), hoursEl = $('#cd-hours'), minsEl = $('#cd-mins');
+    var cfg = TRAVEL.locationMap || {};
+    var lat = typeof cfg.lat === 'number' ? cfg.lat : 48.4108;
+    var lng = typeof cfg.lng === 'number' ? cfg.lng : -114.3378;
+    var zoom = cfg.zoom || 13;
+    var provider = cfg.tileProvider || 'carto-light';
+    var name = cfg.name || 'Whitefish, Montana';
 
-    var CFG = window.SAVE_THE_DATE || {};
-    var date = CFG.date || {};
-    var flags = CFG.flags || {};
-
-    // Local-time + UTC-offset string → a UTC instant, same technique
-    // calendar.js uses for the .ics file, kept independent here rather
-    // than shared across a file boundary for one nine-line function.
-    function localToUtc(local, offset) {
-      var m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/.exec(local || '');
-      if (!m) return null;
-      var o = /^([+-])(\d{2}):?(\d{2})$/.exec(offset || '+00:00');
-      var minutes = o ? (o[1] === '-' ? -1 : 1) * (parseInt(o[2], 10) * 60 + parseInt(o[3], 10)) : 0;
-      return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) - minutes * 60000);
+    // Slippy-map tile math — same formula every XYZ tile provider uses.
+    function latLngToTile(la, ln, z) {
+      var n = Math.pow(2, z);
+      var x = Math.floor((ln + 180) / 360 * n);
+      var latRad = la * Math.PI / 180;
+      var y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+      return { x: x, y: y };
     }
 
-    var target = flags.CEREMONY_TIME_CONFIRMED
-      ? localToUtc(date.startLocal, date.utcOffset)
-      : localToUtc((date.iso || '').replace(/-/g, '') + 'T000000', date.utcOffset);
-
-    if (!target) { root.hidden = true; return; }
-
-    function setCell(el, value) {
-      var str = String(value);
-      if (!el || el.textContent === str) return;
-      el.textContent = str;
-      if (reduced) return;
-      // Restart the CSS animation by forcing a reflow between removing
-      // and re-adding the class — the standard "no-op change won't
-      // retrigger a keyframe" workaround.
-      el.classList.remove('is-rolling');
-      void el.offsetWidth;
-      el.classList.add('is-rolling');
+    function tileUrl(x, y, z) {
+      if (provider === 'carto-dark') return 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/' + z + '/' + x + '/' + y + '.png';
+      if (provider === 'openstreetmap') return 'https://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png';
+      return 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/' + z + '/' + x + '/' + y + '.png';
     }
 
-    var announced = false;
+    function formatCoords(la, ln) {
+      var latDir = la >= 0 ? 'N' : 'S';
+      var lngDir = ln >= 0 ? 'E' : 'W';
+      return Math.abs(la).toFixed(4) + '° ' + latDir + ', ' + Math.abs(ln).toFixed(4) + '° ' + lngDir;
+    }
 
-    function tick() {
-      var diff = target.getTime() - Date.now();
+    mount.innerHTML = '';
 
-      if (diff <= 0) {
-        grid.hidden = true;
-        passed.hidden = false;
-        clearInterval(timer);
-        return;
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'location-map-card';
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', name + ' — select to expand into a map');
+
+    var grid = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    grid.setAttribute('class', 'location-map-grid');
+    grid.setAttribute('aria-hidden', 'true');
+    grid.innerHTML =
+      '<defs><pattern id="location-map-grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">' +
+      '<path d="M20 0 0 0 0 20" fill="none" stroke="currentColor" stroke-width=".5"/></pattern></defs>' +
+      '<rect width="100%" height="100%" fill="url(#location-map-grid-pattern)"/>';
+    card.appendChild(grid);
+
+    var tilesWrap = document.createElement('div');
+    tilesWrap.className = 'location-map-tiles';
+    tilesWrap.setAttribute('aria-hidden', 'true');
+    var tilesInner = document.createElement('div');
+    tilesInner.className = 'location-map-tiles-inner';
+    tilesWrap.appendChild(tilesInner);
+    card.appendChild(tilesWrap);
+
+    var fadeTop = document.createElement('span');
+    fadeTop.className = 'location-map-fade location-map-fade--top';
+    card.appendChild(fadeTop);
+    var fadeBottom = document.createElement('span');
+    fadeBottom.className = 'location-map-fade location-map-fade--bottom';
+    card.appendChild(fadeBottom);
+
+    var marker = document.createElement('span');
+    marker.className = 'location-map-marker';
+    marker.setAttribute('aria-hidden', 'true');
+    marker.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" focusable="false">' +
+      '<defs><radialGradient id="location-map-marker-gradient" cx="32%" cy="28%" r="75%">' +
+      '<stop offset="0%" stop-color="#d59a63"/><stop offset="55%" stop-color="#b0743f"/><stop offset="100%" stop-color="#70441f"/>' +
+      '</radialGradient></defs>' +
+      '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="url(#location-map-marker-gradient)"/>' +
+      '<circle cx="12" cy="9" r="2.5" class="location-map-marker-hole"/>' +
+      '</svg>';
+    card.appendChild(marker);
+
+    var content = document.createElement('span');
+    content.className = 'location-map-content';
+
+    var icon = document.createElement('span');
+    icon.className = 'location-map-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">' +
+      '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>' +
+      '<line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>';
+    content.appendChild(icon);
+
+    var textWrap = document.createElement('span');
+    textWrap.className = 'location-map-text';
+    var title = document.createElement('span');
+    title.className = 'location-map-title';
+    title.textContent = name;
+    textWrap.appendChild(title);
+    var coords = document.createElement('span');
+    coords.className = 'location-map-coords';
+    coords.textContent = formatCoords(lat, lng);
+    textWrap.appendChild(coords);
+    var underline = document.createElement('span');
+    underline.className = 'location-map-underline';
+    underline.setAttribute('aria-hidden', 'true');
+    textWrap.appendChild(underline);
+    content.appendChild(textWrap);
+
+    card.appendChild(content);
+    mount.appendChild(card);
+
+    // Tiles are built once, the first time a guest expands the card —
+    // never on page load, so a guest who never taps it never triggers a
+    // request to a third-party tile host.
+    var tilesBuilt = false;
+    function buildTiles() {
+      if (tilesBuilt) return;
+      tilesBuilt = true;
+
+      var center = latLngToTile(lat, lng, zoom);
+      var total = 9;
+      var loaded = 0;
+
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          var img = document.createElement('img');
+          img.className = 'location-map-tile';
+          img.alt = '';
+          img.loading = 'eager';
+          img.decoding = 'async';
+          img.style.left = ((dx + 1) * 256) + 'px';
+          img.style.top = ((dy + 1) * 256) + 'px';
+          img.style.transitionDelay = ((Math.abs(dx) + Math.abs(dy)) * 45) + 'ms';
+          (function (img) {
+            function onSettled() {
+              loaded++;
+              img.classList.add('is-loaded');
+              if (loaded === total) tilesWrap.classList.add('is-loaded');
+            }
+            img.addEventListener('load', onSettled, { once: true });
+            img.addEventListener('error', onSettled, { once: true });
+          }(img));
+          img.src = tileUrl(center.x + dx, center.y + dy, zoom);
+          tilesInner.appendChild(img);
+        }
       }
-
-      var days = Math.floor(diff / 86400000);
-      var hours = Math.floor((diff % 86400000) / 3600000);
-      var mins = Math.floor((diff % 3600000) / 60000);
-
-      setCell(daysEl, days);
-      setCell(hoursEl, hours);
-      setCell(minsEl, mins);
-
-      // One announcement, not one per minute — a live region that
-      // re-announces every 60 seconds is noise, not information.
-      if (!announced && live) {
-        announced = true;
-        live.textContent = days + ' days, ' + hours + ' hours and ' + mins + ' minutes until the wedding.';
-      }
     }
 
-    tick();
-    var timer = setInterval(tick, 60000);
+    var expanded = false;
+    function setExpanded(next) {
+      if (next === expanded) return;
+      expanded = next;
+      card.classList.toggle('is-expanded', expanded);
+      card.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+      if (expanded) buildTiles();
+    }
+
+    card.addEventListener('click', function () { setExpanded(!expanded); });
+
+    // Cursor tilt — desktop hover only, and skipped entirely under
+    // prefers-reduced-motion. A light rAF lerp toward the target angle
+    // reads as a soft spring without pulling in a physics library for it.
+    var canHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    if (canHover && !reduced) {
+      var rx = 0, ry = 0, targetRx = 0, targetRy = 0, raf = null;
+
+      function step() {
+        rx += (targetRx - rx) * 0.18;
+        ry += (targetRy - ry) * 0.18;
+        card.style.transform = 'rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
+        if (Math.abs(targetRx - rx) > 0.02 || Math.abs(targetRy - ry) > 0.02) {
+          raf = requestAnimationFrame(step);
+        } else {
+          raf = null;
+        }
+      }
+      function kick() { if (!raf) raf = requestAnimationFrame(step); }
+
+      card.addEventListener('pointermove', function (e) {
+        var rect = card.getBoundingClientRect();
+        var dx = clamp(e.clientX - (rect.left + rect.width / 2), -50, 50);
+        var dy = clamp(e.clientY - (rect.top + rect.height / 2), -50, 50);
+        targetRy = (dx / 50) * 8;
+        targetRx = -(dy / 50) * 8;
+        kick();
+      });
+      card.addEventListener('pointerleave', function () {
+        targetRx = 0; targetRy = 0; kick();
+      });
+    }
   }());
 
 
@@ -1166,10 +1278,9 @@
 
       // Purely decorative — the day name already carries the information;
       // this just gives each card in the desktop 3-up grid (§11.5) a quiet
-      // typographic anchor, echoing the countdown's own big display
-      // numerals instead of leaving three text-only columns with nothing
-      // to tell them apart at a glance. Hidden from assistive tech since
-      // it's redundant with weekend-day.
+      // typographic anchor instead of leaving three text-only columns with
+      // nothing to tell them apart at a glance. Hidden from assistive tech
+      // since it's redundant with weekend-day.
       var headWrap = document.createElement('div');
       headWrap.className = 'weekend-card-head';
       var num = document.createElement('span');

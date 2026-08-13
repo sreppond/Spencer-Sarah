@@ -91,8 +91,8 @@
        Opens on the Glacier Image (full-bleed), masked so its foot
        dissolves straight into the white page background rather than
        cutting to a hard edge — see .travel-hero-media in CSS §11.2. No
-       calendar action: the copy leads straight from the photo into a
-       live countdown, then Where to Stay below. -->
+       calendar action: the copy leads straight from the photo into the
+       location map, then Where to Stay below. -->
   <header class="travel-hero" id="travel-hero">
     <div class="travel-hero-media">
       <img src="../images/Glacier Image.png" alt="Glacier-fed peaks above Whitefish, Montana" decoding="async" fetchpriority="high">
@@ -103,18 +103,13 @@
       <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
 
-      <!-- Days / hours / minutes only — seconds are frantic and burn
-           battery for nothing. travel.js swaps this to a single line
-           once the date has passed, and it is a plain updating number
-           under prefers-reduced-motion rather than a digit-roll. -->
-      <div class="countdown" id="countdown" aria-live="off">
-        <p class="countdown-passed" id="countdown-passed" hidden>Married in Whitefish, June 12, 2027</p>
-        <div class="countdown-grid" id="countdown-grid">
-          <div class="countdown-cell"><span class="countdown-num" id="cd-days">–</span><span class="countdown-unit">days</span></div>
-          <div class="countdown-cell"><span class="countdown-num" id="cd-hours">–</span><span class="countdown-unit">hours</span></div>
-          <div class="countdown-cell"><span class="countdown-num" id="cd-mins">–</span><span class="countdown-unit">minutes</span></div>
-        </div>
-        <p class="sr-only" id="countdown-live" role="status" aria-live="polite"></p>
+      <!-- Replaces the old countdown clock — a small tilting card that
+           expands on select into a real map centered on the venue. Built
+           entirely by locationMap() in travel.js from travel-data.js
+           `locationMap`; the plain text below is only what a guest with
+           JavaScript off ever sees. -->
+      <div class="location-map" id="location-map">
+        <p class="location-map-fallback">Whitefish, Montana</p>
       </div>
     </div>
   </header>
