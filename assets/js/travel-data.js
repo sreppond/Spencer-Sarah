@@ -99,7 +99,7 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '(406) 862-3000',
       coords: null,
-      photos: ['images/Grouse Mountain.jpg'],
+      photos: ['images/grouse-mountain.jpg'],
       isRoomBlock: true
     },
     {
@@ -119,7 +119,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.lodgeatwhitefishlake.com',
       phone: '',
       coords: [48.4231, -114.3536],
-      photos: ['images/Lodge at Whitefish.jpg'],
+      photos: ['images/lodge-at-whitefish.jpg'],
       isRoomBlock: false
     },
     {
@@ -137,7 +137,7 @@ window.TRAVEL = {
       bookingUrl: 'https://www.firebrandhotel.com',
       phone: '(406) 863-1900',
       coords: null,
-      photos: ['images/Firebrand.jpeg'],
+      photos: ['images/firebrand.jpeg'],
       isRoomBlock: false
     },
     {
@@ -176,7 +176,7 @@ window.TRAVEL = {
       bookingUrl: '',
       phone: '',
       coords: null,
-      photos: ['images/Airbnb.avif'],
+      photos: ['images/airbnb.avif'],
       isRoomBlock: false
     }
   ],
