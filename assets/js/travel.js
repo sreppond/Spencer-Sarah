@@ -1305,6 +1305,25 @@
         }).join('<br>');
       }
     }
+
+    // Same fade-and-rise-on-scroll as the weekend cards above, so the
+    // contact card doesn't just sit there fully formed on load.
+    var contactCard = $('#local-contact');
+    if (contactCard) {
+      if (reduced || !('IntersectionObserver' in window)) {
+        contactCard.classList.add('is-revealed');
+      } else {
+        var contactIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+              contactIo.unobserve(entry.target);
+            }
+          });
+        }, { threshold: .3 });
+        contactIo.observe(contactCard);
+      }
+    }
   }());
 
 

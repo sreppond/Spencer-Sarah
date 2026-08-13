@@ -3494,21 +3494,69 @@ html.lodge-lightbox-open body { overflow-y: hidden; }
   box-shadow: 0 1px 2px rgba(93,74,44,.05), 0 18px 40px -28px rgba(93,74,44,.5);
   -webkit-backdrop-filter: blur(14px);
           backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(14px);
   transition:
+    opacity .6s var(--ease-out),
     transform .45s var(--ease-soft),
     box-shadow .45s var(--ease-soft),
     border-color .45s var(--ease-soft);
 }
+.local-contact.is-revealed { opacity: 1; transform: none; }
 .local-contact:hover {
   transform: translateY(-3px);
   border-color: rgba(196,159,108,.42);
   box-shadow: 0 1px 2px rgba(93,74,44,.06), 0 26px 48px -26px rgba(93,74,44,.58);
 }
 @media (prefers-reduced-motion: reduce) {
+  .local-contact { opacity: 1; transform: none; }
   .local-contact:hover { transform: none; }
 }
-.local-contact-mark { display: inline-block; width: 2.2rem; color: var(--gold-deep); opacity: .8; }
-.local-contact-mark svg { width: 100%; height: auto; }
+
+/* The mark gets a slow, quiet double ping — the same "someone's there"
+   cue as a phone icon's ring, not a tech-dashboard pulse. Rings are
+   pseudo-elements so the SVG itself never resizes; each expands and
+   fades on its own offset for a soft, continuous heartbeat rather than
+   a single one-shot animation. */
+.local-contact-mark {
+  position: relative;
+  display: inline-block;
+  width: 2.2rem;
+  color: var(--gold-deep);
+  opacity: .8;
+}
+.local-contact-mark::before,
+.local-contact-mark::after {
+  content: '';
+  position: absolute;
+  inset: -.3rem;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  opacity: 0;
+  animation: local-contact-ping 3.6s var(--ease-out) infinite;
+}
+.local-contact-mark::after { animation-delay: 1.8s; }
+.local-contact-mark svg { position: relative; width: 100%; height: auto; }
+@keyframes local-contact-ping {
+  0%   { transform: scale(.7); opacity: .55; }
+  70%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .local-contact-mark::before, .local-contact-mark::after { animation: none; }
+}
+
+.local-contact-line,
+.local-contact-meta {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-soft);
+}
+.local-contact.is-revealed .local-contact-line { opacity: 1; transform: none; transition-delay: .15s; }
+.local-contact.is-revealed .local-contact-meta { opacity: 1; transform: none; transition-delay: .3s; }
+@media (prefers-reduced-motion: reduce) {
+  .local-contact-line, .local-contact-meta { opacity: 1; transform: none; transition-delay: 0s; }
+}
 .local-contact-line { margin-top: .6rem; font-size: var(--t-body); line-height: 1.6; color: var(--ink-body); }
 .local-contact-meta { margin-top: .7rem; font-size: var(--t-small); color: var(--ink-soft); }
 .local-contact-meta .is-todo { font-style: italic; color: var(--stone-text); }
