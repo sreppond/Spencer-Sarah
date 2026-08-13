@@ -347,18 +347,17 @@ window.TRAVEL = {
     {
       q: 'What time should I arrive on Friday?',
       a: 'The welcome party starts at 8 PM in Whitefish, so we’d recommend ' +
-        'getting in by 5-6 PM – enough time to check in, unpack, and get ' +
-        'settled before heading out for the night.'
+        'getting in by 5-6 PM at the latest – enough time to check in, ' +
+        'unpack, and get settled before heading out for the night.'
     },
     {
       q: 'Which airport should I fly into?',
       /* The FCA code really is left over from the airport's old name –
          Kalispell's "Flathead County Airport," before it was renamed
          Glacier Park International. Real fact, not an invented bit. */
-      a: 'Glacier Park International – code FCA, which confuses everyone ' +
-        'expecting a "G" in there somewhere. It’s left over from the ' +
-        'airport’s old name, Flathead County Airport, from back before ' +
-        'the fancier rebrand. It’s about 15 minutes from downtown ' +
+      a: 'Glacier Park International – code FCA. The airport code is ' +
+        'confusing, right!? It’s left over from the airport’s old name, ' +
+        'Flathead County Airport. It’s about 15 minutes from downtown ' +
         'Kalispell and 20 from Whitefish. Missoula is a fallback if you ' +
         'can’t get a good fare into FCA, but treat it as a last resort – ' +
         'it’s a 2.5-3 hour detour from here.'
