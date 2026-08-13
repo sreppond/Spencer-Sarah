@@ -2694,8 +2694,8 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
 }
 
 /* --- 11.3 · shared section rhythm --- */
-.travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(3rem, 9vh, 4.5rem); }
-.travel-section + .travel-section { padding-top: clamp(3rem, 9vh, 4.5rem); }
+.travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(2.25rem, 6.5vh, 3.25rem); }
+.travel-section + .travel-section { padding-top: clamp(2.25rem, 6.5vh, 3.25rem); }
 /* Only the first section inherits enough top padding from .page-sub .paper
    (above) to already clear the fixed nav; the second and third sections'
    own padding-top is smaller and was never meant to carry that job alone.

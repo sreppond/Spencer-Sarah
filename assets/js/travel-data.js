@@ -402,12 +402,6 @@ window.TRAVEL = {
         'for sunshine.'
     },
     {
-      q: 'The ceremony is lakeside – will it be easy to get around for guests who have trouble with uneven ground?',
-      a: ''
-    },
-    { q: 'Is the rehearsal dinner open to all guests?', a: '' },
-    { q: 'I don’t drink – will there be non-alcoholic options?', a: '' },
-    {
       q: 'What’s the plan for Sunday?',
       a: 'We’re putting together a low-key farewell gathering on Sunday, ' +
         'June 13 – time and place are still coming together, and we’ll ' +
@@ -420,8 +414,17 @@ window.TRAVEL = {
         'specific recommendations pulled together yet, but block off ' +
         'extra days if you can swing it.'
     },
-    { q: 'Can we bring our dog?', a: '' },
-    { q: 'Do you have a gift registry?', a: '' },
+    {
+      q: 'Can we bring our dog?',
+      a: 'As much as we’d love to meet your furry friend, we ask that ' +
+        'pets sit this one out – no dogs, cats, or other creatures at ' +
+        'the festivities, please.'
+    },
+    {
+      q: 'Do you have a gift registry?',
+      a: 'Not yet – we’re planning to have one ready in early 2027. ' +
+        'We’ll share it here as soon as it’s live.'
+    },
     {
       q: 'I can’t make it – what should I do?',
       a: 'We’ll miss you, but totally understand – just let us know so we ' +
