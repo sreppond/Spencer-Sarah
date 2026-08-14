@@ -3,15 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- See index.html's head for why this policy shape (hashed inline script,
+     no wildcard hosts, no 'unsafe-inline'). Kept in sync by hand — this
+     page's inline <script>/<style> are tiny and effectively never change. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Mwe/goL4lDQTPlGfHQxgGJhVYadc8bK3BP6TuBg6qzM='; style-src 'self' 'sha256-Pzk884IEzW82LuJz4Uot+FqQtCkDhG2OkIUVGuThdmo='; img-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Sarah &amp; Spencer | Save the Date</title>
 <link rel="canonical" href="https://sreppond.github.io/Spencer-Sarah/">
 <meta http-equiv="refresh" content="0; url=./">
 <meta name="robots" content="noindex">
+<style>body{font-family:Georgia,serif;background:#f7f2e9;color:#514e4b;padding:3rem;text-align:center}a{color:#a8834f}</style>
 <script>location.replace('./' + location.search + location.hash);</script>
 </head>
-<body style="font-family:Georgia,serif;background:#f7f2e9;color:#514e4b;padding:3rem;text-align:center">
+<body>
 <!-- The save-the-date is now the site root. This stub keeps any link
      that was already shared at /save-the-date.html working. -->
-<p>Taking you to the save the date… <a href="./" style="color:#a8834f">continue</a>.</p>
+<p>Taking you to the save the date… <a href="./">continue</a>.</p>
 </body>
 </html>

@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
+<!-- Locks the page down to just the hosts it actually uses: this origin,
+     Google Fonts, and the Apps Script form endpoint. The one inline
+     <script> below (marks the doc script-capable pre-paint) is allowed by
+     its exact hash rather than a blanket 'unsafe-inline', so a script hung
+     off an injected <img onerror> or similar still won't run. Real
+     clickjacking protection (frame-ancestors) needs an HTTP header, which
+     plain GitHub Pages can't send — a meta tag can't carry it. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-DamCoPgB/VkDCPsu0R6X4sJsz1c66vGlUGBXLu04Yxg='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
 <!-- ================================================================
      Sarah & Spencer — Save the Date
      Content + asset paths live in assets/js/config.js.
