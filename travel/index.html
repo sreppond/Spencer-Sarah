@@ -54,13 +54,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260813a">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260813b">
 
 <script>document.documentElement.className += ' js';</script>
 <script defer src="../assets/js/config.js?v=20260813b"></script>
-<script defer src="../assets/js/travel-data.js?v=20260813a"></script>
+<script defer src="../assets/js/travel-data.js?v=20260813b"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260814a"></script>
+<script defer src="../assets/js/travel.js?v=20260814b"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -97,8 +97,8 @@
        Opens on the Glacier Image (full-bleed), masked so its foot
        dissolves straight into the white page background rather than
        cutting to a hard edge — see .travel-hero-media in CSS §11.2. No
-       calendar action: the copy leads straight from the photo into the
-       location map, then Where to Stay below. -->
+       calendar action: the copy leads straight from the photo into
+       Where to Stay below. -->
   <header class="travel-hero" id="travel-hero">
     <div class="travel-hero-media">
       <img src="../images/Glacier Image.png" alt="Glacier-fed peaks above Whitefish, Montana" decoding="async" fetchpriority="high">
@@ -108,15 +108,6 @@
       <h1 class="travel-hero-title">Travel &amp; Stay</h1>
       <img class="travel-hero-divider" src="../assets/typography/botanical-divider-exact.svg" alt="" aria-hidden="true" width="322" height="30">
       <p class="travel-hero-lede">Everything you need to get here, find a bed, and know what the weekend looks like.</p>
-
-      <!-- Replaces the old countdown clock — a small tilting card that
-           expands on select into a real map centered on the venue. Built
-           entirely by locationMap() in travel.js from travel-data.js
-           `locationMap`; the plain text below is only what a guest with
-           JavaScript off ever sees. -->
-      <div class="location-map" id="location-map">
-        <p class="location-map-fallback">Whitefish, Montana</p>
-      </div>
     </div>
   </header>
 

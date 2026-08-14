@@ -47,31 +47,6 @@ window.TRAVEL = {
   },
 
 
-  /* ---- Location map -------------------------------------------------
-     Replaces the old hero countdown clock — see locationMap() in
-     travel.js. `lat`/`lng` are Whitefish, Montana's own town-center
-     coordinates (checked against a map, not the venue's exact address —
-     this card is "where in the world is this," not turn-by-turn).
-
-     `tileProvider` is 'openstreetmap' — the official tile.openstreetmap.org
-     server, chosen over a third-party CDN (e.g. CARTO's free basemap
-     service) specifically because it's the one tile source guaranteed to
-     still exist and need no API key; third-party map CDNs have a history
-     of quietly sunsetting free/anonymous access. Its full-color tiles are
-     muted toward the site's cream palette in CSS (.location-map-tiles
-     filter) rather than switched to a prettier-but-less-certain provider.
-     Usage here stays well inside OSM's tile usage policy — tiles load
-     lazily, only once a guest actually expands the card, never on page
-     load. */
-  locationMap: {
-    name: 'Whitefish, Montana',
-    lat: 48.4108,
-    lng: -114.3378,
-    zoom: 13,
-    tileProvider: 'openstreetmap'
-  },
-
-
   /* ---- Lodging -------------------------------------------------
      Five options, rendered as an expand-on-select carousel — see
      lodgeGallery() in travel.js. `driveMinutes` and `coords` are
