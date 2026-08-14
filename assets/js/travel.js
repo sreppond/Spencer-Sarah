@@ -29,71 +29,23 @@
     return (/^(\.\.\/|https?:|\/)/).test(path) ? path : '../' + path;
   }
 
-  /* Same {v,t}-record localStorage wrapper as save-the-date.js, kept
-     separate rather than shared as a third file — see BUILDGUIDE §B.0's
-     "no build step" — but byte-for-byte the same behavior, because the
-     ambient-audio module below reads the exact key (std:audio) that one
-     writes. */
-  var store = (function () {
-    var ls = (function () {
-      try {
-        var area = window.localStorage;
-        area.setItem('std:probe', '1');
-        area.removeItem('std:probe');
-        return area;
-      } catch (e) { return null; }
-    }());
-
-    function clear(key) {
-      if (!ls) return;
-      try { ls.removeItem(key); } catch (e) {}
-    }
-
-    return {
-      clear: clear,
-
-      get: function (key, maxAgeDays) {
-        if (!ls) return null;
-        var raw;
-        try { raw = ls.getItem(key); } catch (e) { return null; }
-        if (!raw) return null;
-
-        var rec;
-        try { rec = JSON.parse(raw); } catch (e) { clear(key); return null; }
-        if (!rec || typeof rec.t !== 'number') { clear(key); return null; }
-
-        if (maxAgeDays && Date.now() - rec.t > maxAgeDays * 864e5) {
-          clear(key);
-          return null;
-        }
-        return rec.v;
-      },
-
-      set: function (key, value) {
-        if (!ls) return;
-        try { ls.setItem(key, JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
-      }
-    };
-  }());
-
-
   /* ------------------------------------------------------------------
-     Ambient audio — carries a guest's choice over from the save the
-     date rather than starting silent or re-asking. Same localStorage
-     key (std:audio) and the same file, read from config.js's `media`
-     block, which this page already loads.
+     Ambient audio — same file and gain as the save the date, read from
+     config.js's `media` block, which this page already loads.
 
-     Default on, same as the save the date: autoplay is attempted on load
-     unless the stored preference explicitly says "off". Nothing on this
-     page holds a fresh user gesture the way the envelope tap does, so a
-     guest who lands here cold — every direct visit to /travel/ — gets a
-     silent autoplay refusal from the browser: it does not accept a
-     non-muted play() without a gesture behind it, no matter how quiet the
-     bed is. The retry below is what actually starts it: it waits for the
-     guest's real first interaction with the page and tries again then,
-     which the policy does accept. A guest arriving from the save the date
-     (same origin, already played audio there) typically autoplays cleanly
-     on the strength of that and never needs the retry at all.
+     Default on, every time this page loads — autoplay is attempted
+     unconditionally, not gated on anything remembered from a prior visit
+     or from the save-the-date page. Muting here (the toggle below) is a
+     plain in-memory flag scoped to this page view; it is never written
+     to storage, so a reload or a trip back from the save-the-date page
+     starts the bed fresh rather than carrying a stale "off" over. Nothing
+     on this page holds a fresh user gesture the way the envelope tap
+     does, so a guest who lands here cold — every direct visit to
+     /travel/ — gets a silent autoplay refusal from the browser: it does
+     not accept a non-muted play() without a gesture behind it, no matter
+     how quiet the bed is. The retry below is what actually starts it: it
+     waits for the guest's real first interaction with the page and
+     tries again then, which the policy does accept.
 
      🔒 Gain runs through the Web Audio API (ensureGain() below), never
      `audio.volume` directly — see the matching note in save-the-date.js.
@@ -109,8 +61,7 @@
     var opts = CFG.audio || {};
     if (!audio || !toggle || !media.ambientAudio) return;
 
-    var AUDIO_KEY = 'std:audio';
-    var AUDIO_TTL_DAYS = 400;
+    var muted = false;
     var failed = false;
     var fadeTimer = null;
     var audioCtx = null;
@@ -224,21 +175,19 @@
     audio.src = assetPath(media.ambientAudio);
     revealToggle();
 
-    if (store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') {
-      tryPlay(opts.fadeInMs || 1200);
-    }
+    tryPlay(opts.fadeInMs || 1200);
 
     /* See the comment above this IIFE: a direct load never carries a
        gesture, so the attempt above almost always gets refused. Retry on
        the guest's actual first interaction with the page instead — a tap,
        a key, a scroll — which the browser's policy does accept. Only
-       fires if audio isn't already playing and the guest hasn't turned it
-       off in the meantime; removes its own listeners once it runs. */
+       fires if audio isn't already playing and the guest hasn't muted it
+       in the meantime; removes its own listeners once it runs. */
     (function armRetry() {
       var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
       function attempt() {
         events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
-        if (audio.paused && store.get(AUDIO_KEY, AUDIO_TTL_DAYS) !== 'off') tryPlay(opts.fadeInMs || 1200);
+        if (audio.paused && !muted) tryPlay(opts.fadeInMs || 1200);
       }
       events.forEach(function (evt) {
         document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
@@ -251,9 +200,9 @@
         fadeTo(0, 500);
         setTimeout(function () { audio.pause(); }, 520);
         setPressed(false);
-        store.set(AUDIO_KEY, 'off');
+        muted = true;
       } else {
-        store.set(AUDIO_KEY, 'on');
+        muted = false;
         ensureGain();
         resumeAudioCtx();
         armAudioResume();

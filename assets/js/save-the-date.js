@@ -226,15 +226,15 @@
   }
 
   /* Hoisted up from the ambient-audio block below (§ "Ambient audio") so
-     that audioPreference() reads a real key/TTL rather than the
-     pre-assignment `undefined` a `var` carries until its own line runs —
-     the envelope init below calls it synchronously, before that block
-     would otherwise have executed. */
-  var AUDIO_KEY = 'std:audio';
-  var AUDIO_TTL_DAYS = 400;
-
-  function audioPreference() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS); }
-  function setAudioPreference(on) { store.set(AUDIO_KEY, on ? 'on' : 'off'); }
+     that it is false, not the pre-assignment `undefined` a `var` carries
+     until its own line runs, when the envelope init below reads it
+     synchronously — before that block would otherwise have executed.
+     Deliberately a plain in-memory flag, not a stored preference: audio
+     defaults on for every visit to every page, and muting it is only
+     ever a choice about the page currently open, not a record that
+     should follow a guest to the next page or the next visit — see the
+     "Ambient audio" comment below. */
+  var audioMuted = false;
 
   function rememberOpened() {
     store.set(SEEN_KEY, true);
@@ -256,7 +256,7 @@
     startHeroVideo();
     revealHero();
     revealAudioToggle();
-    if (audioPreference() !== 'off') startAmbient();
+    if (!audioMuted) startAmbient();
   }
 
   function seal() {
@@ -292,10 +292,9 @@
     // and the hero is what's on screen. The envelope itself is silent by
     // design (its own video carries no audio track); starting the ambient
     // bed any earlier, mid-animation, would make it sound like the
-    // envelope was making noise. A guest who has explicitly turned audio
-    // off before — this visit or a remembered one — is the one case that
-    // stays silent.
-    if (audioPreference() !== 'off') startAmbient();
+    // envelope was making noise. A guest who has already muted it once
+    // during this same page view is the one case that stays silent.
+    if (!audioMuted) startAmbient();
 
     // Matches .env-scene's own .85s opacity fade (CSS §1) — by the time
     // this fires the scene is already fully transparent, so pulling it
@@ -439,7 +438,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
-      if (audioPreference() !== 'off') startAmbient();
+      if (!audioMuted) startAmbient();
     // Seen it already inside the last 30 days? Never seal the page at all.
     } else if (alreadyOpened()) {
       scene.style.display = 'none';
@@ -448,7 +447,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
-      if (audioPreference() !== 'off') startAmbient();
+      if (!audioMuted) startAmbient();
     } else {
       seal();
 
@@ -659,18 +658,23 @@
   /* ------------------------------------------------------------------
      Ambient audio
 
-     Default on. The bed is genuinely quiet — mastered to -18 LUFS, played
-     at config.audio.targetVolume gain. The envelope itself is always
-     silent (its clip carries no audio track) — the ambient bed starts
-     only once the hero is actually on screen, in finishEnvelope() below,
-     never mid-animation. It is at least attempted on every path that
-     lands there (the envelope tap, a remembered return visit, the skip
-     link, reduced-motion, the 2.8s auto-open) — see the audioPreference()
-     calls in finishEnvelope(), bypassEnvelope() and the
-     reduced/alreadyOpened branches. The toggle at the hand-off is how a
-     guest turns it back off, and that choice — off only, never on, since
-     on is already the default — is what gets remembered for a returning
-     visit.
+     Default on, every time, on every page — see audioMuted above. The bed
+     is genuinely quiet — mastered to -18 LUFS, played at
+     config.audio.targetVolume gain. The envelope itself is always silent
+     (its clip carries no audio track) — the ambient bed starts only once
+     the hero is actually on screen, in finishEnvelope() below, never
+     mid-animation. It is at least attempted on every path that lands
+     there (the envelope tap, a remembered return visit, the skip link,
+     reduced-motion, the 2.8s auto-open) — see the `!audioMuted` checks in
+     finishEnvelope(), bypassEnvelope() and the reduced/alreadyOpened
+     branches. The toggle at the hand-off is how a guest turns it back
+     off, but that choice is scoped to the page currently open: it is a
+     plain in-memory flag, never written to storage, so it does not
+     survive a reload or follow the guest to another page — landing on
+     /travel/ after muting here starts that page's own bed fresh, and
+     coming back here later does too. If a persistent "stay off" choice
+     is ever wanted, that is a deliberate product decision to revisit,
+     not an accidental side effect of how the toggle happens to work.
 
      The paths with no gesture are not a corner case: a guest inside the
      30-day "already opened" window (i.e. almost every reload while this
@@ -835,13 +839,15 @@
         fadeTo(0, 500);
         setTimeout(function () { audio.pause(); }, 520);
         setPressed(false);
-        setAudioPreference(false);
+        audioMuted = true;
       } else {
-        setAudioPreference(true);
+        audioMuted = false;
         var opts = CFG.audio || {};
-        // A guest who never had a stored "on" preference never went
-        // through startAmbient() on envelope open, so audio.src is still
-        // empty at this point — this is the first tap that needs it set.
+        // A guest who never had audio start on envelope open (muted it
+        // immediately, or startAmbient()'s own gesture-less attempt was
+        // refused) never went through startAmbient() at all, so audio.src
+        // is still empty at this point — this is the first tap that needs
+        // it set.
         if (!audio.src) audio.src = (CFG.media || {}).ambientAudio || '';
         ensureGain();
         resumeAudioCtx();
@@ -882,7 +888,7 @@
     function attempt() {
       retryArmed = false;
       events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
-      if (audio && audio.paused && audioPreference() !== 'off') startAmbient();
+      if (audio && audio.paused && !audioMuted) startAmbient();
     }
     events.forEach(function (evt) {
       document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
