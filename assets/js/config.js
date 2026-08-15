@@ -19,8 +19,8 @@ window.SAVE_THE_DATE = {
     iso: '2027-06-12',
     // Local ceremony window, used for the .ics file.
     // Whitefish, MT is UTC-6 in June (Mountain Daylight Time).
-    startLocal: '20270612T163000',
-    endLocal: '20270612T233000',
+    startLocal: '20270612T153000',
+    endLocal: '20270612T220000',
     utcOffset: '-06:00'
   },
 
@@ -54,12 +54,10 @@ window.SAVE_THE_DATE = {
      it renders the honest, designed alternative instead. Flip one
      only when the fact behind it is actually confirmed. */
   flags: {
-    /* The ceremony window in `date` above is a placeholder-shaped
-       guess. While this is false the "add to calendar" action makes
-       an ALL-DAY event for June 12, which is honest and still does
-       the only job that matters — getting the day into the calendar.
-       Set the real startLocal/endLocal above, THEN set this true. */
-    CEREMONY_TIME_CONFIRMED: false
+    /* The ceremony window in `date` above is real: 3:30 PM–10:00 PM,
+       ceremony and reception together. While this was false the "add
+       to calendar" action made an ALL-DAY event for June 12 instead. */
+    CEREMONY_TIME_CONFIRMED: true
   },
 
   /* ---- How a guest reaches us -------------------------------

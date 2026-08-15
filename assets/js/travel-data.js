@@ -225,10 +225,12 @@ window.TRAVEL = {
 
 
   /* ---- Schedule --------------------------------------------------
-     The welcome party (Friday) is real and confirmed — see
-     flags.WELCOME_PARTY_SET. Saturday's ceremony time and Sunday's
-     farewell are still TODO by design; the one thing that IS certain
-     regardless of those gaps: guests should plan to fly in Friday. */
+     Friday's welcome party and Saturday's ceremony + reception window
+     are both real and confirmed — see flags.WELCOME_PARTY_SET and
+     flags.CEREMONY_TIME_SET (mirrored from config.js
+     CEREMONY_TIME_CONFIRMED). Sunday's farewell is still TODO by
+     design; the one thing that IS certain regardless of that gap:
+     guests should plan to fly in Friday. */
   schedule: [
     {
       day: 'Friday', date: '2027-06-11',
@@ -241,7 +243,7 @@ window.TRAVEL = {
     {
       day: 'Saturday', date: '2027-06-12',
       title: 'Ceremony + reception',
-      time: '', venue: 'The Lodge at Whitefish Lake', blurb: '', dress: '',
+      time: '3:30 PM – 10:00 PM', venue: 'The Lodge at Whitefish Lake', blurb: '', dress: '',
       flag: 'CEREMONY_TIME_SET'
     },
     {

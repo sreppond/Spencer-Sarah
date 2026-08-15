@@ -229,11 +229,12 @@
      that it is false, not the pre-assignment `undefined` a `var` carries
      until its own line runs, when the envelope init below reads it
      synchronously — before that block would otherwise have executed.
-     Deliberately a plain in-memory flag, not a stored preference: audio
-     defaults on for every visit to every page, and muting it is only
-     ever a choice about the page currently open, not a record that
-     should follow a guest to the next page or the next visit — see the
-     "Ambient audio" comment below. */
+     A plain in-memory flag, deliberately separate from the AUDIO_KEY
+     stored preference set up in "Ambient audio" below: this one only
+     stops a guest who has just muted mid-visit from being re-started by
+     another branch later in the same page view. Whether audio should be
+     attempted at all — the actual on/off default — is AUDIO_KEY's job,
+     not this one's. */
   var audioMuted = false;
 
   function rememberOpened() {
@@ -256,7 +257,7 @@
     startHeroVideo();
     revealHero();
     revealAudioToggle();
-    if (!audioMuted) startAmbient();
+    if (!audioMuted && audioOptedIn()) startAmbient();
   }
 
   function seal() {
@@ -287,13 +288,15 @@
     revealHero();
     revealAudioToggle();
 
-    // Audio defaults on (see the "Ambient audio" section below), but only
-    // from here — the moment the envelope has actually finished opening
-    // and the hero is what's on screen. The envelope itself is silent by
-    // design (its own video carries no audio track); starting the ambient
-    // bed any earlier, mid-animation, would make it sound like the
-    // envelope was making noise. A guest who has already muted it once
-    // during this same page view is the one case that stays silent.
+    // The one place audio starts with no prior opt-in (see the "Ambient
+    // audio" section below) — but only from here, the moment the envelope
+    // has actually finished opening and the hero is what's on screen, and
+    // only because tapping the envelope open is itself the guest's own
+    // deliberate gesture. The envelope itself is silent by design (its own
+    // video carries no audio track); starting the ambient bed any earlier,
+    // mid-animation, would make it sound like the envelope was making
+    // noise. A guest who has already muted it once during this same page
+    // view is the one case that stays silent.
     if (!audioMuted) startAmbient();
 
     // Matches .env-scene's own .85s opacity fade (CSS §1) — by the time
@@ -438,7 +441,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
-      if (!audioMuted) startAmbient();
+      if (!audioMuted && audioOptedIn()) startAmbient();
     // Seen it already inside the last 30 days? Never seal the page at all.
     } else if (alreadyOpened()) {
       scene.style.display = 'none';
@@ -447,7 +450,7 @@
       revealHero();
       startHeroVideo();
       revealAudioToggle();
-      if (!audioMuted) startAmbient();
+      if (!audioMuted && audioOptedIn()) startAmbient();
     } else {
       seal();
 
@@ -658,34 +661,32 @@
   /* ------------------------------------------------------------------
      Ambient audio
 
-     Default on, every time, on every page — see audioMuted above. The bed
-     is genuinely quiet — mastered to -18 LUFS, played at
-     config.audio.targetVolume gain. The envelope itself is always silent
-     (its clip carries no audio track) — the ambient bed starts only once
-     the hero is actually on screen, in finishEnvelope() below, never
-     mid-animation. It is at least attempted on every path that lands
-     there (the envelope tap, a remembered return visit, the skip link,
-     reduced-motion, the 2.8s auto-open) — see the `!audioMuted` checks in
-     finishEnvelope(), bypassEnvelope() and the reduced/alreadyOpened
-     branches. The toggle at the hand-off is how a guest turns it back
-     off, but that choice is scoped to the page currently open: it is a
-     plain in-memory flag, never written to storage, so it does not
-     survive a reload or follow the guest to another page — landing on
-     /travel/ after muting here starts that page's own bed fresh, and
-     coming back here later does too. If a persistent "stay off" choice
-     is ever wanted, that is a deliberate product decision to revisit,
-     not an accidental side effect of how the toggle happens to work.
+     Off by default. The only thing that starts it with no explicit tap
+     of the toggle is the envelope itself opening — see the `!audioMuted`
+     call in finishEnvelope() below — because that is a deliberate action
+     a guest just took, not an assumption made on their behalf before
+     they have done anything at all. The bed is genuinely quiet —
+     mastered to -18 LUFS, played at config.audio.targetVolume gain.
 
-     The paths with no gesture are not a corner case: a guest inside the
-     30-day "already opened" window (i.e. almost every reload while this
-     site is being worked on) lands on bypassEnvelope() every single time,
-     and the browser refuses a non-muted play() call that isn't backed by
-     one — silently, so "default on" looked like it was doing nothing.
-     armAmbientRetry() below is the actual fix: it waits for the guest's
-     real first interaction with the page, whatever it is, and retries
-     startAmbient() then. That interaction is a gesture the policy
-     accepts, so audio reliably starts within one tap/key/scroll of
-     landing on the page even when nothing here could supply one itself.
+     A guest who lands with no envelope to tap (the skip link, reduced
+     motion, or a remembered return visit inside the 30-day window — see
+     bypassEnvelope() and the reduced/alreadyOpened branches) gets audio
+     ONLY if they turned it on during an earlier visit: AUDIO_KEY below
+     is a persisted choice, checked before any of those paths attempts
+     startAmbient() at all. No stored choice — the common case, every
+     first-ever visit — means no attempt, no listener armed to start it
+     on the guest's next scroll or tap either; the toggle just sits ready
+     until they press it themselves. This used to default to "on" and
+     treat literally the guest's next pointerdown/keydown/wheel anywhere
+     on the page as consent to start unmuted sound — effectively "on by
+     default" the moment anyone touched the page at all, which is exactly
+     the behaviour this section now avoids.
+
+     The toggle writes AUDIO_KEY on every explicit press, on or off, so
+     the choice follows the guest to /travel/ and back (see the matching
+     block in travel.js) and survives a reload — see store's {v,t} shape
+     up top for the accessible-anywhere, throws-nowhere storage this
+     reads and writes through.
 
      🔒 Gain runs through the Web Audio API (ensureGain() below), never
      `audio.volume` directly. iOS Safari's HTMLMediaElement.volume is a
@@ -699,6 +700,10 @@
      a setting that never reached an iPhone in the first place. Do not
      reintroduce `audio.volume = …`.
      ------------------------------------------------------------------ */
+  var AUDIO_KEY = 'std:audio';
+  var AUDIO_TTL_DAYS = 180;
+  function audioOptedIn() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === true; }
+
   var audioFailed = false;
   var fadeTimer = null;
   var audioCtx = null;
@@ -801,6 +806,7 @@
       p.then(function () {
         fadeTo(targetVolume(opts), opts.fadeInMs || 4000);
         setPressed(true);
+        store.set(AUDIO_KEY, true);
       }).catch(function () {
         // Autoplay refused: keep offering it, and arm the gesture retry
         // below so the guest's next real tap/key/scroll picks it up
@@ -840,8 +846,10 @@
         setTimeout(function () { audio.pause(); }, 520);
         setPressed(false);
         audioMuted = true;
+        store.set(AUDIO_KEY, false);
       } else {
         audioMuted = false;
+        store.set(AUDIO_KEY, true);
         var opts = CFG.audio || {};
         // A guest who never had audio start on envelope open (muted it
         // immediately, or startAmbient()'s own gesture-less attempt was
@@ -868,18 +876,23 @@
 
   /* Browsers only grant a non-muted play() when it is backed by a fresh
      user gesture. bypassEnvelope() and the reduced-motion/alreadyOpened
-     branches call startAmbient() with none, immediately on load, and get
-     silently refused — startAmbient()'s own .catch() above is what arms
-     this. (The envelope-tap path calls startAmbient() later, from
-     finishEnvelope() once the hero is revealed, on the same page's
-     "sticky" activation from that earlier tap — it does not need this.)
-     Deliberately not armed at load: a pointerdown fires on the envelope
-     tap itself, which would otherwise start the bed mid-animation, before
-     the guest has actually seen the reveal. Arming only after a real,
-     gesture-less attempt has already failed keeps it out of that window
-     entirely. Listens once for whatever the guest's actual next touch of
-     the page turns out to be — pointer, key or scroll all count — and
-     retries then; removes its own listeners the moment it runs. */
+     branches only call startAmbient() at all when audioOptedIn() is true
+     (a guest who turned audio on during an earlier visit) — with no
+     gesture behind that call, it gets silently refused, and
+     startAmbient()'s own .catch() above is what arms this. (The
+     envelope-tap path calls startAmbient() later, from finishEnvelope()
+     once the hero is revealed, on the same page's "sticky" activation
+     from that earlier tap — it does not need this.) Deliberately not
+     armed at load: a pointerdown fires on the envelope tap itself, which
+     would otherwise start the bed mid-animation, before the guest has
+     actually seen the reveal. Arming only after a real, gesture-less
+     attempt has already failed keeps it out of that window entirely.
+     Listens once for whatever the guest's actual next touch of the page
+     turns out to be — pointer, key or scroll all count — and retries
+     then; removes its own listeners the moment it runs. Since this only
+     ever arms downstream of an opted-in preference or the envelope's own
+     tap, it never turns audio on for a guest who has not, one way or
+     another, already said yes. */
   var retryArmed = false;
   function armAmbientRetry() {
     if (retryArmed) return;
@@ -1134,6 +1147,91 @@
        moved house must be able to tell us.                              */
     var SENT_KEY = 'std:sent';
     var rememberDays = (CFG.form || {}).rememberSentDays;
+
+    /* ---- Bulletproofing the send ------------------------------------
+       Three separate weak points used to sit in the plain fetch() this
+       replaces: no timeout (a hung request left "Sending…" on screen
+       forever), no retry (one dropped packet or one slow cold-start on
+       the Apps Script side and the guest saw a failure that a second
+       attempt, half a second later, would have cleared on its own), and
+       a .catch() that discarded the actual error — so a real failure and
+       "everything's fine, that just doesn't happen to work" looked
+       identical in the console. PENDING_KEY closes the last gap: a
+       submission that still fails after the retry is kept, not lost, and
+       flushPendingSubmit() below tries it again, quietly, the next time
+       this script runs — another tab, the next visit, after the guest's
+       connection recovers. */
+    var PENDING_KEY = 'std:pending-submit';
+    var PENDING_TTL_DAYS = 30;
+
+    function buildInit(opts, payload) {
+      var init = { method: opts.method || 'POST', headers: { Accept: 'application/json' } };
+      if (opts.encoding === 'formdata') {
+        var fd = new FormData();
+        Object.keys(payload).forEach(function (k) { fd.append(k, payload[k]); });
+        init.body = fd;
+      } else {
+        init.headers['Content-Type'] = 'application/json';
+        init.body = JSON.stringify(payload);
+      }
+      return init;
+    }
+
+    // One attempt, with a hard ceiling so a hung connection can't leave
+    // the guest staring at "Sending…" indefinitely — AbortController isn't
+    // in every browser this form still has to work in, so a missing one
+    // just means no timeout rather than a broken submit.
+    function postOnce(endpoint, opts, payload) {
+      var init = buildInit(opts, payload);
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = null;
+      if (controller) {
+        init.signal = controller.signal;
+        timer = setTimeout(function () { controller.abort(); }, 15000);
+      }
+      return fetch(endpoint, init).then(function (res) {
+        if (timer) clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res;
+      }, function (err) {
+        if (timer) clearTimeout(timer);
+        throw err;
+      });
+    }
+
+    // A single silent retry covers the common transient case (a dropped
+    // packet, an Apps Script cold start) without making the guest wait
+    // through two full "Sending…" cycles — only the final failure, if
+    // there is one, ever reaches the guest-facing .catch().
+    function postWithRetry(endpoint, opts, payload) {
+      return postOnce(endpoint, opts, payload).catch(function (err) {
+        console.warn('[save-the-date] form submit failed, retrying once:', err);
+        return new Promise(function (resolve) { setTimeout(resolve, 1200); })
+          .then(function () { return postOnce(endpoint, opts, payload); });
+      });
+    }
+
+    // Runs once per page load, before the guest has touched anything: if
+    // an earlier visit's submission never made it (both attempts failed,
+    // the tab was closed mid-retry, whatever), try it again in the
+    // background. Success clears the queue and marks the guest as sent,
+    // so a return visit correctly lands on the done screen even though
+    // they never saw this happen. A renewed failure just leaves it
+    // queued for the next page load — never surfaced as an error, since
+    // the guest isn't actively waiting on it right now.
+    (function flushPendingSubmit() {
+      var endpoint = CFG.FORM_ENDPOINT;
+      if (!endpoint) return;
+      var pending = store.get(PENDING_KEY, PENDING_TTL_DAYS);
+      if (!pending) return;
+      postOnce(endpoint, CFG.form || {}, pending).then(function () {
+        store.clear(PENDING_KEY);
+        store.set(SENT_KEY, pending.name || true);
+        if (rememberDays && !form.hidden) showDone(true);
+      }).catch(function (err) {
+        console.warn('[save-the-date] queued submission still failing:', err);
+      });
+    }());
 
     function showDone(remembered) {
       if (!done) return;
@@ -1553,20 +1651,9 @@
       if (sendLabel) sendLabel.textContent = 'Sending…';
       setStatus('', false);
 
-      var init = { method: opts.method || 'POST', headers: { Accept: 'application/json' } };
-
-      if (opts.encoding === 'formdata') {
-        var fd = new FormData();
-        Object.keys(payload).forEach(function (k) { fd.append(k, payload[k]); });
-        init.body = fd;
-      } else {
-        init.headers['Content-Type'] = 'application/json';
-        init.body = JSON.stringify(payload);
-      }
-
-      fetch(endpoint, init)
-        .then(function (res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
+      postWithRetry(endpoint, opts, payload)
+        .then(function () {
+          store.clear(PENDING_KEY);
           form.removeAttribute('aria-busy');
           store.set(SENT_KEY, payload.name || true);
           showDone(false);
@@ -1580,7 +1667,18 @@
           // nudge takes focus, rather than popping the two at once.
           setTimeout(openNudge, reduced ? 250 : 900);
         })
-        .catch(function () {
+        .catch(function (err) {
+          // A discarded error here used to make a real failure and "that
+          // just doesn't work" look identical in the console. Logging the
+          // actual reason (a timeout, an HTTP status, a network error)
+          // costs the guest nothing and is the only way this is ever
+          // debuggable from the outside.
+          console.error('[save-the-date] form submit failed after retry:', err);
+          // The attempt is not thrown away — flushPendingSubmit() above
+          // will quietly try it again on the next page load, so the
+          // guest's typed details survive even this failure.
+          store.set(PENDING_KEY, payload);
+
           sending = false;
           submit.removeAttribute('aria-disabled');
           submit.classList.remove('is-sending');

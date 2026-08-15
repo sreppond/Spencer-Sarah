@@ -29,23 +29,60 @@
     return (/^(\.\.\/|https?:|\/)/).test(path) ? path : '../' + path;
   }
 
-  /* ------------------------------------------------------------------
-     Ambient audio — same file and gain as the save the date, read from
-     config.js's `media` block, which this page already loads.
+  /* Same {v,t}-with-max-age shape as save-the-date.js's own `store` — kept
+     as a second small copy rather than a shared module (see BUILDGUIDE
+     §B.0: no build step, nothing to import across a page boundary) so
+     this page's one read of AUDIO_KEY doesn't need save-the-date.js
+     loaded too. Safari private mode throws on localStorage access rather
+     than returning null, hence the try/catch. */
+  var store = (function () {
+    var ls = (function () {
+      try {
+        var area = window.localStorage;
+        area.setItem('std:probe', '1');
+        area.removeItem('std:probe');
+        return area;
+      } catch (e) { return null; }
+    }());
 
-     Default on, every time this page loads — autoplay is attempted
-     unconditionally, not gated on anything remembered from a prior visit
-     or from the save-the-date page. Muting here (the toggle below) is a
-     plain in-memory flag scoped to this page view; it is never written
-     to storage, so a reload or a trip back from the save-the-date page
-     starts the bed fresh rather than carrying a stale "off" over. Nothing
-     on this page holds a fresh user gesture the way the envelope tap
-     does, so a guest who lands here cold — every direct visit to
-     /travel/ — gets a silent autoplay refusal from the browser: it does
-     not accept a non-muted play() without a gesture behind it, no matter
-     how quiet the bed is. The retry below is what actually starts it: it
-     waits for the guest's real first interaction with the page and
-     tries again then, which the policy does accept.
+    return {
+      get: function (key, maxAgeDays) {
+        if (!ls) return null;
+        var raw;
+        try { raw = ls.getItem(key); } catch (e) { return null; }
+        if (!raw) return null;
+        var rec;
+        try { rec = JSON.parse(raw); } catch (e) { return null; }
+        if (!rec || typeof rec.t !== 'number') return null;
+        if (maxAgeDays && Date.now() - rec.t > maxAgeDays * 864e5) return null;
+        return rec.v;
+      },
+      set: function (key, value) {
+        if (!ls) return;
+        try { ls.setItem(key, JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
+      }
+    };
+  }());
+
+  /* ------------------------------------------------------------------
+     Ambient audio — same file, gain and AUDIO_KEY storage preference as
+     the save the date (see the "Ambient audio" comment in
+     save-the-date.js), read from config.js's `media` block, which this
+     page already loads.
+
+     Off by default. No envelope gesture happens on this page — there is
+     nothing here like the save-the-date's own envelope tap to hang a
+     first play() on — so this only ever attempts to start audio when
+     audioOptedIn() is true: the guest turned it on during an earlier
+     visit, here or on the save-the-date page, and that choice was
+     written to AUDIO_KEY. With no stored choice, the common case for
+     every guest arriving at /travel/ cold, nothing is attempted and no
+     listener is armed to start it on the guest's next scroll or tap —
+     the toggle simply sits ready until they press it themselves. Only
+     when opted in does the direct-load attempt below happen (and,
+     because a direct load never carries a gesture, almost always get
+     silently refused) — armRetry() is what actually resumes it then,
+     waiting for the guest's real first interaction with the page.
 
      🔒 Gain runs through the Web Audio API (ensureGain() below), never
      `audio.volume` directly — see the matching note in save-the-date.js.
@@ -60,6 +97,10 @@
     var media = CFG.media || {};
     var opts = CFG.audio || {};
     if (!audio || !toggle || !media.ambientAudio) return;
+
+    var AUDIO_KEY = 'std:audio';
+    var AUDIO_TTL_DAYS = 180;
+    function audioOptedIn() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === true; }
 
     var muted = false;
     var failed = false;
@@ -163,6 +204,7 @@
         p.then(function () {
           fadeTo(targetVolume(), fadeMs);
           setPressed(true);
+          store.set(AUDIO_KEY, true);
         }).catch(function () {
           // Autoplay refused without a fresh gesture — leave the toggle
           // showing "off". armRetry() below gets the next real one.
@@ -175,24 +217,29 @@
     audio.src = assetPath(media.ambientAudio);
     revealToggle();
 
-    tryPlay(opts.fadeInMs || 1200);
+    // Only attempt anything, and only arm the retry below, for a guest who
+    // has already opted in on an earlier visit — see the "Ambient audio"
+    // comment above this IIFE. No stored preference means no attempt.
+    if (audioOptedIn()) {
+      tryPlay(opts.fadeInMs || 1200);
 
-    /* See the comment above this IIFE: a direct load never carries a
-       gesture, so the attempt above almost always gets refused. Retry on
-       the guest's actual first interaction with the page instead — a tap,
-       a key, a scroll — which the browser's policy does accept. Only
-       fires if audio isn't already playing and the guest hasn't muted it
-       in the meantime; removes its own listeners once it runs. */
-    (function armRetry() {
-      var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
-      function attempt() {
-        events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
-        if (audio.paused && !muted) tryPlay(opts.fadeInMs || 1200);
-      }
-      events.forEach(function (evt) {
-        document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
-      });
-    }());
+      /* A direct load never carries a gesture, so the attempt above
+         almost always gets refused. Retry on the guest's actual first
+         interaction with the page instead — a tap, a key, a scroll —
+         which the browser's policy does accept. Only fires if audio
+         isn't already playing and the guest hasn't muted it in the
+         meantime; removes its own listeners once it runs. */
+      (function armRetry() {
+        var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+        function attempt() {
+          events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
+          if (audio.paused && !muted) tryPlay(opts.fadeInMs || 1200);
+        }
+        events.forEach(function (evt) {
+          document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
+        });
+      }());
+    }
 
     toggle.addEventListener('click', function () {
       var on = toggle.getAttribute('aria-pressed') === 'true';
@@ -201,8 +248,10 @@
         setTimeout(function () { audio.pause(); }, 520);
         setPressed(false);
         muted = true;
+        store.set(AUDIO_KEY, false);
       } else {
         muted = false;
+        store.set(AUDIO_KEY, true);
         ensureGain();
         resumeAudioCtx();
         armAudioResume();
@@ -341,6 +390,28 @@
       if (!tier) return '';
       var max = priceScale.max || 4;
       return tier + ' of ' + new Array(max + 1).join('$');
+    }
+
+    // Visual stand-in for priceText() above: the same tier read as a row of
+    // $ signs, `tier.length` of them lit and the rest dim, rather than the
+    // "$$ of $$$$" string. The full text still carries the accessible name
+    // (role="img" + aria-label), so nothing is lost for a screen reader.
+    function priceRating(tier) {
+      if (!tier) return null;
+      var max = priceScale.max || 4;
+      var lit = tier.length;
+      var wrap = document.createElement('span');
+      wrap.className = 'price-rating';
+      wrap.setAttribute('role', 'img');
+      wrap.setAttribute('aria-label', priceText(tier));
+      for (var i = 0; i < max; i++) {
+        var sign = document.createElement('span');
+        sign.className = 'price-rating-sign' + (i < lit ? ' is-active' : '');
+        sign.setAttribute('aria-hidden', 'true');
+        sign.textContent = '$';
+        wrap.appendChild(sign);
+      }
+      return wrap;
     }
 
     // The same five-stroke sprig used on the wax seal and the mosaic's
@@ -508,9 +579,8 @@
       label.appendChild(text);
 
       if (entry.priceTier) {
-        var price = document.createElement('span');
-        price.className = 'lodge-carousel-price';
-        price.textContent = priceText(entry.priceTier);
+        var price = priceRating(entry.priceTier);
+        price.classList.add('lodge-carousel-price');
         label.appendChild(price);
       }
       panel.appendChild(label);
@@ -990,7 +1060,9 @@
         buildMedia(entry);
         buildBadges(entry);
         nameEl.textContent = entry.name;
-        priceEl.textContent = priceText(entry.priceTier);
+        priceEl.textContent = '';
+        var priceRatingEl = priceRating(entry.priceTier);
+        if (priceRatingEl) priceEl.appendChild(priceRatingEl);
         var blurbInfo = todoOrText(entry.blurb, 'More about ' + entry.name);
         blurbEl.textContent = blurbInfo.text;
         blurbEl.classList.toggle('is-todo', blurbInfo.todo);

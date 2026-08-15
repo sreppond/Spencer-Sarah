@@ -401,14 +401,18 @@ html:not(.js) .env-scene { display: none; }
   overflow: hidden;
   min-width: 8.25rem;
   height: 44px;
-  padding: 0 1.35rem;
+  padding: 0 1.1rem;
   border-radius: 999px;
   font-family: var(--font-text);
-  font-size: var(--t-micro);
+  /* Sized to fit "Share Your Info!" — a full phrase, not a four-letter
+     acronym — on the smallest phones this pill still has to share the
+     nav bar with the hamburger; see the label's own tracking note below. */
+  font-size: clamp(.66rem, 2.5vw, var(--t-micro));
   font-weight: 600;
-  letter-spacing: .17em;
-  text-indent: .17em;
+  letter-spacing: .04em;
+  text-indent: .04em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--card);
   background: linear-gradient(135deg, var(--rsvp-light) 0%, var(--rsvp) 55%, var(--rsvp-deep) 100%);
   border: 1px solid var(--nav-border);
@@ -2648,12 +2652,13 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
 }
 
 /* --- 11.3 · shared section rhythm --- */
-.travel-section { padding-top: clamp(4rem, 12vh, 6rem); padding-bottom: clamp(2.25rem, 6.5vh, 3.25rem); }
-.travel-section + .travel-section { padding-top: clamp(2.25rem, 6.5vh, 3.25rem); }
-/* Only the first section inherits enough top padding from .page-sub .paper
-   (above) to already clear the fixed nav; the second and third sections'
-   own padding-top is smaller and was never meant to carry that job alone.
-   scroll-margin-top is what actually matters here: it's what a hash link
+.travel-section { padding-top: clamp(2.25rem, 6.5vh, 3.25rem); padding-bottom: clamp(2.25rem, 6.5vh, 3.25rem); }
+/* #where-to-stay no longer opens with a heading (see travel/index.html —
+   its eyebrow/title/lede were cut, leaving the lodge-urgency line and the
+   carousel to sit directly under the hero), so it no longer needs the
+   larger top padding a heading would want to breathe under. All three
+   sections now share the same smaller rhythm. */
+/* scroll-margin-top is what actually matters here: it's what a hash link
    or a restored scroll position to #where-to-stay/#the-weekend/#questions
    lands against (none of the three is in the hero-nav's menu any more,
    but all three ids are still real anchors other links and bookmarks can
@@ -2981,6 +2986,15 @@ body.travel-page .paper { background: #fff; padding-top: 0; }
   .lodge-carousel-item:hover .lodge-carousel-price,
   .lodge-carousel-item:focus-within .lodge-carousel-price { opacity: .92; }
 }
+
+/* Price tier read as a row of $ signs — travel.js priceRating(). Sits
+   wherever "$$ of $$$$" text used to: inherits its color and size from
+   whichever price element wraps it (.lodge-carousel-price above,
+   .lodge-lightbox-price in §11.4). Only the letter-spacing on the parent
+   is dropped here since the gaps between signs already read as spacing. */
+.price-rating { display: inline-flex; letter-spacing: 0; }
+.price-rating-sign { opacity: .35; }
+.price-rating-sign.is-active { opacity: 1; }
 .lodge-carousel-item.is-active .lodge-carousel-price { opacity: .92; }
 
 .lodge-gallery-badge {
