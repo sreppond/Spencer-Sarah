@@ -54,13 +54,13 @@
 <!-- Same stylesheet as the rest of the site — one design system, no
      second copy of the tokens to drift out of sync. Bump ?v= whenever
      save-the-date.css changes; current token matches index.html's. -->
-<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260813b">
+<link rel="stylesheet" href="../assets/css/save-the-date.css?v=20260816a">
 
 <script>document.documentElement.className += ' js';</script>
-<script defer src="../assets/js/config.js?v=20260813b"></script>
+<script defer src="../assets/js/config.js?v=20260816a"></script>
 <script defer src="../assets/js/travel-data.js?v=20260813b"></script>
 <script defer src="../assets/js/calendar.js?v=20260811g"></script>
-<script defer src="../assets/js/travel.js?v=20260814b"></script>
+<script defer src="../assets/js/travel.js?v=20260816a"></script>
 </head>
 
 <body class="page-sub travel-page">
@@ -244,28 +244,6 @@
   </footer>
 
 </main>
-
-<!-- Ambient audio — carries a guest's on/off choice over from the save
-     the date (same std:audio localStorage key, same file). No envelope
-     gesture happens on this page, so it only resumes automatically when
-     that choice was already "on"; otherwise the toggle just sits ready,
-     same as the save-the-date's before its own envelope tap. -->
-<audio id="ambient" loop preload="none" playsinline></audio>
-<button type="button" id="audio-toggle" class="audio-toggle" hidden
-        aria-pressed="false" aria-label="Turn on ambient sound">
-  <svg class="ico-on" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
-      <path d="M13.6 8.2a4 4 0 0 1 0 5.6M16.1 5.8a7.4 7.4 0 0 1 0 10.4"/>
-    </g>
-  </svg>
-  <svg class="ico-off" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
-    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 8.4h2.7L10.4 5v12L6.7 13.6H4z"/>
-      <path d="M13.8 8.8l4.4 4.4M18.2 8.8l-4.4 4.4"/>
-    </g>
-  </svg>
-</button>
 
 </body>
 </html>

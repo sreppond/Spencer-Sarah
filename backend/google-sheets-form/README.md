@@ -7,8 +7,16 @@ its `FORM_ENDPOINT` comment; `Code.gs` in this folder is the script that
 makes it real.
 
 Columns: `Timestamp · Name · Email · Phone · Address · Address status ·
-Source`. `Address status` reads `given`, `pending` (guest tapped "send
-the rest and we'll follow up"), or `blank`.
+Source · Submission ID`. `Address status` reads `given`, `pending`
+(guest tapped "send the rest and we'll follow up"), or `blank`.
+
+`Submission ID` is bookkeeping, not data — ignore it when reading the
+sheet. The page retries a send whose response got lost, and a lost
+response does not mean the row was lost, so the same submission can
+arrive twice; the id is how `Code.gs` recognises the second copy and
+skips it. An existing sheet gains the column on its next submission
+after you redeploy — rows written before then leave it blank, which is
+fine.
 
 ## One-time setup (about five minutes)
 

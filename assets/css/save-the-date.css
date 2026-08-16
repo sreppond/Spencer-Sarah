@@ -2279,40 +2279,11 @@ html.book-nudge-open body { overflow-y: hidden; }
 }
 
 
-/* ==========================================================================
-   7 · AUDIO CONTROL
-   ========================================================================== */
-
-.audio-toggle {
-  position: fixed;
-  z-index: 60;
-  left: calc(1rem + var(--safe-l));
-  bottom: calc(1rem + var(--safe-b));
-  /* 2.6rem is 41.6px — under the 44px floor, on the one control that
-     floats over scrolling content and has to be hit on the move. */
-  width: 2.85rem;
-  height: 2.85rem;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(157,144,120,.5);
-  border-radius: 50%;
-  background: rgba(251,247,240,.88);
-  -webkit-backdrop-filter: blur(8px);
-          backdrop-filter: blur(8px);
-  color: var(--ink-soft);
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity .8s var(--ease-out), transform .8s var(--ease-out),
-              background .4s ease, color .4s ease;
-}
-.audio-toggle.is-shown { opacity: 1; transform: none; }
-.audio-toggle:hover { background: rgba(251,247,240,.95); color: var(--ink); }
-.audio-toggle svg { width: 1.15rem; height: 1.15rem; }
-.audio-toggle .ico-on { display: none; }
-.audio-toggle[aria-pressed="true"] .ico-on  { display: block; }
-.audio-toggle[aria-pressed="true"] .ico-off { display: none; }
-
+/* 7 · AUDIO CONTROL is gone — the site has no ambient sound any more, so
+   the floating mute button it styled has no markup left to style. The
+   number is left unused rather than closed up, because comments
+   throughout this file and the JS cite sections by number and
+   renumbering would silently invalidate every one of them. */
 
 /* ==========================================================================
    8 · RESPONSIVE
@@ -2348,22 +2319,6 @@ html.book-nudge-open body { overflow-y: hidden; }
 
 @media (max-width: 480px) {
   :root { --hero-framing: 69% 50%; }
-}
-
-/* .audio-toggle sits fixed in the bottom-left corner; .hero-cue is
-   centred and sized to its own "Scroll for detail" label. Measured in a
-   real render: the two hit targets physically overlap by 17px at 320px
-   width and are within 3px of touching at 360px — a tap meant for one can
-   land on the other. Trimming the cue's horizontal padding (its tap
-   target, not its visible text) buys back some of that on its own; below
-   350px it isn't quite enough, so the cue also steps a few px right of
-   dead-centre, which is imperceptible against a column already reading
-   as centred at a glance. */
-@media (max-width: 400px) {
-  .hero-cue { padding-inline: .8rem; }
-}
-@media (max-width: 350px) {
-  .hero-cue { left: calc(50% + 20px); }
 }
 
 /* Stack the actions only once they genuinely run out of width, and give
@@ -2511,7 +2466,7 @@ html.book-nudge-open body { overflow-y: hidden; }
 /* ==========================================================================
    10 · PRINT
    Someone's grandmother will print this. Chrome (the envelope, the nav,
-   the audio toggle, the scroll cue, the mosaic's flying satellites) has no
+   the scroll cue, the mosaic's flying satellites) has no
    job on paper — the content underneath it does. Background images are
    dropped outright: they cost ink for no information and most home
    printers render them badly or not at all.
@@ -2520,7 +2475,6 @@ html.book-nudge-open body { overflow-y: hidden; }
 @media print {
   .env-scene,
   .hero-nav,
-  .audio-toggle,
   .hero-cue,
   .skip-link { display: none !important; }
 

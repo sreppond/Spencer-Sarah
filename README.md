@@ -12,7 +12,7 @@ website — no itinerary, travel, registry, FAQ or RSVP yet.
 ```
 index.html                     the whole public experience
 assets/js/config.js            ← names, date, place, asset paths, form endpoint
-assets/js/save-the-date.js     envelope, hero, audio, mosaic, form
+assets/js/save-the-date.js     envelope, hero, mosaic, form
 assets/css/save-the-date.css
 backend/google-sheets-form/    guest-form database (Google Sheet) + setup steps
 assets/typography/             the hero lettering (see its README)
@@ -20,13 +20,12 @@ assets/img/social-preview.jpg  1200×630 iMessage / Open Graph card — a still
                                of the closed envelope, see assets/video/README.md
 assets/photos/                 the photo journey (see its README)
 assets/video/                  hero loop + envelope-open clip (see its README)
-assets/audio/                  the ambient loop (see its README)
 images/hero-lake.jpg           the source painting; hero poster source
 images/envelope-closed.jpg     the OG card's source still (see assets/video/README.md)
 images/IMG_3091.png            the comp the hero typography was lifted from
-tools/                         regenerate the lettering, the hero poster,
-                               the ambient loop (make-social-preview.py is
-                               unused now — see assets/video/README.md)
+tools/                         regenerate the lettering and the hero poster
+                               (make-social-preview.py is unused now — see
+                               assets/video/README.md)
 ```
 
 **One exception to config-driven content:** the hero title, divider and

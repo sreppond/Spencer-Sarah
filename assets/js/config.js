@@ -105,30 +105,7 @@ window.SAVE_THE_DATE = {
        hero falls straight through to heroVideo above. Fill this in when
        the crop ships — see assets/video/README.md. */
     heroVideoMobile: '',
-    /* Ambient bed. Mastered to -18 LUFS; see the `audio` block below for
-       the gain actually applied on top of that. Rebuild it with
-       tools/make-ambient-loop.sh rather than dropping a raw clip in —
-       see assets/audio/README.md. */
-    ambientAudio: 'assets/audio/whitefish-ambience-loop.mp3',
     socialPreview: 'assets/img/social-preview.jpg'
-  },
-
-  /* ---- Ambient audio ---------------------------------------
-     0.016 = 10% of the 0.16 gain the bed originally shipped at — very
-     subtle, and the same number on every platform. Earlier rounds tried
-     a lower desktop value plus a separate, halved targetVolumeMobile —
-     that split was tuned by ear against a setting that, on iOS, was
-     never actually reaching the speaker: HTMLMediaElement.volume is a
-     documented no-op on iOS Safari (always reads back 1, ignores
-     writes), so an iPhone was playing the file at full raw loudness
-     regardless of either number. assets/js/save-the-date.js and
-     travel.js now apply this through a Web Audio GainNode instead
-     (see the 🔒 note by ensureGain() in both), which iOS does honour,
-     so one target volume means the same thing everywhere and the
-     mobile-specific knob is gone rather than carried forward unverified. */
-  audio: {
-    targetVolume: 0.016,
-    fadeInMs: 4000
   },
 
   /* ---- The mosaic -------------------------------------------

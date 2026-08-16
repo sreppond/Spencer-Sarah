@@ -132,8 +132,8 @@
      declaration but not the lookup, so a section that ran its own
      `var el = $('#el')` beside its handlers handed `undefined` to
      anything the envelope called earlier in the file — and the envelope
-     calls into the hero, the loop and the audio toggle synchronously on
-     a repeat visit. The hero stayed hidden and the loop never started.
+     calls into the hero and the loop synchronously on a repeat visit.
+     The hero stayed hidden and the loop never started.
      The script is `defer`red, so the document is fully parsed by now.
      ------------------------------------------------------------------ */
   var scene = $('#envelope-scene');
@@ -142,8 +142,6 @@
   var page = $('#page');
   var heroEl = $('#hero');
   var video = $('#hero-video');
-  var audio = $('#ambient');
-  var toggle = $('#audio-toggle');
 
 
   /* ------------------------------------------------------------------
@@ -225,18 +223,6 @@
     return store.get(SEEN_KEY, SEEN_TTL_DAYS) === true;
   }
 
-  /* Hoisted up from the ambient-audio block below (§ "Ambient audio") so
-     that it is false, not the pre-assignment `undefined` a `var` carries
-     until its own line runs, when the envelope init below reads it
-     synchronously — before that block would otherwise have executed.
-     A plain in-memory flag, deliberately separate from the AUDIO_KEY
-     stored preference set up in "Ambient audio" below: this one only
-     stops a guest who has just muted mid-visit from being re-started by
-     another branch later in the same page view. Whether audio should be
-     attempted at all — the actual on/off default — is AUDIO_KEY's job,
-     not this one's. */
-  var audioMuted = false;
-
   function rememberOpened() {
     store.set(SEEN_KEY, true);
   }
@@ -256,8 +242,6 @@
     }
     startHeroVideo();
     revealHero();
-    revealAudioToggle();
-    if (!audioMuted && audioOptedIn()) startAmbient();
   }
 
   function seal() {
@@ -286,18 +270,6 @@
     scene.setAttribute('aria-hidden', 'true');
     startHeroVideo();
     revealHero();
-    revealAudioToggle();
-
-    // The one place audio starts with no prior opt-in (see the "Ambient
-    // audio" section below) — but only from here, the moment the envelope
-    // has actually finished opening and the hero is what's on screen, and
-    // only because tapping the envelope open is itself the guest's own
-    // deliberate gesture. The envelope itself is silent by design (its own
-    // video carries no audio track); starting the ambient bed any earlier,
-    // mid-animation, would make it sound like the envelope was making
-    // noise. A guest who has already muted it once during this same page
-    // view is the one case that stays silent.
-    if (!audioMuted) startAmbient();
 
     // Matches .env-scene's own .85s opacity fade (CSS §1) — by the time
     // this fires the scene is already fully transparent, so pulling it
@@ -371,11 +343,6 @@
     envelope.setAttribute('aria-disabled', 'true');
     scene.classList.add('is-opening');
 
-    // The ambient bed starts in finishEnvelope() instead, once the
-    // envelope has actually finished opening — see the comment there.
-    // This tap is still what supplies the user gesture the browser wants;
-    // it just isn't spent until playback actually begins a few seconds
-    // later, on the same page's "sticky" activation.
     playEnvelopeVideo();
   }
 
@@ -440,8 +407,6 @@
       opened = true;
       revealHero();
       startHeroVideo();
-      revealAudioToggle();
-      if (!audioMuted && audioOptedIn()) startAmbient();
     // Seen it already inside the last 30 days? Never seal the page at all.
     } else if (alreadyOpened()) {
       scene.style.display = 'none';
@@ -449,8 +414,6 @@
       opened = true;
       revealHero();
       startHeroVideo();
-      revealAudioToggle();
-      if (!audioMuted && audioOptedIn()) startAmbient();
     } else {
       seal();
 
@@ -655,257 +618,6 @@
   if (!scene || !envelope) {
     revealHero();
     startHeroVideo();
-  }
-
-
-  /* ------------------------------------------------------------------
-     Ambient audio
-
-     Off by default. The only thing that starts it with no explicit tap
-     of the toggle is the envelope itself opening — see the `!audioMuted`
-     call in finishEnvelope() below — because that is a deliberate action
-     a guest just took, not an assumption made on their behalf before
-     they have done anything at all. The bed is genuinely quiet —
-     mastered to -18 LUFS, played at config.audio.targetVolume gain.
-
-     A guest who lands with no envelope to tap (the skip link, reduced
-     motion, or a remembered return visit inside the 30-day window — see
-     bypassEnvelope() and the reduced/alreadyOpened branches) gets audio
-     ONLY if they turned it on during an earlier visit: AUDIO_KEY below
-     is a persisted choice, checked before any of those paths attempts
-     startAmbient() at all. No stored choice — the common case, every
-     first-ever visit — means no attempt, no listener armed to start it
-     on the guest's next scroll or tap either; the toggle just sits ready
-     until they press it themselves. This used to default to "on" and
-     treat literally the guest's next pointerdown/keydown/wheel anywhere
-     on the page as consent to start unmuted sound — effectively "on by
-     default" the moment anyone touched the page at all, which is exactly
-     the behaviour this section now avoids.
-
-     The toggle writes AUDIO_KEY on every explicit press, on or off, so
-     the choice follows the guest to /travel/ and back (see the matching
-     block in travel.js) and survives a reload — see store's {v,t} shape
-     up top for the accessible-anywhere, throws-nowhere storage this
-     reads and writes through.
-
-     🔒 Gain runs through the Web Audio API (ensureGain() below), never
-     `audio.volume` directly. iOS Safari's HTMLMediaElement.volume is a
-     documented no-op — reads back 1, writes are silently ignored — so an
-     <audio> element there always plays at the file's raw mastered level
-     no matter what this code sets. A GainNode sitting after the element
-     in a Web Audio graph is the one thing iOS actually honours, and it
-     is what makes config.audio.targetVolume mean the same thing on a
-     phone as it does on a laptop — which is also why there is no longer
-     a separate targetVolumeMobile: the old split was tuned by ear against
-     a setting that never reached an iPhone in the first place. Do not
-     reintroduce `audio.volume = …`.
-     ------------------------------------------------------------------ */
-  var AUDIO_KEY = 'std:audio';
-  var AUDIO_TTL_DAYS = 180;
-  function audioOptedIn() { return store.get(AUDIO_KEY, AUDIO_TTL_DAYS) === true; }
-
-  var audioFailed = false;
-  var fadeTimer = null;
-  var audioCtx = null;
-  var gainNode = null;
-  var gainSupported = true;
-
-  function ensureGain() {
-    if (gainNode || !gainSupported || !audio) return gainNode;
-    try {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new Ctx();
-      var source = audioCtx.createMediaElementSource(audio);
-      gainNode = audioCtx.createGain();
-      gainNode.gain.value = 0;
-      source.connect(gainNode).connect(audioCtx.destination);
-    } catch (e) {
-      // No Web Audio API (very old browser): fall back to audio.volume,
-      // which at least works everywhere it exists except iOS.
-      gainSupported = false;
-      gainNode = null;
-    }
-    return gainNode;
-  }
-
-  function getGain() {
-    return ensureGain() ? gainNode.gain.value : audio.volume;
-  }
-
-  function setGain(v) {
-    if (ensureGain()) gainNode.gain.value = v;
-    else audio.volume = v;
-  }
-
-  // Autoplay policy suspends a freshly created AudioContext until a
-  // user gesture resumes it — the same rule that gates audio.play()
-  // itself, just one layer further down the graph, and a stricter one:
-  // Chrome's Media Engagement Index can let audio.play() through with no
-  // gesture at all once this origin has been played enough (exactly what
-  // happens on a repeat visit, or arriving via the RSVP link's `#details`
-  // hash below, which hands off straight to bypassEnvelope() with none) —
-  // but MEI does not extend to AudioContext.resume(), which Chrome never
-  // waives. That combination is silent in a specific way: audio.play()
-  // resolves, the element genuinely plays, the toggle shows "on" — but
-  // the suspended context means the GainNode graph after it never
-  // processes a sample. armAudioResume() below is what actually recovers
-  // from that: it waits for the guest's real next tap/key/scroll,
-  // whatever it turns out to be, and resumes the context then, same
-  // shape as armAmbientRetry() but not conditioned on play() having
-  // failed — this fires whether it did or not, since play() succeeding
-  // is exactly the case that otherwise leaves nothing else to catch it.
-  function resumeAudioCtx() {
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
-  }
-
-  var audioResumeArmed = false;
-  function armAudioResume() {
-    if (audioResumeArmed) return;
-    audioResumeArmed = true;
-    var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
-    function attempt() {
-      events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
-      resumeAudioCtx();
-    }
-    events.forEach(function (evt) {
-      document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
-    });
-  }
-
-  function fadeTo(target, ms) {
-    if (!audio) return;
-    clearInterval(fadeTimer);
-    var from = getGain();
-    var t0 = performance.now();
-    fadeTimer = setInterval(function () {
-      var k = clamp((performance.now() - t0) / ms, 0, 1);
-      setGain(clamp(from + (target - from) * k, 0, 1));
-      if (k === 1) clearInterval(fadeTimer);
-    }, 40);
-  }
-
-  function targetVolume(opts) {
-    return opts.targetVolume != null ? opts.targetVolume : 0.16;
-  }
-
-  function startAmbient() {
-    var media = CFG.media || {};
-    var opts = CFG.audio || {};
-    if (!audio || !media.ambientAudio) return;
-
-    audio.addEventListener('error', function () { audioFailed = true; hideAudioToggle(); }, { once: true });
-
-    ensureGain();
-    resumeAudioCtx();
-    armAudioResume();
-    audio.src = media.ambientAudio;
-    setGain(0);
-    var p = audio.play();
-
-    if (p && p.then) {
-      p.then(function () {
-        fadeTo(targetVolume(opts), opts.fadeInMs || 4000);
-        setPressed(true);
-        store.set(AUDIO_KEY, true);
-      }).catch(function () {
-        // Autoplay refused: keep offering it, and arm the gesture retry
-        // below so the guest's next real tap/key/scroll picks it up
-        // without them having to find and press the toggle themselves.
-        // File missing: the 'error' listener above has already retired
-        // the control, so this still runs but armAmbientRetry() no-ops.
-        setPressed(false);
-        armAmbientRetry();
-      });
-    }
-  }
-
-  function setPressed(on) {
-    if (!toggle) return;
-    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-    toggle.setAttribute('aria-label', on ? 'Turn off ambient sound' : 'Turn on ambient sound');
-  }
-
-  function revealAudioToggle() {
-    if (!toggle || audioFailed || !(CFG.media || {}).ambientAudio) return;
-    toggle.hidden = false;
-    requestAnimationFrame(function () { toggle.classList.add('is-shown'); });
-  }
-
-  function hideAudioToggle() {
-    if (!toggle) return;
-    audioFailed = true;
-    toggle.classList.remove('is-shown');
-    setTimeout(function () { toggle.hidden = true; }, 400);
-  }
-
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      var on = toggle.getAttribute('aria-pressed') === 'true';
-      if (on) {
-        fadeTo(0, 500);
-        setTimeout(function () { audio.pause(); }, 520);
-        setPressed(false);
-        audioMuted = true;
-        store.set(AUDIO_KEY, false);
-      } else {
-        audioMuted = false;
-        store.set(AUDIO_KEY, true);
-        var opts = CFG.audio || {};
-        // A guest who never had audio start on envelope open (muted it
-        // immediately, or startAmbient()'s own gesture-less attempt was
-        // refused) never went through startAmbient() at all, so audio.src
-        // is still empty at this point — this is the first tap that needs
-        // it set.
-        if (!audio.src) audio.src = (CFG.media || {}).ambientAudio || '';
-        ensureGain();
-        resumeAudioCtx();
-        armAudioResume();
-        setGain(0);
-        var p = audio.play();
-        if (p && p.then) {
-          p.then(function () {
-            fadeTo(targetVolume(opts), 1200);
-            setPressed(true);
-          }).catch(hideAudioToggle);
-        } else {
-          setPressed(true);
-        }
-      }
-    });
-  }
-
-  /* Browsers only grant a non-muted play() when it is backed by a fresh
-     user gesture. bypassEnvelope() and the reduced-motion/alreadyOpened
-     branches only call startAmbient() at all when audioOptedIn() is true
-     (a guest who turned audio on during an earlier visit) — with no
-     gesture behind that call, it gets silently refused, and
-     startAmbient()'s own .catch() above is what arms this. (The
-     envelope-tap path calls startAmbient() later, from finishEnvelope()
-     once the hero is revealed, on the same page's "sticky" activation
-     from that earlier tap — it does not need this.) Deliberately not
-     armed at load: a pointerdown fires on the envelope tap itself, which
-     would otherwise start the bed mid-animation, before the guest has
-     actually seen the reveal. Arming only after a real, gesture-less
-     attempt has already failed keeps it out of that window entirely.
-     Listens once for whatever the guest's actual next touch of the page
-     turns out to be — pointer, key or scroll all count — and retries
-     then; removes its own listeners the moment it runs. Since this only
-     ever arms downstream of an opted-in preference or the envelope's own
-     tap, it never turns audio on for a guest who has not, one way or
-     another, already said yes. */
-  var retryArmed = false;
-  function armAmbientRetry() {
-    if (retryArmed) return;
-    retryArmed = true;
-    var events = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
-    function attempt() {
-      retryArmed = false;
-      events.forEach(function (evt) { document.removeEventListener(evt, attempt, true); });
-      if (audio && audio.paused && !audioMuted) startAmbient();
-    }
-    events.forEach(function (evt) {
-      document.addEventListener(evt, attempt, { capture: true, once: true, passive: true });
-    });
   }
 
 
@@ -1197,6 +909,22 @@
         if (timer) clearTimeout(timer);
         throw err;
       });
+    }
+
+    /* Every retry path below re-sends the *same* payload object, so the
+       id minted here travels with it — the one attempt the guest made,
+       however many times it goes over the wire. That matters because a
+       request can reach Apps Script, append the row, and still look like
+       a failure from here (the response times out, the connection drops
+       on the way back, the tab closes mid-flight); the retry and
+       flushPendingSubmit() then send it again and Spencer gets the same
+       guest twice. backend/google-sheets-form/Code.gs keys on this to
+       skip a row it has already written. An endpoint that doesn't know
+       the field just records it as one more column, so this is safe to
+       ship ahead of redeploying the script. */
+    function newSubmissionId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     }
 
     // A single silent retry covers the common transient case (a dropped
@@ -1616,6 +1344,9 @@
         // 'send the rest' link" from "just didn't fill this in."
         addressStatus: !address ? (addressPending ? 'pending' : 'blank') : 'given',
         submittedAt: new Date().toISOString(),
+        // Identifies this one send across every retry of it — see
+        // newSubmissionId() above.
+        submissionId: newSubmissionId(),
         source: 'save-the-date',
         // So a reply to the notification email reaches the guest rather
         // than the form service. Formspree reads this name; anything else
