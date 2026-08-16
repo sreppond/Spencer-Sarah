@@ -378,10 +378,10 @@ window.TRAVEL = {
     },
     {
       q: 'Are kids invited?',
-      a: 'Kids are absolutely welcome for the whole weekend! For the ' +
-        'ceremony itself, we’ll have on-site care available so parents ' +
-        'can be fully present for our vows – and the kids get to come ' +
-        'right back and celebrate with us the moment we say "I do."'
+      a: 'We’re celebrating adults-only for the ceremony and reception, ' +
+        'but we’ve got you covered – on-site childcare will be available ' +
+        'at the lodge, so you can be fully present with us while the kids ' +
+        'are happily taken care of nearby.'
     },
     {
       q: 'Is the Friday welcome party kid-friendly?',
