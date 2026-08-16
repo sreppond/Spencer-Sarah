@@ -384,12 +384,6 @@ window.TRAVEL = {
         'are happily taken care of nearby.'
     },
     {
-      q: 'Is the Friday welcome party kid-friendly?',
-      a: 'Kids are part of the whole weekend, so yes – it’s just an ' +
-        'evening event starting at 8 PM, so no worries if that’s past ' +
-        'bedtime for the little ones.'
-    },
-    {
       q: 'What time does the ceremony start on Saturday?',
       a: 'Still working that out – we’re deep in the planning stage, and ' +
         'more wedding-day details (exact time included) are on the way. ' +
