@@ -6,15 +6,13 @@ METHOD:PUBLISH
 X-WR-TIMEZONE:America/Denver
 BEGIN:VEVENT
 UID:wedding-20270612@sreppond.github.io
-DTSTAMP:20260810T035416Z
+DTSTAMP:20260816T024306Z
 SUMMARY:Sarah & Spencer’s Wedding
-DTSTART;VALUE=DATE:20270612
-DTEND;VALUE=DATE:20270613
-TRANSP:TRANSPARENT
+DTSTART:20270612T213000Z
+DTEND:20270613T040000Z
 LOCATION:The Lodge at Whitefish Lake\, 1380 Wisconsin Ave\, Whitefish\, M
  T 59937
-DESCRIPTION:Timings to follow. Details: https://sreppond.github.io/Spence
- r-Sarah/
+DESCRIPTION:Details: https://sreppond.github.io/Spencer-Sarah/
 URL:https://sreppond.github.io/Spencer-Sarah/
 END:VEVENT
 END:VCALENDAR
